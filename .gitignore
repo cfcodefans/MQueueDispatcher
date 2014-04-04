@@ -8,3 +8,6 @@ target/*
 
 # svn #
 .svn/*
+
+# log #
+*.log
