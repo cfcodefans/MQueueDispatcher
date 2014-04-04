@@ -8,6 +8,16 @@ import com.rabbitmq.client.QueueingConsumer.Delivery;
 public class MessageContext implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	private long id = -1;
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
 	private QueueCfg queueCfg;
 	private Delivery delivery;
 
@@ -17,8 +27,7 @@ public class MessageContext implements Serializable {
 
 	public void setDelivery(Delivery delivery) {
 		this.delivery = delivery;
-		this.messageBody = delivery.getBody();
-		bodyHash = Arrays.hashCode(messageBody);
+		setMessageBody(delivery.getBody());
 	}
 
 	private byte[] messageBody;
@@ -50,6 +59,9 @@ public class MessageContext implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		if (id != -1)
+			return (int) id;
+
 		result = prime * result + bodyHash;
 		result = prime * result + ((queueCfg == null) ? 0 : queueCfg.hashCode());
 		result = prime * result + ((response == null) ? 0 : response.hashCode());
@@ -64,9 +76,14 @@ public class MessageContext implements Serializable {
 			return false;
 		if (!(obj instanceof MessageContext))
 			return false;
-		MessageContext other = (MessageContext) obj;
+		final MessageContext other = (MessageContext) obj;
+
+		if (id != other.id)
+			return false;
+
 		if (!Arrays.equals(messageBody, other.messageBody))
 			return false;
+
 		if (queueCfg == null) {
 			if (other.queueCfg != null)
 				return false;
@@ -83,15 +100,13 @@ public class MessageContext implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("MessageContext [queueCfg=");
-		builder.append(queueCfg);
-		builder.append(", messageBody=");
-		builder.append(new String(messageBody));
-		builder.append(", response=");
-		builder.append(response);
-		builder.append(", bodyHash=");
-		builder.append(bodyHash);
-		builder.append("]");
+		builder.append("{class:\"MessageContext\",id:").append(id)
+				.append(", queueCfg:").append(queueCfg)
+				.append(", delivery:").append(delivery)
+				.append(", messageBody:").append(Arrays.toString(messageBody))
+				.append(", response:").append(response)
+				.append(", bodyHash:").append(bodyHash)
+				.append(", failTimes:").append(failTimes).append("}");
 		return builder.toString();
 	}
 
@@ -100,6 +115,20 @@ public class MessageContext implements Serializable {
 		this.queueCfg = queueCfg;
 		this.setDelivery(delivery);
 	}
-	
-	
+
+	private long failTimes;
+
+	public long getFailTimes() {
+		return failTimes;
+	}
+
+	public void setFailTimes(long failTimes) {
+		this.failTimes = failTimes;
+	}
+
+	public void setMessageBody(byte[] messageBody) {
+		this.messageBody = messageBody;
+		this.bodyHash = Arrays.hashCode(messageBody);
+	}
+
 }

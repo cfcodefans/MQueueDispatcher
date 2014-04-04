@@ -21,8 +21,8 @@ public class ServerCfg extends Configuration {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ServerCfg [id=").append(id).append(", host=").append(host).append(", port=").append(port).append(", userName=").append(userName).append(", password=").append(password).append(", virtualHost=").append(virtualHost).append(", logFilePath=")
-				.append(logFilePath).append(", maxFileSize=").append(maxFileSize).append("]");
+		builder.append("{class:\"ServerCfg\",id:").append(id).append(", host:").append(host).append(", port:").append(port).append(", userName:").append(userName).append(", password:").append(password).append(", virtualHost:").append(virtualHost).append(", logFilePath:")
+				.append(logFilePath).append(", maxFileSize:").append(maxFileSize).append("}");
 		return builder.toString();
 	}
 

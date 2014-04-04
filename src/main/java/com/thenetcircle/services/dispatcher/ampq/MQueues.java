@@ -264,9 +264,6 @@ public class MQueues {
 			if (getConsumer(qc) == null) {
 				log.error("failed to create ConsumerActor for QueueCfg: \n" + qc);
 			}
-//			if (getRejecter(qc) == null) {
-//				log.error("failed to create rejection channel for ServerCfg: \n" + qc.getServerCfg());
-//			}
 		}
 	}
 }

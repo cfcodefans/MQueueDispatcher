@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
@@ -13,6 +16,7 @@ import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 public class ConsumerActor extends DefaultConsumer {
 
 	private QueueCfg queueCfg;
+	protected static final Log log = LogFactory.getLog(ConsumerActor.class.getSimpleName());
 	
 	public ConsumerActor(final QueueCfg queueCfg) {
 		super(MQueues.getInstance().getChannel(queueCfg));
@@ -27,16 +31,28 @@ public class ConsumerActor extends DefaultConsumer {
 	
 	private static final Map<QueueCfg, ConsumerActor> cfgAndConsumers = new HashMap<QueueCfg, ConsumerActor>();
 	
-	public static void acknowledge(final MessageContext mc) {
-		if (mc == null || !cfgAndConsumers.containsKey(mc.getQueueCfg())) return;
-		
+	public static MessageContext acknowledge(final MessageContext mc) {
+		if (mc == null || !cfgAndConsumers.containsKey(mc.getQueueCfg())) return mc;
 		final ConsumerActor ac = cfgAndConsumers.get(mc.getQueueCfg());
 		try {
 			ac.getChannel().basicAck(mc.getDelivery().getEnvelope().getDeliveryTag(), false);
 		} catch (final IOException e) {
-			//TODO log it
-			e.printStackTrace();
+			log.error("failed to acknowledge message: \n" + new String(mc.getMessageBody()) + "\nresponse: " + mc.getResponse(), e);
 		}
+		
+		return mc;
+	}
+	
+	public static MessageContext reject(final MessageContext mc) {
+		if (mc == null || !cfgAndConsumers.containsKey(mc.getQueueCfg())) return mc;
+		final ConsumerActor ac = cfgAndConsumers.get(mc.getQueueCfg());
+		try {
+			ac.getChannel().basicReject(mc.getDelivery().getEnvelope().getDeliveryTag(), true);
+		} catch (final IOException e) {
+			log.error("failed to reject message: \n" + new String(mc.getMessageBody()) + "\nresponse: " + mc.getResponse(), e);
+		}
+		
+		return mc;
 	}
 	
 	public static void register(final ConsumerActor ac) {

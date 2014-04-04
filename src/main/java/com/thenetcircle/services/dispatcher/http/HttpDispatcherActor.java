@@ -45,13 +45,13 @@ public class HttpDispatcherActor {
 			}
 
 			mc.setResponse(respStr);
-			DefaultFailedMessageHandler.instance().handover(mc);
+			DefaultFailedMessageHandler.getInstance().handover(mc);
 		}
 
 		public void failed(final Exception e) {
 			log.error("failed to process response from url: \n" + mc.getQueueCfg().getDestCfg().getUrl(), e);
 			mc.setResponse(e.getMessage());
-			DefaultFailedMessageHandler.instance().handover(mc);
+			DefaultFailedMessageHandler.getInstance().handover(mc);
 		}
 
 		public void cancelled() {

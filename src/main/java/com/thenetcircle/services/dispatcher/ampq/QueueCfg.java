@@ -130,7 +130,10 @@ public class QueueCfg extends Configuration {
 
 	@Override
 	public String toString() {
-		return "QueueCfg [id=" + id + ", queueName=" + queueName + ", durable=" + durable + ", exclusive=" + exclusive + ", autoDelete=" + autoDelete + ", routeKey=" + routeKey + ", exchanges=" + exchanges + ", serverCfg=" + serverCfg + ", priority=" + priority + "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append("{class:\"QueueCfg\",id:").append(id).append(", queueName:").append(queueName).append(", durable:").append(durable).append(", exclusive:").append(exclusive).append(", autoDelete:").append(autoDelete).append(", routeKey:").append(routeKey)
+				.append(", exchanges:").append(exchanges).append(", serverCfg:").append(serverCfg).append(", priority:").append(priority).append(", destCfg:").append(destCfg).append(", enabled:").append(enabled).append("}");
+		return builder.toString();
 	}
 	
 	private HttpDestinationCfg destCfg;

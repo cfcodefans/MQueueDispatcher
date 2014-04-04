@@ -69,7 +69,6 @@ public class DispatcherConfig {
 		
 		for (final QueueConf queueConf : servers) {
 			final ServerCfg sc = queueConfToServerCfg(queueConf);
-			
 			serverCfgs.add(sc);
 		}
 		

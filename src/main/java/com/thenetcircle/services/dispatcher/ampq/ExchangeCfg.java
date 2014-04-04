@@ -99,7 +99,7 @@ public class ExchangeCfg extends Configuration {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ExchangeCfg [id=").append(id).append(", exchangeName=").append(exchangeName).append(", durable=").append(durable).append(", autoDelete=").append(autoDelete).append(", type=").append(type).append("]");
+		builder.append("{class:\"ExchangeCfg\",id:").append(id).append(", exchangeName:").append(exchangeName).append(", durable:").append(durable).append(", autoDelete:").append(autoDelete).append(", type:").append(type).append(", serverCfg:").append(serverCfg).append("}");
 		return builder.toString();
 	}
 	
