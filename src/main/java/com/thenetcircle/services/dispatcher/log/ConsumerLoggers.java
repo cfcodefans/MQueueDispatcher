@@ -1,0 +1,70 @@
+package com.thenetcircle.services.dispatcher.log;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.RollingFileAppender;
+
+import com.thenetcircle.services.dispatcher.ampq.MQueueDispatcher;
+import com.thenetcircle.services.dispatcher.ampq.ServerCfg;
+
+public class ConsumerLoggers {
+	static final Map<String, Logger> serverNameAndLoggers = new HashMap<String, Logger>();
+
+	public static synchronized Logger getLoggerByQueueConf(final ServerCfg sc) {
+		String queueName = sc.getHost();
+		Logger logger = serverNameAndLoggers.get(queueName);
+		if (logger != null) {
+			return logger;
+		}
+
+		String logFileName = sc.getLogFilePath();
+		if (StringUtils.isBlank(logFileName)) {
+			logFileName = queueName;
+		}
+
+		String maxLogSize = sc.getLogFilePath();
+
+		RollingFileAppender originalLogAppender = (RollingFileAppender) Logger.getRootLogger().getAppender("consumerDispatcherLog");
+
+		PatternLayout srcLayout = (PatternLayout) originalLogAppender.getLayout();
+
+		RollingFileAppender queueLogAppender = new RollingFileAppender();
+
+		queueLogAppender.setEncoding(originalLogAppender.getEncoding());
+
+		try {
+			queueLogAppender.setFile(logFileName, originalLogAppender.getAppend(), originalLogAppender.getBufferedIO(), originalLogAppender.getBufferSize());
+
+			queueLogAppender.setErrorHandler(originalLogAppender.getErrorHandler());
+			queueLogAppender.setImmediateFlush(originalLogAppender.getImmediateFlush());
+
+			PatternLayout pl = new PatternLayout(srcLayout.getConversionPattern());
+			queueLogAppender.setLayout(pl);
+			queueLogAppender.setMaxBackupIndex(originalLogAppender.getMaxBackupIndex());
+			queueLogAppender.setMaxFileSize(maxLogSize);
+
+			queueLogAppender.setName(queueName);
+			queueLogAppender.setThreshold(originalLogAppender.getThreshold());
+
+			logger = Logger.getLogger(queueName);
+			logger.setAdditivity(false);// don't inherit root's appender
+			logger.removeAllAppenders();// purge other appenders
+			logger.addAppender(queueLogAppender);// use specified appender
+
+			serverNameAndLoggers.put(queueName, logger);
+		} catch (IOException e) {
+			log.error("failed to create logger for serverCfg: \n" + sc, e);
+		}
+		return logger;
+	}
+
+	protected static final Log log = LogFactory.getLog(MQueueDispatcher.class.getSimpleName());
+
+}
