@@ -39,7 +39,7 @@ public class MQueues {
 
 	private Map<QueueCfg, Channel> queueAndChannels = new HashMap<QueueCfg, Channel>();
 
-	private Map<QueueCfg, Consumer> queueAndConsumers = new HashMap<QueueCfg, Consumer>();
+	private Map<QueueCfg, ConsumerActor> queueAndConsumers = new HashMap<QueueCfg, ConsumerActor>();
 
 	private Collection<QueueCfg> queueCfgs;
 
@@ -76,8 +76,8 @@ public class MQueues {
 		return connFactory;
 	}
 
-	public synchronized Consumer getConsumer(final QueueCfg qc) {
-		Consumer c = queueAndConsumers.get(qc);
+	public ConsumerActor getConsumer(final QueueCfg qc) {
+		ConsumerActor c = queueAndConsumers.get(qc);
 		if (c == null) {
 			final Channel ch = getChannel(qc);
 			c = new ConsumerActor(qc);

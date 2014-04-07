@@ -18,7 +18,7 @@ public class ConsumerLoggers {
 	static final Map<String, Logger> serverNameAndLoggers = new HashMap<String, Logger>();
 
 	public static synchronized Logger getLoggerByQueueConf(final ServerCfg sc) {
-		String queueName = sc.getHost();
+		final String queueName = sc.getHost();
 		Logger logger = serverNameAndLoggers.get(queueName);
 		if (logger != null) {
 			return logger;
@@ -29,7 +29,7 @@ public class ConsumerLoggers {
 			logFileName = queueName;
 		}
 
-		String maxLogSize = sc.getLogFilePath();
+		final String maxLogSize = sc.getLogFilePath();
 
 		RollingFileAppender originalLogAppender = (RollingFileAppender) Logger.getRootLogger().getAppender("consumerDispatcherLog");
 
@@ -45,7 +45,7 @@ public class ConsumerLoggers {
 			queueLogAppender.setErrorHandler(originalLogAppender.getErrorHandler());
 			queueLogAppender.setImmediateFlush(originalLogAppender.getImmediateFlush());
 
-			PatternLayout pl = new PatternLayout(srcLayout.getConversionPattern());
+			final PatternLayout pl = new PatternLayout(srcLayout.getConversionPattern());
 			queueLogAppender.setLayout(pl);
 			queueLogAppender.setMaxBackupIndex(originalLogAppender.getMaxBackupIndex());
 			queueLogAppender.setMaxFileSize(maxLogSize);
@@ -66,5 +66,4 @@ public class ConsumerLoggers {
 	}
 
 	protected static final Log log = LogFactory.getLog(MQueueDispatcher.class.getSimpleName());
-
 }

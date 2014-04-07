@@ -8,66 +8,24 @@ import com.rabbitmq.client.QueueingConsumer.Delivery;
 public class MessageContext implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private long id = -1;
-
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	private QueueCfg queueCfg;
-	private Delivery delivery;
-
-	public Delivery getDelivery() {
-		return delivery;
-	}
-
-	public void setDelivery(Delivery delivery) {
-		this.delivery = delivery;
-		setMessageBody(delivery.getBody());
-	}
-
-	private byte[] messageBody;
-	private String response;
-
 	private int bodyHash = 1;
 
-	public QueueCfg getQueueCfg() {
-		return queueCfg;
-	}
+	private Delivery delivery;
 
-	public void setQueueCfg(QueueCfg queueCfg) {
+	private long failTimes;
+
+	private long id = -1;
+	private byte[] messageBody;
+
+	private QueueCfg queueCfg;
+
+	private String response;
+
+	public MessageContext(final QueueCfg queueCfg, final Delivery delivery) {
+		super();
 		this.queueCfg = queueCfg;
+		this.setDelivery(delivery);
 	}
-
-	public byte[] getMessageBody() {
-		return messageBody;
-	}
-
-	public String getResponse() {
-		return response;
-	}
-
-	public void setResponse(String response) {
-		this.response = response;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		if (id != -1)
-			return (int) id;
-
-		result = prime * result + bodyHash;
-		result = prime * result + ((queueCfg == null) ? 0 : queueCfg.hashCode());
-		result = prime * result + ((response == null) ? 0 : response.hashCode());
-		return result;
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -97,6 +55,69 @@ public class MessageContext implements Serializable {
 		return true;
 	}
 
+	public Delivery getDelivery() {
+		return delivery;
+	}
+
+	public long getFailTimes() {
+		return failTimes;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public byte[] getMessageBody() {
+		return messageBody;
+	}
+
+	public QueueCfg getQueueCfg() {
+		return queueCfg;
+	}
+
+	public String getResponse() {
+		return response;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		if (id != -1)
+			return (int) id;
+
+		result = prime * result + bodyHash;
+		result = prime * result + ((queueCfg == null) ? 0 : queueCfg.hashCode());
+		result = prime * result + ((response == null) ? 0 : response.hashCode());
+		return result;
+	}
+
+	public void setDelivery(Delivery delivery) {
+		this.delivery = delivery;
+		setMessageBody(delivery.getBody());
+	}
+
+	public void setFailTimes(long failTimes) {
+		this.failTimes = failTimes;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public void setMessageBody(byte[] messageBody) {
+		this.messageBody = messageBody;
+		this.bodyHash = Arrays.hashCode(messageBody);
+	}
+
+	public void setQueueCfg(QueueCfg queueCfg) {
+		this.queueCfg = queueCfg;
+	}
+
+	public void setResponse(String response) {
+		this.response = response;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -108,27 +129,6 @@ public class MessageContext implements Serializable {
 				.append(", bodyHash:").append(bodyHash)
 				.append(", failTimes:").append(failTimes).append("}");
 		return builder.toString();
-	}
-
-	public MessageContext(final QueueCfg queueCfg, final Delivery delivery) {
-		super();
-		this.queueCfg = queueCfg;
-		this.setDelivery(delivery);
-	}
-
-	private long failTimes;
-
-	public long getFailTimes() {
-		return failTimes;
-	}
-
-	public void setFailTimes(long failTimes) {
-		this.failTimes = failTimes;
-	}
-
-	public void setMessageBody(byte[] messageBody) {
-		this.messageBody = messageBody;
-		this.bodyHash = Arrays.hashCode(messageBody);
 	}
 
 }

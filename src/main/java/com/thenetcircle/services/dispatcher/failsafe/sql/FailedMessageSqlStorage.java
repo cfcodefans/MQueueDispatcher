@@ -13,19 +13,20 @@ import com.thenetcircle.services.dispatcher.ampq.MessageContext;
 import com.thenetcircle.services.dispatcher.ampq.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.IFailedMessageManagment;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
+import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 
-public class FailedMessageSqlStorage implements  Runnable, IFailsafe, IFailedMessageManagment {
+public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMessageManagment {
 
 	protected static final Log log = LogFactory.getLog(FailedMessageSqlStorage.class.getSimpleName());
 	private static FailedMessageSqlStorage instance = new FailedMessageSqlStorage();
-	
+
 	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
 	final ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	public MessageContext handle(final MessageContext mc) {
 		return mc;
 	}
-	
+
 	public static FailedMessageSqlStorage getInstance() {
 		return instance;
 	}
@@ -50,11 +51,14 @@ public class FailedMessageSqlStorage implements  Runnable, IFailsafe, IFailedMes
 	}
 
 	public void retry(Criterion c) {
-		
+
 	}
 
 	public void retry(Collection<MessageContext> messages, QueueCfg qc) {
-		
+		for (final MessageContext msg : messages) {
+			msg.setQueueCfg(qc);
+			HttpDispatcherActor.instance().handover(msg);
+		}
 	}
 
 	public Collection<MessageContext> query(Criterion c) {

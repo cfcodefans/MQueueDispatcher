@@ -1,6 +1,7 @@
 package com.thenetcircle.services.common;
 
 import java.lang.management.ManagementFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.collections4.iterators.ArrayIterator;
 import org.apache.commons.collections4.iterators.ObjectArrayIterator;
@@ -65,10 +66,18 @@ public class MiscUtils {
 		}
 
 		public E loop() {
-			if (!super.hasNext()) {
-				this.reset();
+//			if (!super.hasNext()) {
+//				this.reset();
+//			}
+//			return next();
+			
+			final E[] array = this.getArray();
+			if (loopIdx.compareAndSet(array.length, 0)) {
+				return array[loopIdx.get()];
 			}
-			return next();
+			return array[loopIdx.getAndIncrement()];
 		}
+		
+		private AtomicInteger loopIdx = new AtomicInteger();
 	}
 }

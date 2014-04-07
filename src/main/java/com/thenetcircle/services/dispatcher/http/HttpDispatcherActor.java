@@ -2,6 +2,7 @@ package com.thenetcircle.services.dispatcher.http;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -12,15 +13,17 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.util.EntityUtils;
 
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
+import com.thenetcircle.services.dispatcher.IMessageActor;
+import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.ampq.MessageContext;
-import com.thenetcircle.services.dispatcher.failsafe.DefaultFailedMessageHandler;
 
-public class HttpDispatcherActor {
+public class HttpDispatcherActor implements IMessageActor {
 
 	private List<CloseableHttpAsyncClient> hacs;
 
@@ -40,18 +43,15 @@ public class HttpDispatcherActor {
 				log.error("failed to process response from url: \n" + mc.getQueueCfg().getDestCfg().getUrl(), e);
 				respStr = e.getMessage();
 			}
-			if ("ok".equalsIgnoreCase(respStr)) {
-				return;
-			}
 
 			mc.setResponse(respStr);
-			DefaultFailedMessageHandler.getInstance().handover(mc);
+			MQueues.getInstance().getConsumer(mc.getQueueCfg()).handover(mc);
 		}
 
 		public void failed(final Exception e) {
 			log.error("failed to process response from url: \n" + mc.getQueueCfg().getDestCfg().getUrl(), e);
 			mc.setResponse(e.getMessage());
-			DefaultFailedMessageHandler.getInstance().handover(mc);
+			MQueues.getInstance().getConsumer(mc.getQueueCfg()).handover(mc);
 		}
 
 		public void cancelled() {
@@ -73,15 +73,17 @@ public class HttpDispatcherActor {
 
 	private LoopingArrayIterator<CloseableHttpAsyncClient> httpClientIterator = null;
 
-	public void dispatch(final MessageContext mc) {
+	public MessageContext handle(final MessageContext mc) {
 		final HttpDestinationCfg destCfg = mc.getQueueCfg().getDestCfg();
 		final String destUrlStr = destCfg.getUrl();
 		final HttpPost post = new HttpPost(destUrlStr);
 		if (StringUtils.isNotBlank(destCfg.getHostHead())) {
 			post.addHeader("host", destCfg.getHostHead());
 		}
+		post.setEntity(new ByteArrayEntity(mc.getMessageBody()));
 
 		httpClientIterator.loop().execute(post, new RespHandler(mc));
+		return mc;
 	}
 
 	public void shutdown() {
@@ -106,6 +108,21 @@ public class HttpDispatcherActor {
 
 	public static HttpDispatcherActor instance() {
 		return instance;
+	}
+
+	public MessageContext handover(MessageContext mc) {
+		handle(mc);
+		return mc;
+	}
+
+	public void handover(Collection<MessageContext> mcs) {
+		handle(mcs);
+	}
+
+	public void handle(Collection<MessageContext> mcs) {
+		for (final MessageContext mc : mcs) {
+			handle(mc);
+		}
 	}
 
 }
