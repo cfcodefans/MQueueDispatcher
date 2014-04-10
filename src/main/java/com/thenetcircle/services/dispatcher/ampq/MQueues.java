@@ -21,6 +21,9 @@ import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.QueueingConsumer;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
+import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 public class MQueues {
 

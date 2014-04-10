@@ -21,12 +21,12 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.QueueingConsumer.Delivery;
 import com.thenetcircle.services.common.MiscUtils;
-import com.thenetcircle.services.dispatcher.ampq.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.ampq.MQueueDispatcher;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
-import com.thenetcircle.services.dispatcher.ampq.MessageContext;
-import com.thenetcircle.services.dispatcher.ampq.QueueCfg;
-import com.thenetcircle.services.dispatcher.ampq.ServerCfg;
+import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
+import com.thenetcircle.services.dispatcher.entity.MessageContext;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 
 public class ThreadsTest {

@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.thenetcircle.services.dispatcher.ampq.ExchangeCfg;
-import com.thenetcircle.services.dispatcher.ampq.QueueCfg;
-import com.thenetcircle.services.dispatcher.ampq.ServerCfg;
-import com.thenetcircle.services.dispatcher.http.HttpDestinationCfg;
+import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
+import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 public class DispatcherConfig {
 

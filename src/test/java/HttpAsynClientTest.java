@@ -29,7 +29,7 @@ import com.thenetcircle.services.common.MiscUtils;
 public class HttpAsynClientTest {
 
 	private static final int URL_CNT = 100;
-	private static final int MSG_CNT = 10000;
+	private static final int MSG_CNT = 5000;
 	static Logger log = Logger.getLogger(HttpAsynClientTest.class.getSimpleName());
 	
 	static class TestCallback implements FutureCallback<HttpResponse> {
@@ -66,7 +66,7 @@ public class HttpAsynClientTest {
 		}
 	}
 	
-	static final String TEST_URL_BASE = "http://wio.poppen.lab:8282/wan/isonline?SHOW_IMAGE=0&NICKNAME=fan";
+	static final String TEST_URL_BASE = "http://wio.poppen.lab:8282/wan2/isonline?SHOW_IMAGE=0&NICKNAME=fan";
 	static String[] TEST_URLS = null;
 	static {
 		TEST_URLS = new String[URL_CNT];
@@ -150,7 +150,7 @@ public class HttpAsynClientTest {
 	
 	@Test
 	public void testSimplePostsInThreadPool() throws Exception {
-		final ExecutorService es = Executors.newFixedThreadPool(10);
+		final ExecutorService es = Executors.newFixedThreadPool(MiscUtils.AVAILABLE_PROCESSORS * 128);
 		
 		sw.start();
 		for (int i = 0; i < MSG_CNT; i++) {

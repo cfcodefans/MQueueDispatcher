@@ -21,7 +21,8 @@ import org.apache.http.util.EntityUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
-import com.thenetcircle.services.dispatcher.ampq.MessageContext;
+import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
+import com.thenetcircle.services.dispatcher.entity.MessageContext;
 
 public class HttpDispatcherActor implements IMessageActor {
 

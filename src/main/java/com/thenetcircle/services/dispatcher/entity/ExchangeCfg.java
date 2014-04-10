@@ -1,10 +1,24 @@
-package com.thenetcircle.services.dispatcher.ampq;
+package com.thenetcircle.services.dispatcher.entity;
+
+import javax.persistence.Basic;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 import com.thenetcircle.services.dispatcher.cfg.Configuration;
 
+@Entity
+@Table(name = "exchange_cfg")
 public class ExchangeCfg extends Configuration {
 	private static final long serialVersionUID = 1L;
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
 	public int getId() {
@@ -15,13 +29,19 @@ public class ExchangeCfg extends Configuration {
 		this.id = id;
 	}
 
+	@Basic
 	private String exchangeName;
+	@Basic
 	private boolean durable = true;
+	@Basic
 	private boolean autoDelete = false;
+	@Basic
 	private String type = "direct";
-	
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "server_id")
 	private ServerCfg serverCfg;
-	
+
 	public ServerCfg getServerCfg() {
 		return serverCfg;
 	}
@@ -102,6 +122,5 @@ public class ExchangeCfg extends Configuration {
 		builder.append("{class:\"ExchangeCfg\",id:").append(id).append(", exchangeName:").append(exchangeName).append(", durable:").append(durable).append(", autoDelete:").append(autoDelete).append(", type:").append(type).append(", serverCfg:").append(serverCfg).append("}");
 		return builder.toString();
 	}
-	
-	
+
 }

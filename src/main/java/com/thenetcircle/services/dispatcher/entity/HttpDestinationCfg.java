@@ -1,13 +1,29 @@
-package com.thenetcircle.services.dispatcher.http;
+package com.thenetcircle.services.dispatcher.entity;
+
+import javax.persistence.Basic;
+import javax.persistence.Cacheable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 import com.thenetcircle.services.dispatcher.cfg.Configuration;
 
+@Entity
+@Table(name = "dest_cfg")
+@Cacheable
 public class HttpDestinationCfg extends Configuration {
 	private static final long serialVersionUID = 1L;
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
+	@Basic
 	private String url;
+	
+	@Basic
 	private int retry;
 
 	public int getId() {
@@ -34,6 +50,7 @@ public class HttpDestinationCfg extends Configuration {
 		this.retry = retry;
 	}
 
+	@Basic
 	private String hostHead;
 
 	public String getHostHead() {
@@ -75,9 +92,8 @@ public class HttpDestinationCfg extends Configuration {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("HttpDestinationCfg [id=").append(id).append(", url=").append(url).append(", retry=").append(retry).append(", hostHead=").append(hostHead).append("]");
+		builder.append("{class:\"HttpDestinationCfg\",id:").append(id).append(", url:").append(url).append(", retry:").append(retry).append(", hostHead:").append(hostHead).append("}");
 		return builder.toString();
 	}
 
-	
 }

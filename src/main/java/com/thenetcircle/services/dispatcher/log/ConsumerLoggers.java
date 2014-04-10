@@ -12,7 +12,7 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 
 import com.thenetcircle.services.dispatcher.ampq.MQueueDispatcher;
-import com.thenetcircle.services.dispatcher.ampq.ServerCfg;
+import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 public class ConsumerLoggers {
 	static final Map<String, Logger> serverNameAndLoggers = new HashMap<String, Logger>();

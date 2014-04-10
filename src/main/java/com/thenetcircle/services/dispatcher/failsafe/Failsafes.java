@@ -1,9 +1,13 @@
 package com.thenetcircle.services.dispatcher.failsafe;
 
-import com.thenetcircle.services.dispatcher.ampq.QueueCfg;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
 public class Failsafes {
-	public static IFailSafe getFailsafe(final QueueCfg qc) {
-		if (qc == null) return null;
+	public static IFailsafe getFailsafe(final QueueCfg qc) {
+		if (qc == null || qc.getFailsafeCfg() == null) return null;
+		
+		final IFailsafe fs = null;
+		
+		return fs;
 	}
 }

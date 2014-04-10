@@ -2,7 +2,7 @@ package com.thenetcircle.services.dispatcher;
 
 import java.util.Collection;
 
-import com.thenetcircle.services.dispatcher.ampq.MessageContext;
+import com.thenetcircle.services.dispatcher.entity.MessageContext;
 
 public interface IMessageActor {
 	MessageContext handover(final MessageContext mc);

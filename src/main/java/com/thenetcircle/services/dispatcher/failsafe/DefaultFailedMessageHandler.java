@@ -10,7 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.dispatcher.ampq.ConsumerActor;
-import com.thenetcircle.services.dispatcher.ampq.MessageContext;
+import com.thenetcircle.services.dispatcher.entity.MessageContext;
 
 public class DefaultFailedMessageHandler implements Runnable, IFailsafe {
 	protected static final Log log = LogFactory.getLog(DefaultFailedMessageHandler.class.getSimpleName());

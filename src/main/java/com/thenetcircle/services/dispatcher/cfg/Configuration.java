@@ -2,10 +2,15 @@ package com.thenetcircle.services.dispatcher.cfg;
 
 import java.io.Serializable;
 
+import javax.persistence.Basic;
+import javax.persistence.Column;
+
 public class Configuration implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private int version;
+	@Basic
+	@Column(name = "ver")
+	private int version = 0;
 
 	public int getVersion() {
 		return version;
@@ -36,5 +41,5 @@ public class Configuration implements Serializable {
 			return false;
 		return true;
 	}
-	
+
 }

@@ -8,8 +8,8 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.thenetcircle.services.dispatcher.ampq.MessageContext;
-import com.thenetcircle.services.dispatcher.ampq.QueueCfg;
+import com.thenetcircle.services.dispatcher.entity.MessageContext;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
 public interface IFailedMessageManagment {
 	public static class Criterion {

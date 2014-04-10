@@ -1,10 +1,23 @@
-package com.thenetcircle.services.dispatcher.ampq;
+package com.thenetcircle.services.dispatcher.entity;
+
+import javax.persistence.Basic;
+import javax.persistence.Cacheable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 import com.thenetcircle.services.dispatcher.cfg.Configuration;
 
+@Entity
+@Table(name="server_cfg")
+@Cacheable
 public class ServerCfg extends Configuration {
 	private static final long serialVersionUID = 1L;
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
 	public int getId() {
@@ -15,7 +28,10 @@ public class ServerCfg extends Configuration {
 		this.id = id;
 	}
 
+	@Basic
 	private String host = "localhost";
+	
+	@Basic
 	private int port = 5672;
 
 	@Override
@@ -26,8 +42,11 @@ public class ServerCfg extends Configuration {
 		return builder.toString();
 	}
 
+	@Basic
 	private String userName = "guest";
+	@Basic
 	private String password = "guest";
+	@Basic
 	private String virtualHost = "/";
 
 	@Override
@@ -106,8 +125,11 @@ public class ServerCfg extends Configuration {
 
 	// log file configuration
 	// TODO need better abstraction
-	String logFilePath;
-	String maxFileSize = String.valueOf("2GB");
+	@Basic
+	private String logFilePath;
+	
+	@Basic
+	private String maxFileSize = String.valueOf("2GB");
 
 	public String getLogFilePath() {
 		return logFilePath;
@@ -124,5 +146,4 @@ public class ServerCfg extends Configuration {
 	public void setMaxFileSize(String maxFileSize) {
 		this.maxFileSize = maxFileSize;
 	}
-
 }

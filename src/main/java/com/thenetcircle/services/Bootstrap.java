@@ -11,8 +11,8 @@ import org.apache.commons.logging.LogFactory;
 import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
 import com.thenetcircle.comsumerdispatcher.config.QueueConf;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
-import com.thenetcircle.services.dispatcher.ampq.QueueCfg;
-import com.thenetcircle.services.dispatcher.ampq.ServerCfg;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 
 

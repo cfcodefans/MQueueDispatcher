@@ -9,8 +9,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.dispatcher.ampq.MessageContext;
-import com.thenetcircle.services.dispatcher.ampq.QueueCfg;
+import com.thenetcircle.services.dispatcher.entity.MessageContext;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.IFailedMessageManagment;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
@@ -24,6 +24,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 	final ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	public MessageContext handle(final MessageContext mc) {
+		//TODO
 		return mc;
 	}
 
@@ -51,7 +52,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 	}
 
 	public void retry(Criterion c) {
-
+		//TODO
 	}
 
 	public void retry(Collection<MessageContext> messages, QueueCfg qc) {
@@ -62,6 +63,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 	}
 
 	public Collection<MessageContext> query(Criterion c) {
+		//TODO
 		return null;
 	}
 

@@ -1,16 +1,35 @@
-package com.thenetcircle.services.dispatcher.ampq;
+package com.thenetcircle.services.dispatcher.entity;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import com.thenetcircle.services.dispatcher.cfg.Configuration;
-import com.thenetcircle.services.dispatcher.http.HttpDestinationCfg;
+import javax.persistence.Basic;
+import javax.persistence.Cacheable;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
+import com.thenetcircle.services.dispatcher.cfg.Configuration;
+import com.thenetcircle.services.dispatcher.failsafe.FailsafeCfg;
+
+@Entity
+@Table(name="queue_cfg")
+@Cacheable
 public class QueueCfg extends Configuration {
 	private static final long serialVersionUID = 1L;
 
 	public static final String DEFAULT_ROUTE_KEY = "default_route_key";
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
 	public int getId() {
@@ -21,12 +40,22 @@ public class QueueCfg extends Configuration {
 		this.id = id;
 	}
 
+	@Basic
 	private String queueName;
+	
+	@Basic
 	private boolean durable = true;
+	
+	@Basic
 	private boolean exclusive = false;
+	
+	@Basic
 	private boolean autoDelete = false;
+	
+	@Basic
 	private String routeKey = DEFAULT_ROUTE_KEY;
 
+	@ManyToMany(fetch=FetchType.EAGER)
 	private Set<ExchangeCfg> exchanges = new HashSet<ExchangeCfg>();
 
 	public String getRouteKey() {
@@ -37,8 +66,11 @@ public class QueueCfg extends Configuration {
 		this.routeKey = routeKey;
 	}
 
+	@ManyToOne(fetch=FetchType.EAGER)
+	@JoinColumn(name = "server_id")
 	private ServerCfg serverCfg;
 
+	@Basic
 	private int priority;
 
 	public int getPriority() {
@@ -136,6 +168,8 @@ public class QueueCfg extends Configuration {
 		return builder.toString();
 	}
 	
+	@OneToOne(fetch=FetchType.EAGER)
+	@JoinColumn(name = "dest_cfg_id")
 	private HttpDestinationCfg destCfg;
 
 	public HttpDestinationCfg getDestCfg() {
@@ -146,6 +180,7 @@ public class QueueCfg extends Configuration {
 		this.destCfg = destCfg;
 	}
 	
+	@Basic
 	private boolean enabled = true;
 
 	public boolean isEnabled() {
@@ -155,4 +190,17 @@ public class QueueCfg extends Configuration {
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
+	
+	@Transient
+	private FailsafeCfg failsafeCfg = new FailsafeCfg();
+
+	public FailsafeCfg getFailsafeCfg() {
+		return failsafeCfg;
+	}
+
+	public void setFailsafeCfg(FailsafeCfg failsafeCfg) {
+		this.failsafeCfg = failsafeCfg;
+	}
+	
+	
 }

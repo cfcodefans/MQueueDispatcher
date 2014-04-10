@@ -14,6 +14,8 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.QueueingConsumer.Delivery;
 import com.thenetcircle.services.dispatcher.IMessageActor;
+import com.thenetcircle.services.dispatcher.entity.MessageContext;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 
 public class ConsumerActor extends DefaultConsumer implements IMessageActor, Runnable {

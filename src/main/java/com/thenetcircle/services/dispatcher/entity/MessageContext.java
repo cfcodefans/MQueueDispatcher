@@ -1,31 +1,65 @@
-package com.thenetcircle.services.dispatcher.ampq;
+package com.thenetcircle.services.dispatcher.entity;
 
 import java.io.Serializable;
 import java.util.Arrays;
 
+import javax.persistence.Basic;
+import javax.persistence.Cacheable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import com.rabbitmq.client.QueueingConsumer.Delivery;
 
+@Entity
+@Table(name = "msg_ctx")
+@Cacheable
 public class MessageContext implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	@Transient
 	private int bodyHash = 1;
 
+	@Transient
 	private Delivery delivery;
 
+	@Basic
 	private long failTimes;
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id = -1;
+	
+	@Column(name="msg_content", length=10000)
+	@Lob
 	private byte[] messageBody;
 
+	@ManyToOne(fetch=FetchType.EAGER)
+	@JoinColumn(name="queue_cfg_id")
 	private QueueCfg queueCfg;
 
+	@Basic
 	private String response;
 
+	public MessageContext() {
+		super();
+	}
+	
 	public MessageContext(final QueueCfg queueCfg, final Delivery delivery) {
 		super();
 		this.queueCfg = queueCfg;
 		this.setDelivery(delivery);
 	}
+	
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

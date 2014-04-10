@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" 
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence 
+              http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+
+	<persistence-unit name="mqueue-dispatcher" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+		<jar-file>${project.build.outputDirectory}</jar-file>
+		<exclude-unlisted-classes>false</exclude-unlisted-classes>
+		<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
+		<properties>
+			<!-- jdbc connection properties -->
+			<property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:file:./test/data/mqueue-dispatcher" />
+			<property name="javax.persistence.jdbc.user" value="sa" />
+			<property name="javax.persistence.jdbc.password" value="" />
+			<!-- hibernate connection properties -->
+			<property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect" />
+			<property name="hibernate.hbm2ddl.auto" value="update" />
+			<property name="hibernate.max_fetch_depth" value="4" />
+			<property name="hibernate.jdbc.batch_size" value="50" />
+			<!-- hibernate debug properties -->
+			<property name="hibernate.generate_statistics" value="true" />
+			<property name="hibernate.format_sql" value="true" />
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.archive.autodetection" value="class" />
+		</properties>
+	</persistence-unit>
+    
+ 
+</persistence>
+      <!-- query & object cache properties 
+      <property name="hibernate.bytecode.use_reflection_optimizer" value="true"/>
+      <property name="hibernate.cache.region.factory_class" value="com.thenetcircle.services.manager.cache.EhCacheFactory"/>
+      <property name="hibernate.cache.use_structured_entries" value="true"/>
+      <property name="hibernate.cache.use_query_cache" value="true"/>
+      <property name="hibernate.cache.use_second_level_cache" value="true"/>-->
+      <!-- c3p0 connection pool properties 
+      <property name="hibernate.c3p0.acquire_increment" value="1"/>
+      <property name="hibernate.c3p0.idle_test_period" value="100"/>
+      <property name="hibernate.c3p0.max_size" value="10"/>
+      <property name="hibernate.c3p0.max_statements" value="0"/>
+      <property name="hibernate.c3p0.min_size" value="10"/>
+      <property name="hibernate.c3p0.timeout" value="100"/>-->
