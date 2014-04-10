@@ -37,8 +37,8 @@ public class Bootstrap {
 			
 			final List<QueueConf> qcs = new ArrayList<QueueConf>(dispatcherConfig.getServers().values());
 			
-			final List<ServerCfg> serverCfgs = DispatcherConfig.queueConfsToServerCfgs(qcs);
-			Collection<QueueCfg> queueCfgs = DispatcherConfig.dispatcherJobsToQueueCfgs(dispatcherConfig.getAllJobs(), serverCfgs);
+//			final List<ServerCfg> serverCfgs = DispatcherConfig.queueConfsToServerCfgs(qcs);
+			Collection<QueueCfg> queueCfgs = DispatcherConfig.dispatcherJobsToQueueCfgs(dispatcherConfig.getAllJobs());
 			
 			log.info(StringUtils.join(queueCfgs, '\n'));
 			

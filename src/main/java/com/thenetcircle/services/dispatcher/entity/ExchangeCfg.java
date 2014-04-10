@@ -1,5 +1,8 @@
 package com.thenetcircle.services.dispatcher.entity;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Basic;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -7,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -41,6 +45,17 @@ public class ExchangeCfg extends Configuration {
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "server_id")
 	private ServerCfg serverCfg;
+
+	@ManyToMany(fetch=FetchType.EAGER)
+	private Set<QueueCfg> queues = new HashSet<QueueCfg>();
+
+	public Set<QueueCfg> getQueues() {
+		return queues;
+	}
+
+	public void setQueues(Set<QueueCfg> queues) {
+		this.queues = queues;
+	}
 
 	public ServerCfg getServerCfg() {
 		return serverCfg;
@@ -122,5 +137,7 @@ public class ExchangeCfg extends Configuration {
 		builder.append("{class:\"ExchangeCfg\",id:").append(id).append(", exchangeName:").append(exchangeName).append(", durable:").append(durable).append(", autoDelete:").append(autoDelete).append(", type:").append(type).append(", serverCfg:").append(serverCfg).append("}");
 		return builder.toString();
 	}
+	
+	
 
 }

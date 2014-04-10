@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
 import com.thenetcircle.comsumerdispatcher.config.QueueConf;
+import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
@@ -65,21 +66,24 @@ public class PersistenceTest {
 		
 		log.info("configuration is loaded");
 		
-		final List<QueueConf> qcs = new ArrayList<QueueConf>(dispatcherConfig.getServers().values());
+//		final List<QueueConf> qcs = new ArrayList<QueueConf>(dispatcherConfig.getServers().values());
 		
-		final List<ServerCfg> serverCfgs = DispatcherConfig.queueConfsToServerCfgs(qcs);
-		log.info(serverCfgs.size() + " servers are loaded");
-		for (final ServerCfg sc : serverCfgs) {
-			em.persist(sc);
-		}
-		
-		Collection<QueueCfg> queueCfgs = DispatcherConfig.dispatcherJobsToQueueCfgs(dispatcherConfig.getAllJobs(), serverCfgs);
+		Collection<QueueCfg> queueCfgs = DispatcherConfig.dispatcherJobsToQueueCfgs(dispatcherConfig.getAllJobs());
 		
 		log.info(queueCfgs.size() + " queues are loaded");
+		startTransaction();
 		for (final QueueCfg qc : queueCfgs) {
+			em.persist(qc.getServerCfg());
+			em.persist(qc.getDestCfg());
+			for (final ExchangeCfg ec : qc.getExchanges()) {
+//				em.persist(ec.getServerCfg());
+				em.persist(ec);
+			}
 			em.persist(qc);
 		}
+//		commit();
 		
+		log.info(em.createQuery("select count(id) from ServerCfg sc").getSingleResult() + " server are loaded");
 	}
 	
 	@AfterClass

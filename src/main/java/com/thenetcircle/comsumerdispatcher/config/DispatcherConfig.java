@@ -1,8 +1,10 @@
 package com.thenetcircle.comsumerdispatcher.config;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
@@ -15,6 +17,7 @@ public class DispatcherConfig {
 	private List<DispatcherJob> allJobs = null;
 	private Map<String, QueueConf> servers = null;
 	private MonitorConf monitorConf = null;
+	static Logger log = Logger.getLogger(DispatcherConfig.class.getSimpleName());
 
 	public static synchronized DispatcherConfig getInstance() {
 		if (null == _self) {
@@ -90,13 +93,22 @@ public class DispatcherConfig {
 		return sc;
 	}
 	
-	public static List<QueueCfg> dispatcherJobsToQueueCfgs(final List<DispatcherJob> jobs, final List<ServerCfg> serverCfgs) {
+	public static List<QueueCfg> dispatcherJobsToQueueCfgs(final List<DispatcherJob> jobs) {
 		final List<QueueCfg> queueCfgs = new ArrayList<QueueCfg>(jobs.size());
+		final Map<String, ServerCfg> nameAndServerCfgs = new HashMap<String, ServerCfg>();
 		
 		for (final DispatcherJob dj : jobs) {
 			final QueueCfg qc = new QueueCfg();
 			
-			qc.setServerCfg(queueConfToServerCfg(dj.getFetcherQConf()));
+			
+			ServerCfg sc = nameAndServerCfgs.get(dj.getFetcherQConf().host);
+			if (sc == null) {
+				sc = queueConfToServerCfg(dj.getFetcherQConf());
+				nameAndServerCfgs.put(sc.getHost(), sc);
+			}
+			log.info(sc.getHost() + " server is loaded");
+			
+			qc.setServerCfg(sc);
 			qc.setQueueName(dj.getQueue());
 			qc.setRouteKey(dj.getRouteKey());
 			qc.setDurable(dj.isQueueDurable());

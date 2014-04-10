@@ -55,7 +55,7 @@ public class QueueCfg extends Configuration {
 	@Basic
 	private String routeKey = DEFAULT_ROUTE_KEY;
 
-	@ManyToMany(fetch=FetchType.EAGER)
+	@ManyToMany(fetch=FetchType.EAGER, mappedBy="queues")
 	private Set<ExchangeCfg> exchanges = new HashSet<ExchangeCfg>();
 
 	public String getRouteKey() {
