@@ -5,6 +5,8 @@ import java.util.Set;
 
 import javax.persistence.Basic;
 import javax.persistence.Cacheable;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -163,8 +165,9 @@ public class QueueCfg extends Configuration {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("{class:\"QueueCfg\",id:").append(id).append(", queueName:").append(queueName).append(", durable:").append(durable).append(", exclusive:").append(exclusive).append(", autoDelete:").append(autoDelete).append(", routeKey:").append(routeKey)
-				.append(", exchanges:").append(exchanges).append(", serverCfg:").append(serverCfg).append(", priority:").append(priority).append(", destCfg:").append(destCfg).append(", enabled:").append(enabled).append("}");
+		builder.append("{class:\"QueueCfg\", id:'").append(id).append("', queueName:'").append(queueName).append("', durable:'").append(durable).append("', exclusive:'").append(exclusive).append("', autoDelete:'").append(autoDelete).append("', routeKey:'").append(routeKey)
+				.append("', \nexchanges:").append(exchanges).append(", \nserverCfg:'").append(serverCfg).append("', \npriority:'").append(priority).append("', destCfg:'").append(destCfg).append("', enabled:'").append(enabled).append("', failsafeCfg:").append(failsafeCfg)
+				.append(", retryLimit:'").append(retryLimit).append("'}");
 		return builder.toString();
 	}
 	
@@ -202,5 +205,14 @@ public class QueueCfg extends Configuration {
 		this.failsafeCfg = failsafeCfg;
 	}
 	
-	
+	@Column(name = "retry_limit")
+	private int retryLimit;
+
+	public int getRetryLimit() {
+		return retryLimit;
+	}
+
+	public void setRetryLimit(int retryLimit) {
+		this.retryLimit = retryLimit;
+	}
 }

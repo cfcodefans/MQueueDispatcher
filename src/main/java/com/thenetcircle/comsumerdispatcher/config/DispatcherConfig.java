@@ -124,10 +124,11 @@ public class DispatcherConfig {
 			
 			{
 				final HttpDestinationCfg destCfg = new HttpDestinationCfg();
-				destCfg.setRetry(dj.getRetryLimit());
+//				destCfg.setRetry(dj.getRetryLimit());
 				destCfg.setUrl(dj.getUrl());
 				destCfg.setHostHead(dj.getUrlhost());
 				qc.setDestCfg(destCfg);
+				qc.setRetryLimit(dj.retryLimit);
 			}
 			
 			queueCfgs.add(qc);

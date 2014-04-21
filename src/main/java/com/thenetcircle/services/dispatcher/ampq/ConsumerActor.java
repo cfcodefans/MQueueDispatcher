@@ -16,6 +16,8 @@ import com.rabbitmq.client.QueueingConsumer.Delivery;
 import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
+import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 
 public class ConsumerActor extends DefaultConsumer implements IMessageActor, Runnable {
@@ -33,7 +35,7 @@ public class ConsumerActor extends DefaultConsumer implements IMessageActor, Run
 	public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body) throws IOException {
 		final Delivery d = new Delivery(envelope, properties, body);
 		final MessageContext mc = new MessageContext(queueCfg, d);
-		HttpDispatcherActor.instance().handover(mc);
+		HttpDispatcherActor.instance().handover(mc);//TODO use injection to decouple dependency
 	}
 
 	public static MessageContext acknowledge(final MessageContext mc) {
@@ -50,11 +52,10 @@ public class ConsumerActor extends DefaultConsumer implements IMessageActor, Run
 		} catch (final IOException e) {
 			log.error("failed to acknowledge message: \n" + new String(mc.getMessageBody()) + "\nresponse: " + mc.getResponse(), e);
 		}
-
 		return mc;
 	}
 
-	public static MessageContext reject(final MessageContext mc) {
+	public static MessageContext reject(final MessageContext mc, final boolean requeue) {
 		if (mc == null) {
 			return mc;
 		}
@@ -63,11 +64,10 @@ public class ConsumerActor extends DefaultConsumer implements IMessageActor, Run
 			return mc;
 		}
 		try {
-			ac.getChannel().basicReject(mc.getDelivery().getEnvelope().getDeliveryTag(), true);
+			ac.getChannel().basicReject(mc.getDelivery().getEnvelope().getDeliveryTag(), requeue);
 		} catch (final IOException e) {
 			log.error("failed to reject message: \n" + new String(mc.getMessageBody()) + "\nresponse: " + mc.getResponse(), e);
 		}
-
 		return mc;
 	}
 
@@ -84,7 +84,12 @@ public class ConsumerActor extends DefaultConsumer implements IMessageActor, Run
 
 	public void run() {
 		while (!Thread.interrupted()) {
-			handle(buf.poll());
+			try {
+				handle(buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT));
+			} catch (InterruptedException e) {
+				log.error("interrupted", e);
+				break;
+			}
 		}
 	}
 
@@ -98,18 +103,22 @@ public class ConsumerActor extends DefaultConsumer implements IMessageActor, Run
 		if (mc == null)
 			return mc;
 
-		final boolean isOk = "ok".equalsIgnoreCase(mc.getResponse());
 		try {
-			if (isOk) {
+			if (mc.isSucceeded()) {
 				getChannel().basicAck(mc.getDelivery().getEnvelope().getDeliveryTag(), false);
-			} else {
-				getChannel().basicReject(mc.getDelivery().getEnvelope().getDeliveryTag(), true);
 			}
+			
+			failsafe.handover(mc);
+			
+//			} else {
+//				getChannel().basicReject(mc.getDelivery().getEnvelope().getDeliveryTag(), true);
+//			}
 		} catch (final IOException e) {
-			log.error("failed to " + (isOk ? "acknowledge" : "reject") + " message: \n" + new String(mc.getMessageBody()) + "\nresponse: " + mc.getResponse(), e);
+			log.error("failed to " + (mc.isSucceeded() ? "acknowledge" : "reject") + " message: \n" + new String(mc.getMessageBody()) + "\nresponse: " + mc.getResponse(), e);
 		}
 		return mc;
 	}
 	
 	final ExecutorService executor = Executors.newSingleThreadExecutor();
+	final IFailsafe failsafe = FailedMessageSqlStorage.getInstance();//TODO use injection to decouple dependency
 }

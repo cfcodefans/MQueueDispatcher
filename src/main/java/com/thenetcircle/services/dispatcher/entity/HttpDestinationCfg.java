@@ -23,8 +23,8 @@ public class HttpDestinationCfg extends Configuration {
 	@Basic
 	private String url;
 	
-	@Basic
-	private int retry;
+//	@Basic
+//	private int retry;
 
 	public int getId() {
 		return id;
@@ -42,13 +42,13 @@ public class HttpDestinationCfg extends Configuration {
 		this.url = url;
 	}
 
-	public int getRetry() {
-		return retry;
-	}
-
-	public void setRetry(int retry) {
-		this.retry = retry;
-	}
+//	public int getRetry() {
+//		return retry;
+//	}
+//
+//	public void setRetry(int retry) {
+//		this.retry = retry;
+//	}
 
 	@Basic
 	private String hostHead;
@@ -92,7 +92,7 @@ public class HttpDestinationCfg extends Configuration {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("{class:\"HttpDestinationCfg\",id:").append(id).append(", url:").append(url).append(", retry:").append(retry).append(", hostHead:").append(hostHead).append("}");
+		builder.append("{class:\"HttpDestinationCfg\", id:'").append(id).append("', url:'").append(url).append("', hostHead:'").append(hostHead).append("}");
 		return builder.toString();
 	}
 

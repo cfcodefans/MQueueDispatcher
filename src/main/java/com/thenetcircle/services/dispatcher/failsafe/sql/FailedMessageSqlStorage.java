@@ -6,9 +6,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.persistence.EntityManager;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.thenetcircle.services.dispatcher.ampq.ConsumerActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.IFailedMessageManagment;
@@ -22,10 +26,17 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 
 	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
 	final ExecutorService executor = Executors.newSingleThreadExecutor();
+	
+	private EntityManager em = null;
 
 	public MessageContext handle(final MessageContext mc) {
-		//TODO
-		return mc;
+		MessageContext _mc = em.find(MessageContext.class, Long.valueOf(mc.getId()));
+		if (_mc == null) {
+			_mc = mc;
+		}
+		_mc.failAgain();
+		ConsumerActor.reject(mc, !_mc.isExceedFailTimes());
+		return em.merge(_mc);
 	}
 
 	public static FailedMessageSqlStorage getInstance() {
@@ -33,8 +44,14 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 	}
 
 	public void run() {
+//		final List<MessageContext> tempList = new ArrayList<MessageContext>(100);
 		while (!Thread.interrupted()) {
-			handle(buf.poll());
+			try {
+				handle(Utils.pull(buf, 100));
+			} catch (InterruptedException e) {
+				log.error("Interrupted during waiting for new failed job", e);
+				break;
+			}
 		}
 	}
 
@@ -52,7 +69,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 	}
 
 	public void retry(Criterion c) {
-		//TODO
+		
 	}
 
 	public void retry(Collection<MessageContext> messages, QueueCfg qc) {
@@ -62,18 +79,22 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 		}
 	}
 
-	public Collection<MessageContext> query(Criterion c) {
+	public Collection<MessageContext> query(final Criterion c) {
 		//TODO
 		return null;
 	}
 
-	public void handle(Collection<MessageContext> mcs) {
+	public void handle(final Collection<MessageContext> mcs) {
+		if (CollectionUtils.isEmpty(mcs)) return;
+		
+		em.getTransaction().begin();
 		for (final MessageContext mc : mcs) {
 			handle(mc);
 		}
+		em.getTransaction().commit();
 	}
 
-	public void handover(Collection<MessageContext> mcs) {
+	public void handover(final Collection<MessageContext> mcs) {
 		buf.addAll(mcs);
 	}
 }

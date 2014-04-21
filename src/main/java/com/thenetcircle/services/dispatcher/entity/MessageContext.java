@@ -17,6 +17,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.rabbitmq.client.QueueingConsumer.Delivery;
 
 @Entity
@@ -37,13 +39,13 @@ public class MessageContext implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id = -1;
-	
-	@Column(name="msg_content", length=10000)
+
+	@Column(name = "msg_content", length = 10000)
 	@Lob
 	private byte[] messageBody;
 
-	@ManyToOne(fetch=FetchType.EAGER)
-	@JoinColumn(name="queue_cfg_id")
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "queue_cfg_id")
 	private QueueCfg queueCfg;
 
 	@Basic
@@ -52,14 +54,13 @@ public class MessageContext implements Serializable {
 	public MessageContext() {
 		super();
 	}
-	
+
 	public MessageContext(final QueueCfg queueCfg, final Delivery delivery) {
 		super();
 		this.queueCfg = queueCfg;
 		this.setDelivery(delivery);
 	}
-	
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -128,6 +129,7 @@ public class MessageContext implements Serializable {
 
 	public void setDelivery(Delivery delivery) {
 		this.delivery = delivery;
+		this.id = delivery.getEnvelope().getDeliveryTag();
 		setMessageBody(delivery.getBody());
 	}
 
@@ -155,14 +157,34 @@ public class MessageContext implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("{class:\"MessageContext\",id:").append(id)
-				.append(", queueCfg:").append(queueCfg)
-				.append(", delivery:").append(delivery)
-				.append(", messageBody:").append(Arrays.toString(messageBody))
-				.append(", response:").append(response)
-				.append(", bodyHash:").append(bodyHash)
-				.append(", failTimes:").append(failTimes).append("}");
+		builder.append("{class:\"MessageContext\",id:").append(id).append(", queueCfg:").append(queueCfg).append(", delivery:").append(delivery).append(", messageBody:").append(Arrays.toString(messageBody)).append(", response:").append(response).append(", bodyHash:")
+				.append(bodyHash).append(", failTimes:").append(failTimes).append("}");
 		return builder.toString();
+	}
+
+	@Transient
+	public boolean isSucceeded() {
+		return "ok".equalsIgnoreCase(StringUtils.trim(response));
+	}
+
+	@Transient
+	public boolean isExceedFailTimes() {
+		return failTimes > queueCfg.getRetryLimit();
+	}
+
+	public long failAgain() {
+		return failTimes++;
+	}
+
+	@Basic
+	private long timestamp;
+
+	public long getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
 	}
 
 }

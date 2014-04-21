@@ -1,7 +1,6 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,15 +9,12 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.collections4.iterators.LoopingListIterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.QueueingConsumer;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
@@ -224,7 +220,7 @@ public class MQueues {
 
 			log.info(String.format("QueueCfg is initiated\n\t%s", qc.toString()));
 		} catch (IOException e) {
-			log.error(String.format("failed to initiate Connection for ServerCfg: \n%s", qc.getServerCfg().toString()), e);
+			log.error(String.format("failed to initiate Connection for QueueCfg: \n%s", qc.toString()), e);
 		}
 
 		return ch;

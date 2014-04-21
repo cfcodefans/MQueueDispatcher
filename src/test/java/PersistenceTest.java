@@ -1,6 +1,4 @@
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.persistence.EntityManager;
@@ -15,10 +13,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
-import com.thenetcircle.comsumerdispatcher.config.QueueConf;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
-import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 
 public class PersistenceTest {
