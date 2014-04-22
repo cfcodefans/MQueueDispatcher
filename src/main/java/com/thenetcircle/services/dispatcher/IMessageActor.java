@@ -17,6 +17,8 @@ public interface IMessageActor {
 
 	MessageContext handle(final MessageContext mc);
 	
+	void stop();
+	
 	static final int WAIT_FACTOR = 2;
 	static final TimeUnit WAIT_FACTOR_UNIT = TimeUnit.SECONDS;
 	

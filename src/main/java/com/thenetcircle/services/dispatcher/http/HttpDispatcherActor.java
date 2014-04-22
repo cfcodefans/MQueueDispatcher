@@ -20,15 +20,19 @@ import org.apache.http.util.EntityUtils;
 
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.dispatcher.IMessageActor;
-import com.thenetcircle.services.dispatcher.ampq.MQueues;
+import com.thenetcircle.services.dispatcher.ampq.Responder;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
+import com.thenetcircle.services.dispatcher.failsafe.DefaultFailedMessageHandler;
+import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
 
 public class HttpDispatcherActor implements IMessageActor {
 
 	private List<CloseableHttpAsyncClient> hacs;
+	
 
 	private static class RespHandler implements FutureCallback<HttpResponse> {
+		private static IFailsafe failsafe = DefaultFailedMessageHandler.getInstance();
 		private MessageContext mc;
 
 		public RespHandler(final MessageContext mc) {
@@ -37,7 +41,7 @@ public class HttpDispatcherActor implements IMessageActor {
 		}
 
 		public void completed(final HttpResponse resp) {
-			String respStr;
+			String respStr = null;
 			try {
 				respStr = EntityUtils.toString(resp.getEntity());
 			} catch (Exception e) {
@@ -46,13 +50,13 @@ public class HttpDispatcherActor implements IMessageActor {
 			}
 
 			mc.setResponse(respStr);
-			MQueues.getInstance().getConsumer(mc.getQueueCfg()).handover(mc);
+			Responder.getInstance().handover(mc);
 		}
 
 		public void failed(final Exception e) {
 			log.error("failed to process response from url: \n" + mc.getQueueCfg().getDestCfg().getUrl(), e);
 			mc.setResponse(e.getMessage());
-			MQueues.getInstance().getConsumer(mc.getQueueCfg()).handover(mc);
+			failsafe.handle(mc);
 		}
 
 		public void cancelled() {
@@ -64,7 +68,7 @@ public class HttpDispatcherActor implements IMessageActor {
 		hacs = new ArrayList<CloseableHttpAsyncClient>();
 		for (int i = 0, j = 3; i < j; i++) {
 			CloseableHttpAsyncClient hac = null;
-			RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(3000).setConnectTimeout(3000).build();
+			RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout(30000).build();
 			hac = HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig).build();
 			hac.start();
 			hacs.add(hac);
@@ -123,6 +127,23 @@ public class HttpDispatcherActor implements IMessageActor {
 	public void handle(Collection<MessageContext> mcs) {
 		for (final MessageContext mc : mcs) {
 			handle(mc);
+		}
+	}
+	
+	public void stop() {
+		for (final CloseableHttpAsyncClient hac : hacs) {
+			close(hac);
+		}
+	}
+
+	private void close(final CloseableHttpAsyncClient hac) {
+		if (!hac.isRunning()) {
+			return;
+		}
+		try {
+			hac.close();
+		} catch (IOException e) {
+			log.error("failed to close CloseableHttpAsyncClient", e);
 		}
 	}
 

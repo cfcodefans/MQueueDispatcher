@@ -11,6 +11,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
@@ -22,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.rabbitmq.client.QueueingConsumer.Delivery;
 
 @Entity
-@Table(name = "msg_ctx")
+@Table(name = "msg_ctx", indexes= {@Index(columnList="")})
 @Cacheable
 public class MessageContext implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -186,5 +187,16 @@ public class MessageContext implements Serializable {
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
+	
+	
+	public long getMessageKey() {
+		final long prime = 31;
+		long result = 1;
 
+		result = prime * result + bodyHash;
+//		result = prime * result + timestamp;
+		result = prime * result + ((queueCfg == null) ? 0 : queueCfg.hashCode());
+		result = prime * result + ((response == null) ? 0 : response.hashCode());
+		return result;
+	}
 }

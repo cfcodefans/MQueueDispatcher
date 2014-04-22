@@ -2,11 +2,14 @@ import java.util.Arrays;
 
 import junit.framework.Assert;
 
+import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
@@ -15,9 +18,9 @@ import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 
 public class FunctionalTests {
-	private static final String DEST_URL = "http://edgy:8888/consumerDispatcher_ok";
+	private static final String DEST_URL = "http://edgy:8888/consumerDispatcher_err";
 	
-	private static final long MSG_NUMBER = 100000;
+	private static final long MSG_NUMBER = 1;
 	private static QueueCfg qc = null;
 	
 	@BeforeClass
@@ -56,7 +59,47 @@ public class FunctionalTests {
 		
 		qc.setRouteKey("test");
 		qc.setQueueName("testQueue");
-		qc.setExclusive(true);
+		qc.setExclusive(false);
+		qc.setRetryLimit(5);
+		
+		Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
+	}
+
+	static Logger log = Logger.getLogger(HttpAsynClientTest.class.getSimpleName());
+	
+	final ServerCfg sc = qc.getServerCfg();
+	final ConnectionFactory cf = new ConnectionFactory();
+
+	private Connection conn;
+
+	private Channel ch;
+
+	@Test
+	public void testPublish() throws Exception {
+		cf.setHost(sc.getHost());
+		cf.setVirtualHost(sc.getVirtualHost());
+		cf.setPort(sc.getPort());
+		cf.setUsername(sc.getUserName());
+		cf.setPassword(sc.getPassword());
+		
+		conn = cf.newConnection();
+		ch = conn.createChannel();
+		
+		for (final ExchangeCfg ec : qc.getExchanges()) {
+			ch.exchangeDeclare(ec.getExchangeName(), ec.getType(), ec.isDurable(), ec.isAutoDelete(), null);
+			ch.queueDeclare(qc.getQueueName(), qc.isDurable(), qc.isExclusive(), qc.isAutoDelete(), null);
+			ch.queueBind(qc.getQueueName(), ec.getExchangeName(), qc.getRouteKey());
+		}
+		
+		for (long i = 0; i < MSG_NUMBER; i++) {
+			for (final ExchangeCfg exCfg : qc.getExchanges()) {
+				final String msgStr = "test_message: " + System.currentTimeMillis();
+				ch.basicPublish(exCfg.getExchangeName(), qc.getRouteKey(), null, msgStr.getBytes());
+			}
+		}
+		
+		ch.close();
+		conn.close();
 	}
 	
 	@Test
@@ -65,18 +108,29 @@ public class FunctionalTests {
 
 		final Channel ch = MQueues.getInstance().getChannel(qc);
 		Assert.assertNotNull(ch);
-
-		for (long i = 0; i < MSG_NUMBER; i++) {
-			for (final ExchangeCfg exCfg : qc.getExchanges()) {
-				final String msgStr = "test_message: " + System.currentTimeMillis();
-				ch.basicPublish(exCfg.getExchangeName(), qc.getRouteKey(), null, msgStr.getBytes());
-			}
-		}
-
 	}
-	
+
 	@AfterClass
 	public static void tearDown() {
-		MQueues.getInstance().shutdown();
+//		MQueues.getInstance().shutdown();
+	}
+	
+	public static void main(String[] args) {
+		initQueue();
+		final FunctionalTests ft = new FunctionalTests();
+		
+		try {
+//			ft.testPublish();
+			ft.testConsumerActor();
+			
+			
+			
+//			ft.ch.close();
+//			ft.conn.close();
+		} catch (Exception e) {
+			log.info("", e);
+		}
+		
+//		tearDown();
 	}
 }

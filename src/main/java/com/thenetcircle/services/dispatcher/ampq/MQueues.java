@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -18,8 +19,10 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
+import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 
 public class MQueues {
 
@@ -63,10 +66,13 @@ public class MQueues {
 	}
 
 	public synchronized ConnectionFactory getConnFactory(final ServerCfg sc) {
-		if (sc == null)
+		if (sc == null) {
 			return null;
+		}
 
-		ConnectionFactory connFactory = connFactories.get(sc);
+		
+		
+		ConnectionFactory connFactory = connFactories.get(sc);	
 		if (connFactory == null) {
 			connFactory = initConnFactory(sc);
 			connFactories.put(sc, connFactory);
@@ -230,7 +236,11 @@ public class MQueues {
 		if (sc == null)
 			return null;
 
-		log.info(String.format("initiating ConnectionFactory with ServerCfg: \n%s", sc.toString()));
+		final Logger loggerByQueueConf = ConsumerLoggers.getLoggerByQueueConf(sc);
+		
+		String infoStr = String.format("initiating ConnectionFactory with ServerCfg: \n%s", sc.toString());
+		log.info(infoStr);
+		loggerByQueueConf.info(infoStr);
 
 		final ConnectionFactory cf = new ConnectionFactory();
 		cf.setHost(sc.getHost());
@@ -239,7 +249,9 @@ public class MQueues {
 		cf.setUsername(sc.getUserName());
 		cf.setPassword(sc.getPassword());
 
-		log.info(String.format("ConnectionFactory is instantiated with \n%s", sc.toString()));
+		infoStr = String.format("ConnectionFactory is instantiated with \n%s", sc.toString());
+		log.info(infoStr);
+		loggerByQueueConf.info(infoStr);
 
 		return cf;
 	}
@@ -254,15 +266,51 @@ public class MQueues {
 	public void initWithQueueCfgs(final Collection<QueueCfg> queueCfgs2) {
 		setQueueCfgs(queueCfgs2);
 		for (final QueueCfg qc : queueCfgs) {
+			final Logger loggerByQueueConf = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());
 			if (getConnFactory(qc.getServerCfg()) == null) {
-				log.error("failed to create ConnectionFactory for ServerCfg: \n" + qc.getServerCfg());
+				final String errMsgStr = "failed to create ConnectionFactory for ServerCfg: \n" + qc.getServerCfg();
+				log.error(errMsgStr);
+				loggerByQueueConf.error(errMsgStr);
 			}
+			
 			if (getChannel(qc) == null) {
-				log.error("failed to create Channel for QueueCfg: \n" + qc);
+				final String errMsgStr = "failed to create Channel for QueueCfg: \n" + qc;
+				log.error(errMsgStr);
+				loggerByQueueConf.error(errMsgStr);
 			}
+			
 			if (getConsumer(qc) == null) {
-				log.error("failed to create ConsumerActor for QueueCfg: \n" + qc);
+				final String errMsgStr = "failed to create ConsumerActor for QueueCfg: \n" + qc;
+				log.error(errMsgStr);
+				loggerByQueueConf.error(errMsgStr);
 			}
 		}
+	}
+
+	public MessageContext acknowledge(final MessageContext mc) {
+		if (mc == null) {
+			return mc;
+		}
+		
+		final QueueCfg queueCfg = mc.getQueueCfg();
+		try {
+			getChannel(queueCfg).basicAck(mc.getDelivery().getEnvelope().getDeliveryTag(), false);
+		} catch (final IOException e) {
+			log.error("failed to acknowledge message: \n" + new String(mc.getMessageBody()) + "\nresponse: " + mc.getResponse(), e);
+		}
+		log.info(queueCfg.getQueueName() + " acknowledged message: " + new String(mc.getMessageBody()));
+		return mc;
+	}
+
+	public MessageContext reject(final MessageContext mc, final boolean requeue) {
+		if (mc == null) {
+			return mc;
+		}
+		try {
+			getChannel(mc.getQueueCfg()).basicReject(mc.getDelivery().getEnvelope().getDeliveryTag(), requeue);
+		} catch (final IOException e) {
+			log.error("failed to reject message: \n" + new String(mc.getMessageBody()) + "\nresponse: " + mc.getResponse(), e);
+		}
+		return mc;
 	}
 }

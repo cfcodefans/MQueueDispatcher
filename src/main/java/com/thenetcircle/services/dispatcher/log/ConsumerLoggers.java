@@ -29,7 +29,7 @@ public class ConsumerLoggers {
 			logFileName = queueName;
 		}
 
-		final String maxLogSize = sc.getLogFilePath();
+		final String maxLogSize = sc.getMaxFileSize();
 
 		RollingFileAppender originalLogAppender = (RollingFileAppender) Logger.getRootLogger().getAppender("consumerDispatcherLog");
 

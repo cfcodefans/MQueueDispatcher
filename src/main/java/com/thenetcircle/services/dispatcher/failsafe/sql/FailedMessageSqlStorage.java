@@ -12,7 +12,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.dispatcher.ampq.ConsumerActor;
+import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.IFailedMessageManagment;
@@ -30,13 +30,23 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 	private EntityManager em = null;
 
 	public MessageContext handle(final MessageContext mc) {
-		MessageContext _mc = em.find(MessageContext.class, Long.valueOf(mc.getId()));
-		if (_mc == null) {
-			_mc = mc;
+		if (mc == null) return mc;
+		try {
+			MessageContext _mc = em.find(MessageContext.class, Long.valueOf(mc.getId()));
+			if (_mc == null) {
+				_mc = mc;
+			}
+			_mc.failAgain();
+			MQueues.getInstance().reject(mc, !_mc.isExceedFailTimes());
+			return em.merge(_mc);
+		} catch (Exception e) {
+			log.error("failed to handle: \n\t" + mc, e);
 		}
-		_mc.failAgain();
-		ConsumerActor.reject(mc, !_mc.isExceedFailTimes());
-		return em.merge(_mc);
+		return mc;
+	}
+	
+	private FailedMessageSqlStorage() {
+		executor.submit(this);
 	}
 
 	public static FailedMessageSqlStorage getInstance() {
@@ -44,15 +54,15 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 	}
 
 	public void run() {
-//		final List<MessageContext> tempList = new ArrayList<MessageContext>(100);
-		while (!Thread.interrupted()) {
-			try {
+		log.info("FailedMessageSqlStorage starts");
+		try {
+			while (!Thread.interrupted()) {
 				handle(Utils.pull(buf, 100));
-			} catch (InterruptedException e) {
-				log.error("Interrupted during waiting for new failed job", e);
-				break;
 			}
+		} catch (InterruptedException e) {
+			log.error("Interrupted during waiting for new failed job", e);
 		}
+		log.info("FailedMessageSqlStorage ends");
 	}
 
 	public MessageContext handover(final MessageContext mc) {

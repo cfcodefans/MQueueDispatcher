@@ -12,7 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.dispatcher.ampq.ConsumerActor;
+import com.thenetcircle.services.dispatcher.ampq.Responder;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
@@ -35,32 +35,39 @@ public class DefaultFailedMessageHandler implements Runnable, IFailsafe {
 	}
 
 	public MessageContext handle(final MessageContext mc) {
-		TreeMap<Long, MessageContext> tagAndMsgs = null;
-		if (!storage.containsKey(mc.getQueueCfg())) {
-			tagAndMsgs = new TreeMap<Long, MessageContext>();
-			storage.put(mc.getQueueCfg(), tagAndMsgs);
-		} else {
-			tagAndMsgs = storage.get(mc.getQueueCfg());
+		if (mc == null) return null;
+		
+		try {
+			TreeMap<Long, MessageContext> tagAndMsgs = null;
+			if (!storage.containsKey(mc.getQueueCfg())) {
+				tagAndMsgs = new TreeMap<Long, MessageContext>();
+				storage.put(mc.getQueueCfg(), tagAndMsgs);
+			} else {
+				tagAndMsgs = storage.get(mc.getQueueCfg());
+			}
+			
+			MessageContext _mc = tagAndMsgs.get(mc.getId());
+			if (_mc == null) {
+				_mc = mc;
+			} 
+			_mc.failAgain();
+			tagAndMsgs.put(mc.getId(), _mc);
+			
+			return _mc;
+		} catch (Exception e) {
+			log.error("failed to handle: \n\t" + mc, e);
 		}
 		
-		MessageContext _mc = tagAndMsgs.get(mc.getId());
-		if (_mc == null) {
-			_mc = mc;
-		} 
-		_mc.failAgain();
-		tagAndMsgs.put(mc.getId(), _mc);
-		
-		return ConsumerActor.reject(mc, !_mc.isExceedFailTimes());
+		return mc;
 	}
 
 	public void run() {
-		while (!Thread.interrupted()) {
-			try {
+		try {
+			while (!Thread.interrupted()) {
 				handle(buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT));
-			} catch (InterruptedException e) {
-				log.error("interrupted", e);
-				break;
 			}
+		} catch (InterruptedException e) {
+			log.error("interrupted", e);
 		}
 	}
 
@@ -69,7 +76,7 @@ public class DefaultFailedMessageHandler implements Runnable, IFailsafe {
 	}
 
 	private DefaultFailedMessageHandler() {
-
+		start();
 	}
 
 	public static DefaultFailedMessageHandler getInstance() {

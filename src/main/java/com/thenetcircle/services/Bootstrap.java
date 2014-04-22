@@ -12,7 +12,6 @@ import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
 import com.thenetcircle.comsumerdispatcher.config.QueueConf;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
-import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 
 
@@ -23,10 +22,12 @@ public class Bootstrap {
 	
 	public static void main(String[] args) {
 		String filePath = null;
-		if (args.length > 0)
+		if (args.length > 0) {
 			filePath = args[0];
-		if (args.length > 1)
+		}
+		if (args.length > 1) {
 			once = "once".equals(args[2]);
+		}
 		
 		try {
 			// load configurations either from file or from distribution server
