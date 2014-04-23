@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
+import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 
 public interface IMessageActor {
 	MessageContext handover(final MessageContext mc);
@@ -38,5 +41,39 @@ public interface IMessageActor {
 		public static final Collection<MessageContext> pull(final BlockingQueue<MessageContext> buf, final int size) throws InterruptedException {
 			return pull(buf, size, WAIT_FACTOR, WAIT_FACTOR_UNIT);
 		}
+	}
+	
+	public static class DefaultMessageActor implements IMessageActor {
+		
+		@Override
+		public MessageContext handover(final MessageContext mc) {
+			return handle(mc);
+		}
+
+		@Override
+		public void handover(final Collection<MessageContext> mcs) {
+			handle(mcs);
+		}
+
+		@Override
+		public void handle(final Collection<MessageContext> mcs) {
+			for (final MessageContext mc : mcs) {
+				handle(mc);
+			}
+		}
+
+		@Override
+		public MessageContext handle(final MessageContext mc) {
+			final Logger log = ConsumerLoggers.getLoggerByQueueConf(mc.getQueueCfg().getServerCfg());
+			log.info(mc);
+			return mc;
+		}
+
+		@Override
+		public void stop() {
+			
+		}
+		
+		public static final DefaultMessageActor instance = new DefaultMessageActor();
 	}
 }

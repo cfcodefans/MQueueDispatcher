@@ -9,7 +9,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.failsafe.DefaultFailedMessageHandler;
@@ -21,7 +20,7 @@ public class Responder implements IMessageActor, Runnable {
 	protected static final Log log = LogFactory.getLog(Responder.class.getSimpleName());
 	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
 	
-	private IFailsafe failsafe = DefaultFailedMessageHandler.getInstance();
+	private IFailsafe failsafe = DefaultFailedMessageHandler.instance();
 
 	@Override
 	public void run() {
@@ -38,8 +37,8 @@ public class Responder implements IMessageActor, Runnable {
 
 	@Override
 	public MessageContext handover(final MessageContext mc) {
-		final boolean re = buf.offer(mc); 
-		log.info(MiscUtils.invocationInfo() + re);
+		buf.offer(mc); 
+//		log.info(MiscUtils.invocationInfo() + re);
 		return mc;
 	}
 
@@ -61,19 +60,22 @@ public class Responder implements IMessageActor, Runnable {
 		
 		try {
 			if (mc.isSucceeded()) {
-				MQueues.getInstance().acknowledge(mc);
+				MQueues.instance().acknowledge(mc);
+				if (mc.getFailTimes() > 1) {
+					failsafe.handover(mc);
+				}
 				return mc;
 			}
 			
 			if (!mc.isExceedFailTimes()) {
 //			MQueues.getInstance().reject(mc, true);
-				failsafe.handle(mc);
+				failsafe.handover(mc);
 				return HttpDispatcherActor.instance().handover(mc);
 			}
 			
 			log.info(String.format("MessageContext: %d exceeds the retryLimit: %d", mc.getDelivery().getEnvelope().getDeliveryTag(), mc.getQueueCfg().getRetryLimit()));
 //		return MQueues.getInstance().reject(mc, false);
-			return MQueues.getInstance().acknowledge(mc);
+			return MQueues.instance().acknowledge(mc);
 		} catch (Exception e) {
 			log.error("failed to handle: \n\t" + mc, e);
 		}
@@ -94,7 +96,7 @@ public class Responder implements IMessageActor, Runnable {
 		executor.submit(this);
 	}
 	
-	public static Responder getInstance() {
+	public static Responder instance() {
 		return instance;
 	}
 }

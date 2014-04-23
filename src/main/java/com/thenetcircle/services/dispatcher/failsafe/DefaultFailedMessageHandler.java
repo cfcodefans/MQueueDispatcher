@@ -46,11 +46,15 @@ public class DefaultFailedMessageHandler implements Runnable, IFailsafe {
 				tagAndMsgs = storage.get(mc.getQueueCfg());
 			}
 			
+			if (mc.isSucceeded()) {
+				return tagAndMsgs.remove(mc.getId());
+			}
+			
 			MessageContext _mc = tagAndMsgs.get(mc.getId());
 			if (_mc == null) {
 				_mc = mc;
 			} 
-			_mc.failAgain();
+			_mc.fail();
 			tagAndMsgs.put(mc.getId(), _mc);
 			
 			return _mc;
@@ -79,7 +83,7 @@ public class DefaultFailedMessageHandler implements Runnable, IFailsafe {
 		start();
 	}
 
-	public static DefaultFailedMessageHandler getInstance() {
+	public static DefaultFailedMessageHandler instance() {
 		return instance;
 	}
 

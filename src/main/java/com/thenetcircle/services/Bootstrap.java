@@ -43,7 +43,7 @@ public class Bootstrap {
 			
 			log.info(StringUtils.join(queueCfgs, '\n'));
 			
-			final MQueues mqueues = MQueues.getInstance();
+			final MQueues mqueues = MQueues.instance();
 //			mqueues.setQueueCfgs(queueCfgs);
 			mqueues.initWithQueueCfgs(queueCfgs);
 			

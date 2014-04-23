@@ -173,7 +173,7 @@ public class MessageContext implements Serializable {
 		return failTimes > queueCfg.getRetryLimit();
 	}
 
-	public long failAgain() {
+	public long fail() {
 		return failTimes++;
 	}
 

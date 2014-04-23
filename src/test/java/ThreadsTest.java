@@ -94,7 +94,7 @@ public class ThreadsTest {
 	static List<ServerCfg> serverCfgs = new ArrayList<ServerCfg>();
 	static List<ExchangeCfg> exchangeCfgs = new ArrayList<ExchangeCfg>();
 	
-	static MQueues md = new MQueues();
+	static MQueues md = MQueues.instance();
 	
 	
 	static Channel publisher = null;

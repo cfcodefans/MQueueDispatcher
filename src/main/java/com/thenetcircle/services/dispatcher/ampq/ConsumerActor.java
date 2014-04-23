@@ -9,9 +9,9 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.QueueingConsumer.Delivery;
+import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
-import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 
 public class ConsumerActor extends DefaultConsumer {
 
@@ -19,7 +19,7 @@ public class ConsumerActor extends DefaultConsumer {
 	protected static final Log log = LogFactory.getLog(ConsumerActor.class.getSimpleName());
 
 	public ConsumerActor(final QueueCfg queueCfg) {
-		super(MQueues.getInstance().getChannel(queueCfg));
+		super(MQueues.instance().getChannel(queueCfg));
 		this.queueCfg = queueCfg;
 
 		// executor.submit(this);
@@ -30,7 +30,8 @@ public class ConsumerActor extends DefaultConsumer {
 		final MessageContext mc = new MessageContext(queueCfg, d);
 
 		// TODO use injection to decouple dependency
-		HttpDispatcherActor.instance().handover(mc);
+//		HttpDispatcherActor.instance().handover(mc);
+		MQueues.instance().firstActor().handover(mc);
 	}
 }
 

@@ -20,7 +20,7 @@ import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 public class FunctionalTests {
 	private static final String DEST_URL = "http://edgy:8888/consumerDispatcher_err";
 	
-	private static final long MSG_NUMBER = 1;
+	private static final long MSG_NUMBER = 1000;
 	private static QueueCfg qc = null;
 	
 	@BeforeClass
@@ -60,7 +60,7 @@ public class FunctionalTests {
 		qc.setRouteKey("test");
 		qc.setQueueName("testQueue");
 		qc.setExclusive(false);
-		qc.setRetryLimit(5);
+		qc.setRetryLimit(3);
 		
 		Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
 	}
@@ -104,9 +104,9 @@ public class FunctionalTests {
 	
 	@Test
 	public void testConsumerActor() throws Exception {
-		MQueues.getInstance().initWithQueueCfgs(Arrays.asList(qc));
+		MQueues.instance().initWithQueueCfgs(Arrays.asList(qc));
 
-		final Channel ch = MQueues.getInstance().getChannel(qc);
+		final Channel ch = MQueues.instance().getChannel(qc);
 		Assert.assertNotNull(ch);
 	}
 

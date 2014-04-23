@@ -36,8 +36,8 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 			if (_mc == null) {
 				_mc = mc;
 			}
-			_mc.failAgain();
-			MQueues.getInstance().reject(mc, !_mc.isExceedFailTimes());
+			_mc.fail();
+			MQueues.instance().reject(mc, !_mc.isExceedFailTimes());
 			return em.merge(_mc);
 		} catch (Exception e) {
 			log.error("failed to handle: \n\t" + mc, e);

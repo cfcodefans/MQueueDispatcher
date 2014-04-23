@@ -1,6 +1,8 @@
 package com.thenetcircle.services.dispatcher.http;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -11,7 +13,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
@@ -20,6 +27,7 @@ import org.apache.http.util.EntityUtils;
 
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.dispatcher.IMessageActor;
+import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.ampq.Responder;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
@@ -32,7 +40,7 @@ public class HttpDispatcherActor implements IMessageActor {
 	
 
 	private static class RespHandler implements FutureCallback<HttpResponse> {
-		private static IFailsafe failsafe = DefaultFailedMessageHandler.getInstance();
+		private static IFailsafe failsafe = DefaultFailedMessageHandler.instance();
 		private MessageContext mc;
 
 		public RespHandler(final MessageContext mc) {
@@ -50,7 +58,9 @@ public class HttpDispatcherActor implements IMessageActor {
 			}
 
 			mc.setResponse(respStr);
-			Responder.getInstance().handover(mc);
+//			Responder.instance().handover(mc);
+			log.info(String.format("msg: %d, \tresponse: '%s', \tfailTimes: %d", mc.getId(), StringUtils.left(mc.getResponse(), 5), mc.getFailTimes()));
+			MQueues.instance().getNextActor(instance).handover(mc);
 		}
 
 		public void failed(final Exception e) {
@@ -81,13 +91,30 @@ public class HttpDispatcherActor implements IMessageActor {
 	public MessageContext handle(final MessageContext mc) {
 		final HttpDestinationCfg destCfg = mc.getQueueCfg().getDestCfg();
 		final String destUrlStr = destCfg.getUrl();
-		final HttpPost post = new HttpPost(destUrlStr);
-		if (StringUtils.isNotBlank(destCfg.getHostHead())) {
-			post.addHeader("host", destCfg.getHostHead());
+		
+		
+		HttpUriRequest req = null;
+		
+		if (!"get".equalsIgnoreCase(StringUtils.trim(destCfg.getHttpMethod()))) {
+			final HttpPost post =  new HttpPost(destUrlStr);
+			post.setEntity(new ByteArrayEntity(mc.getMessageBody()));
+			req = post;
+		} else {
+			String queryStr = "";
+			final String msgStr = new String(mc.getMessageBody());
+			try {
+				queryStr = URLEncoder.encode(msgStr, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				log.error("fail to encode message: " + msgStr, e);
+			}
+			final HttpGet get = new HttpGet(destUrlStr + "?" + queryStr);
+			req = get;
 		}
-		post.setEntity(new ByteArrayEntity(mc.getMessageBody()));
 
-		httpClientIterator.loop().execute(post, new RespHandler(mc));
+		if (StringUtils.isNotBlank(destCfg.getHostHead())) {
+			req.addHeader("host", destCfg.getHostHead());
+		}
+		httpClientIterator.loop().execute(req, new RespHandler(mc));
 		return mc;
 	}
 

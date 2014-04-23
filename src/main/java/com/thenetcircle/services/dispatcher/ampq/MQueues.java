@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
@@ -18,10 +19,13 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
+import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import com.thenetcircle.services.dispatcher.failsafe.DefaultFailedMessageHandler;
+import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 
 public class MQueues {
@@ -30,7 +34,7 @@ public class MQueues {
 	private static final MQueues instance = new MQueues();
 	protected static final Log log = LogFactory.getLog(MQueues.class.getSimpleName());
 
-	public static MQueues getInstance() {
+	public static MQueues instance() {
 		return instance;
 	}
 
@@ -313,4 +317,29 @@ public class MQueues {
 		}
 		return mc;
 	}
+	
+	//this is pointless for now, unless some additional process we need in between
+	private final LinkedMap<IMessageActor, IMessageActor> actors = new LinkedMap<IMessageActor, IMessageActor>();
+	private void initActors() {
+		actors.put(HttpDispatcherActor.instance(), Responder.instance());
+		actors.put(Responder.instance(), HttpDispatcherActor.instance());
+	}
+	
+	private MQueues() {
+		initActors();
+	}
+	
+	public IMessageActor firstActor() {
+		final IMessageActor actor = actors.firstKey();
+		return actor == null ? IMessageActor.DefaultMessageActor.instance : actor;
+	}
+	
+	public IMessageActor getNextActor(final IMessageActor actor) {
+		final IMessageActor nextActor = actors.get(actor);
+		return nextActor == null ? IMessageActor.DefaultMessageActor.instance : nextActor;
+	}
+	
+//	public static class MessageActorMgr {
+//		
+//	}
 }

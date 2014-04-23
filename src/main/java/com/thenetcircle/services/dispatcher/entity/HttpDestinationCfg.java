@@ -65,6 +65,7 @@ public class HttpDestinationCfg extends Configuration {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result + ((httpMethod == null) ? 0 : httpMethod.hashCode());
 		result = prime * result + id;
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
@@ -79,6 +80,11 @@ public class HttpDestinationCfg extends Configuration {
 		if (!(obj instanceof HttpDestinationCfg))
 			return false;
 		HttpDestinationCfg other = (HttpDestinationCfg) obj;
+		if (httpMethod == null) {
+			if (other.httpMethod != null)
+				return false;
+		} else if (!httpMethod.equals(other.httpMethod))
+			return false;
 		if (id != other.id)
 			return false;
 		if (url == null) {
@@ -92,8 +98,19 @@ public class HttpDestinationCfg extends Configuration {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("{class:\"HttpDestinationCfg\", id:'").append(id).append("', url:'").append(url).append("', hostHead:'").append(hostHead).append("}");
+		builder.append("{class:\"HttpDestinationCfg\", id:'").append(id).append("', url:'").append(url).append("', hostHead:'").append(hostHead).append("', httpMethod:'").append(httpMethod).append("'}");
 		return builder.toString();
 	}
+	
+	private String httpMethod = "post";
+
+	public String getHttpMethod() {
+		return httpMethod;
+	}
+
+	public void setHttpMethod(String httpMethod) {
+		this.httpMethod = httpMethod;
+	}
+	
 
 }
