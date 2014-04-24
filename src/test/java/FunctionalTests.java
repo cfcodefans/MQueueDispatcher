@@ -1,4 +1,6 @@
 import java.util.Arrays;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import junit.framework.Assert;
 
@@ -93,7 +95,10 @@ public class FunctionalTests {
 		
 		for (long i = 0; i < MSG_NUMBER; i++) {
 			for (final ExchangeCfg exCfg : qc.getExchanges()) {
-				final String msgStr = "test_message: " + System.currentTimeMillis();
+				String msgStr = "test_message: " + System.currentTimeMillis();
+				if (i == 350) {
+					msgStr = "shutdown " + qc.getQueueName();
+				}
 				ch.basicPublish(exCfg.getExchangeName(), qc.getRouteKey(), null, msgStr.getBytes());
 			}
 		}
@@ -114,6 +119,12 @@ public class FunctionalTests {
 	public static void tearDown() {
 //		MQueues.getInstance().shutdown();
 	}
+	
+//	ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+//	
+//	public void testShutDown() {
+////		ses.schedule(command, delay, unit)
+//	}
 	
 	public static void main(String[] args) {
 		initQueue();
