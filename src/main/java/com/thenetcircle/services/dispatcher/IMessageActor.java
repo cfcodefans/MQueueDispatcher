@@ -29,7 +29,7 @@ public interface IMessageActor {
 		public static final Collection<MessageContext> pull(final BlockingQueue<MessageContext> buf, final int size, final int wait, final TimeUnit waitTimeUnit) throws InterruptedException {
 			final List<MessageContext> tempList = new ArrayList<>(size);
 			final long start = System.currentTimeMillis();
-			final long micros = waitTimeUnit.toMicros(wait);
+			final long micros = waitTimeUnit.toMillis(wait);
 			
 			for (int i = 0; i < size && (System.currentTimeMillis() - start < micros); i++) {
 				tempList.add(buf.poll(wait, waitTimeUnit));

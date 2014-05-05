@@ -1,9 +1,11 @@
 package com.thenetcircle.services.common;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -22,7 +24,8 @@ import org.apache.commons.logging.LogFactory;
  * @param <T>
  */
 @SuppressWarnings("unchecked")
-public abstract class BaseDao<T> {//implements IBaseDao<T> {
+public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<T> {
+	private static final long serialVersionUID = 1L;
 	private static final Log log = LogFactory.getLog(BaseDao.class.getSimpleName());
 	
 	public BaseDao() {
@@ -33,7 +36,7 @@ public abstract class BaseDao<T> {//implements IBaseDao<T> {
 		this.em = _em;
 	}
 	
-	@PersistenceContext
+	@Inject @PersistenceContext
 	protected EntityManager em;
 
 	protected abstract Class<T> getEntityClass();

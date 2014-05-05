@@ -24,6 +24,7 @@ import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 
@@ -359,6 +360,7 @@ public class MQueues {
 	private void initActors() {
 		actors.put(HttpDispatcherActor.instance(), Responder.instance());
 		actors.put(Responder.instance(), HttpDispatcherActor.instance());
+		actors.put(FailedMessageSqlStorage.instance(), HttpDispatcherActor.instance());
 	}
 	
 	private MQueues() {

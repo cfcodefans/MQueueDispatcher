@@ -4,18 +4,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
 import com.thenetcircle.comsumerdispatcher.config.QueueConf;
+import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
-
-
-public class Bootstrap {
+@WebListener
+public class Bootstrap implements ServletContextListener {
 	private static Log log = LogFactory.getLog(Bootstrap.class);
 	
 	public static boolean once = false;
@@ -62,5 +66,16 @@ public class Bootstrap {
 		} catch (Exception e) {
 			log.error(e, e);
 		}
+	}
+
+	@Override
+	public void contextInitialized(final ServletContextEvent paramServletContextEvent) {
+		log.info(MiscUtils.invocationInfo());
+	}
+
+	@Override
+	public void contextDestroyed(final ServletContextEvent paramServletContextEvent) {
+		log.info(MiscUtils.invocationInfo());
+		
 	}
 }

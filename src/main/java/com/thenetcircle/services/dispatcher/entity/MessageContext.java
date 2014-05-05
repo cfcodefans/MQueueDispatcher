@@ -174,7 +174,7 @@ public class MessageContext implements Serializable {
 	}
 
 	public long fail() {
-		return failTimes++;
+		return ++failTimes;
 	}
 
 	@Basic

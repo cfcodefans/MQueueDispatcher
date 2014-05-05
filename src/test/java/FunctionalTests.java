@@ -1,9 +1,12 @@
 import java.util.Arrays;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.List;
+
+import javax.persistence.EntityManager;
 
 import junit.framework.Assert;
+import mgr.dao.QueueCfgDao;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -17,16 +20,29 @@ import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import com.thenetcircle.services.persistence.jpa.JpaModule;
 
 
 public class FunctionalTests {
 	private static final String DEST_URL = "http://edgy:8888/consumerDispatcher_err";
 	
-	private static final long MSG_NUMBER = 1000;
+	private static final long MSG_NUMBER = 1;
 	private static QueueCfg qc = null;
 	
 	@BeforeClass
 	public static void initQueue() {
+		final EntityManager em = JpaModule.instance().getEntityManager();
+		
+		em.getTransaction().begin();
+		
+		QueueCfgDao qcDao = new QueueCfgDao(em);
+		final List<QueueCfg> qcList = qcDao.query("select qc from QueueCfg qc where qc.queueName=?1", "testQueue");
+		if (!CollectionUtils.isEmpty(qcList)) {
+			qc = qcList.get(0);
+			return;
+		}
+		
+		
 		qc = new QueueCfg();
 		{
 			final ServerCfg serverCfg = new ServerCfg();
@@ -37,7 +53,7 @@ public class FunctionalTests {
 			serverCfg.setUserName("guest");
 			serverCfg.setVirtualHost("/");
 			serverCfg.setPort(5672);
-			qc.setServerCfg(serverCfg );
+			qc.setServerCfg(serverCfg);
 		}
 		
 		qc.setAutoDelete(false);
@@ -65,6 +81,10 @@ public class FunctionalTests {
 		qc.setRetryLimit(3);
 		
 		Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
+		
+		em.persist(qc);
+		
+		em.getTransaction().commit();
 	}
 
 	static Logger log = Logger.getLogger(HttpAsynClientTest.class.getSimpleName());
@@ -118,6 +138,7 @@ public class FunctionalTests {
 	@AfterClass
 	public static void tearDown() {
 //		MQueues.getInstance().shutdown();
+		JpaModule.instance().destory();
 	}
 	
 //	ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);

@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
@@ -15,11 +16,11 @@ import org.apache.commons.logging.LogFactory;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
-import com.thenetcircle.services.dispatcher.failsafe.IFailedMessageManagment;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
+import com.thenetcircle.services.persistence.jpa.JpaModule;
 
-public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMessageManagment {
+public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 
 	protected static final Log log = LogFactory.getLog(FailedMessageSqlStorage.class.getSimpleName());
 	private static FailedMessageSqlStorage instance = new FailedMessageSqlStorage();
@@ -27,18 +28,32 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
 	final ExecutorService executor = Executors.newSingleThreadExecutor();
 	
-	private EntityManager em = null;
+	private EntityManager em = JpaModule.getEntityManager();
+	
+	public void delete(final Long id) {
+		final Query q = em.createQuery("delete from MessageContext mc where mc.id=:id");
+		q.setParameter("id", id);
+		q.executeUpdate();
+	}
 
 	public MessageContext handle(final MessageContext mc) {
 		if (mc == null) return mc;
 		try {
-			MessageContext _mc = em.find(MessageContext.class, Long.valueOf(mc.getId()));
-			if (_mc == null) {
-				_mc = mc;
+			if (mc.isSucceeded()) {
+				delete(mc.getId());
+				return mc;
 			}
-			_mc.fail();
-			MQueues.instance().reject(mc, !_mc.isExceedFailTimes());
-			return em.merge(_mc);
+			
+//			MessageContext _mc = em.find(MessageContext.class, Long.valueOf(mc.getId()));
+//			if (_mc == null) {
+//				_mc = mc;
+//			}
+//			_mc.fail();
+//			MQueues.instance().reject(mc, !_mc.isExceedFailTimes());
+			mc.fail();
+			final MessageContext merge = em.merge(mc);
+			mc.setFailTimes(merge.getFailTimes());
+			return MQueues.instance().getNextActor(this).handover(mc);
 		} catch (Exception e) {
 			log.error("failed to handle: \n\t" + mc, e);
 		}
@@ -49,7 +64,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 		executor.submit(this);
 	}
 
-	public static FailedMessageSqlStorage getInstance() {
+	public static FailedMessageSqlStorage instance() {
 		return instance;
 	}
 
@@ -66,6 +81,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 	}
 
 	public MessageContext handover(final MessageContext mc) {
+		log.info("receive Message: \n" + mc);
 		buf.offer(mc);
 		return mc;
 	}
@@ -78,10 +94,6 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 		executor.shutdownNow();
 	}
 
-	public void retry(Criterion c) {
-		
-	}
-
 	public void retry(Collection<MessageContext> messages, QueueCfg qc) {
 		for (final MessageContext msg : messages) {
 			msg.setQueueCfg(qc);
@@ -89,16 +101,12 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe, IFailedMess
 		}
 	}
 
-	public Collection<MessageContext> query(final Criterion c) {
-		//TODO
-		return null;
-	}
-
 	public void handle(final Collection<MessageContext> mcs) {
 		if (CollectionUtils.isEmpty(mcs)) return;
 		
 		em.getTransaction().begin();
 		for (final MessageContext mc : mcs) {
+			log.info("handle Message: \n" + mc);
 			handle(mc);
 		}
 		em.getTransaction().commit();

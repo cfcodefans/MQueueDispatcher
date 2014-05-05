@@ -15,6 +15,7 @@ import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.DefaultFailedMessageHandler;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
+import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 
 public class Responder implements IMessageActor, Runnable {
@@ -22,7 +23,7 @@ public class Responder implements IMessageActor, Runnable {
 	protected static final Log log = LogFactory.getLog(Responder.class.getSimpleName());
 	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
 	
-	private IFailsafe failsafe = DefaultFailedMessageHandler.instance();
+	private IFailsafe failsafe = FailedMessageSqlStorage.instance(); //DefaultFailedMessageHandler.instance();
 
 	@Override
 	public void run() {
@@ -74,16 +75,16 @@ public class Responder implements IMessageActor, Runnable {
 				if (mc.getFailTimes() > 1) {
 					failsafe.handover(mc);
 				}
-				return mc;
+				return MQueues.instance().acknowledge(mc);
 			}
 			
 			if (!mc.isExceedFailTimes()) {
 //			MQueues.getInstance().reject(mc, true);
-				failsafe.handover(mc);
-				return HttpDispatcherActor.instance().handover(mc);
+				return failsafe.handover(mc);
+//				return HttpDispatcherActor.instance().handover(mc);
 			}
 			
-			log.info(String.format("MessageContext: %d exceeds the retryLimit: %d", mc.getDelivery().getEnvelope().getDeliveryTag(), mc.getQueueCfg().getRetryLimit()));
+			log.info(String.format("MessageContext: %d exceeds the retryLimit: %d", mc.getId(), mc.getQueueCfg().getRetryLimit()));
 //		return MQueues.getInstance().reject(mc, false);
 			return MQueues.instance().acknowledge(mc);
 		} catch (Exception e) {

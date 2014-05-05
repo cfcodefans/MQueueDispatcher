@@ -66,7 +66,7 @@ public class HttpDispatcherActor implements IMessageActor {
 		public void failed(final Exception e) {
 			log.error("failed to process response from url: \n" + mc.getQueueCfg().getDestCfg().getUrl(), e);
 			mc.setResponse(e.getMessage());
-			failsafe.handle(mc);
+			MQueues.instance().getNextActor(instance).handover(mc);
 		}
 
 		public void cancelled() {
