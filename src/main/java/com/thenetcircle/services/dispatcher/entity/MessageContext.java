@@ -165,7 +165,7 @@ public class MessageContext implements Serializable {
 
 	@Transient
 	public boolean isSucceeded() {
-		return "ok".equalsIgnoreCase(StringUtils.trim(response));
+		return "ok".equalsIgnoreCase(response);
 	}
 
 	@Transient

@@ -47,12 +47,19 @@ public class PersistenceTest {
 	
 	@Test
 	public void validateEntities() {
-		em.createQuery("select count(id) from ServerCfg sc").getSingleResult();
-		em.createQuery("select count(id) from ExchangeCfg ec").getSingleResult();
-		em.createQuery("select count(id) from QueueCfg qc").getSingleResult();
-		em.createQuery("select mc from MessageContext mc").getResultList();
+		log.info(String.format("sc %s", em.createQuery("select count(id) from ServerCfg sc").getSingleResult()));
+		log.info(String.format("exc %s", em.createQuery("select count(id) from ExchangeCfg ec").getSingleResult()));
+		log.info(String.format("qc %s", em.createQuery("select count(id) from QueueCfg qc").getSingleResult()));
+		log.info(String.format("mc %s", em.createQuery("select count(mc) from MessageContext mc").getResultList()));
 	}
 	
+	@Test
+	public void cleanAll() {
+		log.info("remove QueueCfg " + em.createQuery("delete from MessageContext").executeUpdate());
+		log.info("remove QueueCfg " + em.createQuery("delete from QueueCfg").executeUpdate());
+		log.info("remove QueueCfg " + em.createQuery("delete from ExchangeCfg").executeUpdate());
+		log.info("remove QueueCfg " + em.createQuery("delete from ServerCfg").executeUpdate());
+	}
 	
 	
 	@Test

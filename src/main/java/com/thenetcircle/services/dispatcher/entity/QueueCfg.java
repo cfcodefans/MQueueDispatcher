@@ -57,7 +57,7 @@ public class QueueCfg extends Configuration {
 	@Basic
 	private String routeKey = DEFAULT_ROUTE_KEY;
 
-	@ManyToMany(fetch=FetchType.EAGER, mappedBy="queues", cascade=CascadeType.PERSIST)
+	@ManyToMany(fetch=FetchType.EAGER, mappedBy="queues", cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
 	private Set<ExchangeCfg> exchanges = new HashSet<ExchangeCfg>();
 
 	public String getRouteKey() {
@@ -68,7 +68,7 @@ public class QueueCfg extends Configuration {
 		this.routeKey = routeKey;
 	}
 
-	@ManyToOne(fetch=FetchType.EAGER, cascade=CascadeType.PERSIST)
+	@ManyToOne(fetch=FetchType.EAGER, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "server_id")
 	private ServerCfg serverCfg;
 
@@ -171,7 +171,7 @@ public class QueueCfg extends Configuration {
 		return builder.toString();
 	}
 	
-	@OneToOne(fetch=FetchType.EAGER, cascade=CascadeType.PERSIST)
+	@OneToOne(fetch=FetchType.EAGER, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "dest_cfg_id")
 	private HttpDestinationCfg destCfg;
 

@@ -41,12 +41,12 @@ public class Responder implements IMessageActor, Runnable {
 	@Override
 	public MessageContext handover(final MessageContext mc) {
 		final String msgStr = new String(mc.getMessageBody());
-		if (StringUtils.contains(msgStr, "shutdown")) {
-			final String queueNameStr = StringUtils.substringAfter(msgStr, " ");
-			log.info(String.format("shutdown QueueCfg[name='%s']", queueNameStr));
-			final QueueCfg qc = MQueues.instance().getQueueCfgs().iterator().next();
-			MQueues.instance().removeQueueCfg(qc);
-		}
+//		if (StringUtils.contains(msgStr, "shutdown")) {
+//			final String queueNameStr = StringUtils.substringAfter(msgStr, " ");
+//			log.info(String.format("shutdown QueueCfg[name='%s']", queueNameStr));
+//			final QueueCfg qc = MQueues.instance().getQueueCfgs().iterator().next();
+//			MQueues.instance().removeQueueCfg(qc);
+//		}
 		
 		buf.offer(mc); 
 //		log.info(MiscUtils.invocationInfo() + re);

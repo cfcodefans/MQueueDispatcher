@@ -17,6 +17,9 @@ import org.apache.log4j.Logger;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.ShutdownListener;
+import com.rabbitmq.client.ShutdownSignalException;
+import com.rabbitmq.client.impl.ChannelN;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.dispatcher.IMessageActor;
@@ -49,7 +52,7 @@ public class MQueues {
 
 	private Map<QueueCfg, ConsumerActor> queueAndConsumers = new HashMap<QueueCfg, ConsumerActor>();
 
-	private Collection<QueueCfg> queueCfgs = new HashSet<QueueCfg>();;
+	private Collection<QueueCfg> queueCfgs = new HashSet<QueueCfg>();
 
 	private Map<ServerCfg, LoopingArrayIterator<Connection>> serverAndConns = new HashMap<ServerCfg, LoopingArrayIterator<Connection>>();
 
@@ -61,12 +64,18 @@ public class MQueues {
 		}
 
 		Channel channel = queueAndChannels.get(qc);
-		if (channel == null) {
+		if (channel == null || !channel.isOpen()) {
 			channel = initChannel(qc);
 			queueAndChannels.put(qc, channel);
 		}
 		if (!channel.isOpen()) {
-			log.warn("channel is not opened: \n" + qc);
+			log.warn("channel is not opened: \n" + qc.getQueueName());
+//			ChannelN ch = (ChannelN)channel;
+//			try {
+//				ch.open();
+//			} catch (IOException e) {
+//				log.error("failed to open channel: " + qc.getQueueName(), e);
+//			}
 		}
 		return channel;
 	}
@@ -115,6 +124,8 @@ public class MQueues {
 	}
 
 	public synchronized void shutdown() {
+		log.info(MiscUtils.invocationInfo());
+		
 		final Set<Connection> conns = new HashSet<Connection>();
 		for (final Channel ch : queueAndChannels.values()) {
 			conns.add(ch.getConnection());
@@ -140,24 +151,26 @@ public class MQueues {
 		if (qc == null) {
 			return;
 		}
-		
-		final Channel ch = getChannel(qc);
-		if (ch == null || !ch.isOpen()) {
-			return;
-		}
-		
+
 		try {
-			ch.close();
-		} catch (IOException e) {
-			log.error("failed to shut down Queue: \n" + qc.getQueueName(), e);
+			final Channel ch = getChannel(qc);
+			if (ch == null || !ch.isOpen()) {
+				return;
+			}
+
+			try {
+				ch.close();
+			} catch (IOException e) {
+				log.error("failed to shut down Queue: \n" + qc.getQueueName(), e);
+			}
+		} finally {
+			for (final ExchangeCfg ec : qc.getExchanges()) {
+				exchangeAndChannels.remove(ec);
+			}
+			queueCfgs.remove(qc);
+			queueAndChannels.remove(qc);
+			queueAndConsumers.remove(qc);
 		}
-		
-		for (final ExchangeCfg ec : qc.getExchanges()) {
-			exchangeAndChannels.remove(ec);
-		}
-		queueCfgs.remove(qc);
-		queueAndChannels.remove(qc);
-		queueAndConsumers.remove(qc);
 	}
 
 	public synchronized void addQueueCfg(final QueueCfg qc) {
@@ -226,7 +239,7 @@ public class MQueues {
 		if (qc == null)
 			return null;
 
-		log.info(String.format("initiating Channel with QueueCfg %d: \n%s", qc.hashCode(), qc.toString()));
+		log.info(String.format("initiating Channel with QueueCfg %d: \n%s\n", qc.hashCode(), qc.toString()));
 		Channel ch = null;
 		try {
 			final Connection conn = getConn(qc.getServerCfg());
@@ -235,6 +248,14 @@ public class MQueues {
 				return ch;
 			}
 			ch = conn.createChannel();
+			ch.addShutdownListener(new ShutdownListener() {
+				@Override
+				public void shutdownCompleted(ShutdownSignalException cause) {
+					log.info("\n\n");
+					log.error("channel is closed!", cause);
+					log.info("\n\n");
+				}
+			});
 
 			// ch.exchangeDeclare(exchange, type, durable, autoDelete,
 			// arguments);
@@ -323,6 +344,7 @@ public class MQueues {
 			return mc;
 		}
 		
+		final long deliveryTag = mc.getDelivery().getEnvelope().getDeliveryTag();
 		final QueueCfg queueCfg = mc.getQueueCfg();
 		try {
 			final Channel ch = getChannel(mc.getQueueCfg());
@@ -330,11 +352,11 @@ public class MQueues {
 				log.error("can't acknowledge the message as channel is closed!");
 				return mc;
 			}
-			ch.basicAck(mc.getDelivery().getEnvelope().getDeliveryTag(), false);
+			ch.basicAck(deliveryTag, false);
+			log.info(queueCfg.getQueueName() + " acknowledged message: " + deliveryTag);
 		} catch (final IOException e) {
-			log.error("failed to acknowledge message: \n" + new String(mc.getMessageBody()) + "\nresponse: " + mc.getResponse(), e);
+			log.error("failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse(), e);
 		}
-		log.info(queueCfg.getQueueName() + " acknowledged message: " + new String(mc.getMessageBody()));
 		return mc;
 	}
 

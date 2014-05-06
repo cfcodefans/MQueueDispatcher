@@ -50,7 +50,9 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 //			}
 //			_mc.fail();
 //			MQueues.instance().reject(mc, !_mc.isExceedFailTimes());
+			
 			mc.fail();
+			log.info(String.format("\nMessage: %s failed %d times\n", mc.getQueueCfg().getQueueName(), mc.getFailTimes()));
 			final MessageContext merge = em.merge(mc);
 			mc.setFailTimes(merge.getFailTimes());
 			return MQueues.instance().getNextActor(this).handover(mc);

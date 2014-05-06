@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -46,7 +47,7 @@ public class ExchangeCfg extends Configuration {
 	@JoinColumn(name = "server_id")
 	private ServerCfg serverCfg;
 
-	@ManyToMany(fetch=FetchType.EAGER)
+	@ManyToMany(fetch=FetchType.EAGER, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
 	private Set<QueueCfg> queues = new HashSet<QueueCfg>();
 
 	public Set<QueueCfg> getQueues() {

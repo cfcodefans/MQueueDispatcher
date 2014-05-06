@@ -9,7 +9,6 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.QueueingConsumer.Delivery;
-import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
@@ -21,8 +20,6 @@ public class ConsumerActor extends DefaultConsumer {
 	public ConsumerActor(final QueueCfg queueCfg) {
 		super(MQueues.instance().getChannel(queueCfg));
 		this.queueCfg = queueCfg;
-
-		// executor.submit(this);
 	}
 
 	public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body) throws IOException {

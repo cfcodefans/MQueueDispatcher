@@ -57,7 +57,7 @@ public class HttpDispatcherActor implements IMessageActor {
 				respStr = e.getMessage();
 			}
 
-			mc.setResponse(respStr);
+			mc.setResponse(respStr.trim());
 //			Responder.instance().handover(mc);
 			log.info(String.format("msg: %d, \tresponse: '%s', \tfailTimes: %d", mc.getId(), StringUtils.left(mc.getResponse(), 5), mc.getFailTimes()));
 			MQueues.instance().getNextActor(instance).handover(mc);

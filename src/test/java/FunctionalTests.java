@@ -24,21 +24,24 @@ import com.thenetcircle.services.persistence.jpa.JpaModule;
 
 
 public class FunctionalTests {
-	private static final String DEST_URL = "http://edgy:8888/consumerDispatcher_err";
+	private static final String DEST_URL = "http://edgy:8888/consumerDispatcher_ok";
 	
-	private static final long MSG_NUMBER = 1;
+	private static final long MSG_NUMBER = 4;
 	private static QueueCfg qc = null;
 	
 	@BeforeClass
 	public static void initQueue() {
-		final EntityManager em = JpaModule.instance().getEntityManager();
+		final EntityManager em = JpaModule.getEntityManager();
 		
 		em.getTransaction().begin();
 		
 		QueueCfgDao qcDao = new QueueCfgDao(em);
-		final List<QueueCfg> qcList = qcDao.query("select qc from QueueCfg qc where qc.queueName=?1", "testQueue");
+		final List<QueueCfg> qcList = qcDao.query("select qc from QueueCfg qc LEFT JOIN FETCH qc.exchanges where qc.queueName=?1", "testQueue");
 		if (!CollectionUtils.isEmpty(qcList)) {
 			qc = qcList.get(0);
+//			qc.getExchanges().addAll(qcDao.queryEntity("select exc from ExchangeCfg exc where ?1 member of exc.queues", qc));
+			log.info(qc.getExchanges());
+			em.getTransaction().commit();
 			return;
 		}
 		
@@ -61,6 +64,7 @@ public class FunctionalTests {
 			final HttpDestinationCfg destCfg = new HttpDestinationCfg();
 			destCfg.setHostHead("test");
 			destCfg.setUrl(DEST_URL);
+			destCfg.setHttpMethod("get");
 			qc.setDestCfg(destCfg );
 		}
 		
@@ -72,6 +76,8 @@ public class FunctionalTests {
 			exCfg.setDurable(true);
 			exCfg.setExchangeName("test_ex");
 			exCfg.setType("direct");
+			exCfg.getQueues().add(qc);
+			em.persist(exCfg);
 			qc.getExchanges().add(exCfg);
 		}
 		
@@ -153,9 +159,11 @@ public class FunctionalTests {
 		
 		try {
 //			ft.testPublish();
+//			ft.testPublish();
+			Thread.sleep(1000);
 			ft.testConsumerActor();
 			
-			
+			Thread.sleep(1000);
 			
 //			ft.ch.close();
 //			ft.conn.close();
