@@ -7,6 +7,8 @@ import junit.framework.Assert;
 import mgr.dao.QueueCfgDao;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -26,7 +28,7 @@ import com.thenetcircle.services.persistence.jpa.JpaModule;
 public class FunctionalTests {
 	private static final String DEST_URL = "http://edgy:8888/consumerDispatcher_ok";
 	
-	private static final long MSG_NUMBER = 4;
+	private static final long MSG_NUMBER = 20000;
 	private static QueueCfg qc = null;
 	
 	@BeforeClass
@@ -121,7 +123,7 @@ public class FunctionalTests {
 		
 		for (long i = 0; i < MSG_NUMBER; i++) {
 			for (final ExchangeCfg exCfg : qc.getExchanges()) {
-				String msgStr = "test_message: " + System.currentTimeMillis();
+				String msgStr = "test_message: " + System.currentTimeMillis() + RandomStringUtils.randomAscii(200);
 				if (i == 350) {
 					msgStr = "shutdown " + qc.getQueueName();
 				}

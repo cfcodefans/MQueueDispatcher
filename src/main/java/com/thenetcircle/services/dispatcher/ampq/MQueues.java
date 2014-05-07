@@ -353,7 +353,7 @@ public class MQueues {
 				return mc;
 			}
 			ch.basicAck(deliveryTag, false);
-			log.info(queueCfg.getQueueName() + " acknowledged message: " + deliveryTag);
+//			log.info(queueCfg.getQueueName() + " acknowledged message: " + deliveryTag);
 		} catch (final IOException e) {
 			log.error("failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse(), e);
 		}

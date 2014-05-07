@@ -83,7 +83,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 	}
 
 	public MessageContext handover(final MessageContext mc) {
-		log.info("receive Message: \n" + mc);
+		log.info(" deliveryTag: " + mc.getDelivery().getEnvelope().getDeliveryTag());
 		buf.offer(mc);
 		return mc;
 	}

@@ -1,4 +1,5 @@
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.persistence.EntityManager;
@@ -6,13 +7,17 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
+import com.thenetcircle.services.common.Jsons;
+import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
@@ -69,8 +74,6 @@ public class PersistenceTest {
 		
 		log.info("configuration is loaded");
 		
-//		final List<QueueConf> qcs = new ArrayList<QueueConf>(dispatcherConfig.getServers().values());
-		
 		Collection<QueueCfg> queueCfgs = DispatcherConfig.dispatcherJobsToQueueCfgs(dispatcherConfig.getAllJobs());
 		
 		log.info(queueCfgs.size() + " queues are loaded");
@@ -79,14 +82,28 @@ public class PersistenceTest {
 			em.persist(qc.getServerCfg());
 			em.persist(qc.getDestCfg());
 			for (final ExchangeCfg ec : qc.getExchanges()) {
-//				em.persist(ec.getServerCfg());
 				em.persist(ec);
 			}
 			em.persist(qc);
 		}
-//		commit();
 		
 		log.info(em.createQuery("select count(id) from ServerCfg sc").getSingleResult() + " server are loaded");
+	}
+	
+	@Test
+	public void convertToJSON() throws Exception {
+		QueueCfgDao qcDao = new QueueCfgDao(em);
+		final List<QueueCfg> qcList = qcDao.findAll();
+		
+		Assert.assertFalse(CollectionUtils.isEmpty(qcList));
+		
+		QueueCfg qc = qcList.get(0);
+		
+		try {
+			log.info("\n\n" + Jsons.toString(qc) + "\n\n");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@AfterClass

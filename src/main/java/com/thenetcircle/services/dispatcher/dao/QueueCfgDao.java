@@ -2,6 +2,7 @@ package com.thenetcircle.services.dispatcher.dao;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
+import javax.persistence.EntityManager;
 
 import com.thenetcircle.services.common.BaseDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -18,5 +19,9 @@ public class QueueCfgDao extends BaseDao<QueueCfg> {
 
 	public QueueCfgDao() {
 		
+	}
+	
+	public QueueCfgDao(final EntityManager em) {
+		super(em);
 	}
 }

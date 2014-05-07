@@ -40,7 +40,8 @@ public class Responder implements IMessageActor, Runnable {
 
 	@Override
 	public MessageContext handover(final MessageContext mc) {
-		final String msgStr = new String(mc.getMessageBody());
+//		final String msgStr = new String(mc.getMessageBody());
+//		log.info(" deliveryTag: " + mc.getDelivery().getEnvelope().getDeliveryTag());
 //		if (StringUtils.contains(msgStr, "shutdown")) {
 //			final String queueNameStr = StringUtils.substringAfter(msgStr, " ");
 //			log.info(String.format("shutdown QueueCfg[name='%s']", queueNameStr));
@@ -71,7 +72,7 @@ public class Responder implements IMessageActor, Runnable {
 		
 		try {
 			if (mc.isSucceeded()) {
-				MQueues.instance().acknowledge(mc);
+//				MQueues.instance().acknowledge(mc);
 				if (mc.getFailTimes() > 1) {
 					failsafe.handover(mc);
 				}

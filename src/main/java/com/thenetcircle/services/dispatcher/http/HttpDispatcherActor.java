@@ -13,12 +13,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
@@ -28,11 +25,8 @@ import org.apache.http.util.EntityUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
-import com.thenetcircle.services.dispatcher.ampq.Responder;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
-import com.thenetcircle.services.dispatcher.failsafe.DefaultFailedMessageHandler;
-import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
 
 public class HttpDispatcherActor implements IMessageActor {
 
@@ -40,7 +34,7 @@ public class HttpDispatcherActor implements IMessageActor {
 	
 
 	private static class RespHandler implements FutureCallback<HttpResponse> {
-		private static IFailsafe failsafe = DefaultFailedMessageHandler.instance();
+//		private static IFailsafe failsafe = DefaultFailedMessageHandler.instance();
 		private MessageContext mc;
 
 		public RespHandler(final MessageContext mc) {
@@ -59,7 +53,7 @@ public class HttpDispatcherActor implements IMessageActor {
 
 			mc.setResponse(respStr.trim());
 //			Responder.instance().handover(mc);
-			log.info(String.format("msg: %d, \tresponse: '%s', \tfailTimes: %d", mc.getId(), StringUtils.left(mc.getResponse(), 5), mc.getFailTimes()));
+//			log.info(String.format("msg: %d, \tresponse: '%s', \tfailTimes: %d", mc.getId(), StringUtils.left(mc.getResponse(), 5), mc.getFailTimes()));
 			MQueues.instance().getNextActor(instance).handover(mc);
 		}
 
@@ -76,7 +70,7 @@ public class HttpDispatcherActor implements IMessageActor {
 
 	private void initHttpAsyncClients() {
 		hacs = new ArrayList<CloseableHttpAsyncClient>();
-		for (int i = 0, j = 3; i < j; i++) {
+		for (int i = 0, j = 4; i < j; i++) {
 			CloseableHttpAsyncClient hac = null;
 			RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout(30000).build();
 			hac = HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig).build();
@@ -143,6 +137,7 @@ public class HttpDispatcherActor implements IMessageActor {
 	}
 
 	public MessageContext handover(MessageContext mc) {
+//		log.info(" deliveryTag: " + mc.getDelivery().getEnvelope().getDeliveryTag());
 		handle(mc);
 		return mc;
 	}

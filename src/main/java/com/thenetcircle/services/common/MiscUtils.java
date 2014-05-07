@@ -3,7 +3,6 @@ package com.thenetcircle.services.common;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.collections4.iterators.ArrayIterator;
 import org.apache.commons.collections4.iterators.ObjectArrayIterator;
 import org.apache.commons.lang.math.NumberUtils;
 
@@ -56,7 +55,6 @@ public class MiscUtils {
 	}
 
 	public static class LoopingArrayIterator<E> extends ObjectArrayIterator<E> {
-
 		public LoopingArrayIterator(final E... array) {
 			super(array, 0, array.length);
 		}
@@ -65,16 +63,8 @@ public class MiscUtils {
 			super(array, start, array.length);
 		}
 
-		public E loop() {
-//			if (!super.hasNext()) {
-//				this.reset();
-//			}
-//			return next();
-			
+		public E loop() {		
 			final E[] array = this.getArray();
-//			loopIdx.compareAndSet(array.length, 0);
-//				return array[loopIdx.get()];
-//			}
 			return array[loopIdx.getAndIncrement() % array.length];
 		}
 		
