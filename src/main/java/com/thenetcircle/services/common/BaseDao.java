@@ -36,7 +36,8 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		this.em = _em;
 	}
 	
-	@Inject @PersistenceContext
+	@Inject 
+//	@PersistenceContext//requires JTA
 	protected EntityManager em;
 
 	protected abstract Class<T> getEntityClass();

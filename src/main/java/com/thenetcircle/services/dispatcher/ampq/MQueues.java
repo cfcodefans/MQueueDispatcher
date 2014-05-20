@@ -317,6 +317,11 @@ public class MQueues {
 			initWithQueue(qc);
 		}
 	}
+	
+	public void initWithQueueCfg(final QueueCfg qc) {
+		queueCfgs.add(qc);
+		initWithQueue(qc);
+	}
 
 	private void initWithQueue(final QueueCfg qc) {
 		final Logger loggerByQueueConf = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());

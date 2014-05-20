@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Basic;
+import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,22 +16,24 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thenetcircle.services.dispatcher.cfg.Configuration;
 
 @Entity
 @Table(name = "exchange_cfg")
+@Cacheable
 public class ExchangeCfg extends Configuration {
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	private Integer id = -1;
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -48,6 +51,7 @@ public class ExchangeCfg extends Configuration {
 	private ServerCfg serverCfg;
 
 	@ManyToMany(fetch=FetchType.EAGER, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
+	@JsonIgnore
 	private Set<QueueCfg> queues = new HashSet<QueueCfg>();
 
 	public Set<QueueCfg> getQueues() {
@@ -102,7 +106,10 @@ public class ExchangeCfg extends Configuration {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + id;
+		if (id != -1) {
+			return id;
+		}
+		
 		result = prime * result + ((exchangeName == null) ? 0 : exchangeName.hashCode());
 		result = prime * result + ((serverCfg == null) ? 0 : serverCfg.hashCode());
 		return result;
@@ -117,6 +124,11 @@ public class ExchangeCfg extends Configuration {
 		if (!(obj instanceof ExchangeCfg))
 			return false;
 		ExchangeCfg other = (ExchangeCfg) obj;
+		
+		if (id != -1) {
+			return id.equals(other.id);
+		}
+		
 		if (exchangeName == null) {
 			if (other.exchangeName != null)
 				return false;

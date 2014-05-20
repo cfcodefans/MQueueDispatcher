@@ -6,15 +6,18 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
 public final class Jsons {
 	private Jsons() {
 	}
 
-	private static final ObjectMapper MAPPER = new ObjectMapper();
+	public static final ObjectMapper MAPPER = new ObjectMapper();
 
 	static {
 		MAPPER.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true);
@@ -25,6 +28,14 @@ public final class Jsons {
 		MAPPER.configure(SerializationFeature.INDENT_OUTPUT, true);
 		MAPPER.configure(JsonGenerator.Feature.QUOTE_FIELD_NAMES, true);
 		MAPPER.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, false);
+		
+//		JaxbAnnotationModule module = new JaxbAnnotationModule();
+//		// configure as necessary
+//		MAPPER.registerModule(module);
+//		
+//		AnnotationIntrospector introspector = new JaxbAnnotationIntrospector();
+//		// if ONLY using JAXB annotations:
+//		MAPPER.setAnnotationIntrospector(introspector);
 	}
 
 	/*This method is unused except the tests*/

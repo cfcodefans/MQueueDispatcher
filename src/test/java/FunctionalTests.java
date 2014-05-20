@@ -7,7 +7,6 @@ import junit.framework.Assert;
 import mgr.dao.QueueCfgDao;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.math.RandomUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -46,7 +45,6 @@ public class FunctionalTests {
 			em.getTransaction().commit();
 			return;
 		}
-		
 		
 		qc = new QueueCfg();
 		{

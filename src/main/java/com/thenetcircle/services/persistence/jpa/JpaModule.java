@@ -31,7 +31,7 @@ public class JpaModule {
 	}
 	
 	@Produces 
-	@PersistenceContext
+//	@PersistenceContext
 	public static EntityManager getEntityManager() {
 		log.info(MiscUtils.invocationInfo());
 		if (emf == null) {

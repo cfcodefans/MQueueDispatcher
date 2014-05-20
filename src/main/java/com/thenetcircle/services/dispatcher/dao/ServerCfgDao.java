@@ -16,4 +16,8 @@ public class ServerCfgDao extends BaseDao<ServerCfg> {
 	public ServerCfgDao(final EntityManager em) {
 		super(em);
 	}
+	
+	public ServerCfgDao() {
+		super();
+	}
 }

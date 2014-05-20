@@ -18,13 +18,13 @@ public class ServerCfg extends Configuration {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	private Integer id;
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -53,6 +53,11 @@ public class ServerCfg extends Configuration {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		
+		if (id != -1) {
+			return id;
+		}
+		
 		result = prime * result + ((host == null) ? 0 : host.hashCode());
 		result = prime * result + port;
 		result = prime * result + ((virtualHost == null) ? 0 : virtualHost.hashCode());
@@ -68,6 +73,11 @@ public class ServerCfg extends Configuration {
 		if (!(obj instanceof ServerCfg))
 			return false;
 		ServerCfg other = (ServerCfg) obj;
+		
+		if (id != -1) {
+			return id.equals(other.id);
+		}
+		
 		if (host == null) {
 			if (other.host != null)
 				return false;

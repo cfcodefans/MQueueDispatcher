@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.junit.Test;
 
 import com.thenetcircle.services.common.MiscUtils;
@@ -21,6 +22,14 @@ public class MiscTests {
 		for (int i = 0; i < 10; i++) {
 			System.out.println(lai.loop());
 		}
+	}
+	
+	@Test
+	public void testClassName() {
+		System.out.println(String.class.getCanonicalName());
+		System.out.println(String.class.getSimpleName());
+		System.out.println(ClassUtils.getShortCanonicalName(String.class));
+		System.out.println(ClassUtils.getShortClassName(String.class));
 	}
 	
 	@Test

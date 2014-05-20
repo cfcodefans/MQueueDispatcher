@@ -69,11 +69,7 @@
 			<artifactId>jackson-core</artifactId>
 			<version>2.3.2</version>
 		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.3.2</version>
-		</dependency>
+
 		<dependency>
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
@@ -154,17 +150,17 @@
 		<dependency>
 			<groupId>org.jboss.weld.servlet</groupId>
 			<artifactId>weld-servlet</artifactId>
-			<version>2.2.0.SP1</version>
+			<version>2.0.0.SP1</version>
 		</dependency>
-
-<!-- 		<dependency> -->
-<!-- 			<groupId>javax</groupId> -->
-<!-- 			<artifactId>javaee-web-api</artifactId> -->
-<!-- 			<version>6.0-RC2</version> -->
-<!-- 			<scope>compile</scope> -->
-<!-- 			<optional>true</optional> -->
-<!-- 		</dependency> -->
-
+<!-- 
+ -->
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-web-api</artifactId>
+			<version>6.0-RC2</version>
+<!-- 			<scope>runtime</scope> -->
+			<optional>true</optional>
+		</dependency>
 
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
@@ -178,7 +174,22 @@
 			<version>1.2.0.Final</version>
 		</dependency>
 		
-		<!-- json convert -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.4.0-rc2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-jaxb-annotations</artifactId>
+			<version>2.4.0-rc2</version>
+		</dependency>
+		<!-- json convert 
+				<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.3.2</version>
+		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
@@ -190,10 +201,11 @@
 			<version>2.4.0-rc2</version>
 		</dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.4.0-rc2</version>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-json</artifactId>
+			<version>1.18.1</version>
 		</dependency>
+		-->
 	</dependencies>
 
 	<build>

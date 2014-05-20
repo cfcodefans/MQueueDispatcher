@@ -7,6 +7,7 @@
 	<persistence-unit name="mqueue-dispatcher" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 <!-- 		<jar-file>${project.build.outputDirectory}</jar-file> -->
+<!-- 			<jar-file>../</jar-file> -->
 		<class>com.thenetcircle.services.dispatcher.entity.ExchangeCfg</class>
 		<class>com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg</class>
 		<class>com.thenetcircle.services.dispatcher.entity.MessageContext</class>
@@ -27,7 +28,7 @@
 			<property name="hibernate.max_fetch_depth" value="4" />
 			<property name="hibernate.jdbc.batch_size" value="50" />
 			<!-- hibernate debug properties -->
-			<property name="hibernate.generate_statistics" value="true" />
+<!-- 			<property name="hibernate.generate_statistics" value="true" /> -->
 <!-- 			<property name="hibernate.format_sql" value="true" /> -->
 <!-- 			<property name="hibernate.show_sql" value="true" /> -->
 			<property name="hibernate.archive.autodetection" value="class" />

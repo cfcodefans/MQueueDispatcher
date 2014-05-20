@@ -18,7 +18,7 @@ public class HttpDestinationCfg extends Configuration {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	private Integer id = -1;
 
 	@Basic
 	private String url;
@@ -26,11 +26,11 @@ public class HttpDestinationCfg extends Configuration {
 //	@Basic
 //	private int retry;
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -65,8 +65,11 @@ public class HttpDestinationCfg extends Configuration {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((httpMethod == null) ? 0 : httpMethod.hashCode());
 		result = prime * result + id;
+		
+		if (id != -1) return id;
+		
+		result = prime * result + ((httpMethod == null) ? 0 : httpMethod.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
 	}
@@ -80,13 +83,16 @@ public class HttpDestinationCfg extends Configuration {
 		if (!(obj instanceof HttpDestinationCfg))
 			return false;
 		HttpDestinationCfg other = (HttpDestinationCfg) obj;
+		if (id != -1) {
+			return id.equals(other.id);
+		}
+		
 		if (httpMethod == null) {
 			if (other.httpMethod != null)
 				return false;
 		} else if (!httpMethod.equals(other.httpMethod))
 			return false;
-		if (id != other.id)
-			return false;
+
 		if (url == null) {
 			if (other.url != null)
 				return false;

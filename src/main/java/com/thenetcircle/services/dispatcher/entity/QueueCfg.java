@@ -32,13 +32,13 @@ public class QueueCfg extends Configuration {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	private Integer id = -1;
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -126,7 +126,12 @@ public class QueueCfg extends Configuration {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = super.hashCode();
+		int result = 1;
+		
+		if (id != -1) {
+			return id;
+		}
+		
 		result = prime * result + ((queueName == null) ? 0 : queueName.hashCode());
 		result = prime * result + ((serverCfg == null) ? 0 : serverCfg.hashCode());
 		return result;
@@ -140,7 +145,13 @@ public class QueueCfg extends Configuration {
 			return false;
 		if (!(obj instanceof QueueCfg))
 			return false;
+		
+		
 		QueueCfg other = (QueueCfg) obj;
+		if (id != -1) {
+			return id.equals(other.id); 
+		}
+		
 		if (queueName == null) {
 			if (other.queueName != null)
 				return false;

@@ -18,8 +18,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.rabbitmq.client.QueueingConsumer.Delivery;
 
 @Entity
@@ -119,8 +117,10 @@ public class MessageContext implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		if (id != -1)
+		
+		if (id != -1) {
 			return (int) id;
+		}
 
 		result = prime * result + bodyHash;
 		result = prime * result + ((queueCfg == null) ? 0 : queueCfg.hashCode());
