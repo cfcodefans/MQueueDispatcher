@@ -1,28 +1,31 @@
 package com.thenetcircle.services;
 
-import java.util.ArrayList;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
 
+import com.sun.net.httpserver.HttpServer;
 import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
-import com.thenetcircle.comsumerdispatcher.config.QueueConf;
 import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.common.WeldBinder;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+//import com.sun.jersey.api.core.PackagesResourceConfig;
 
-@WebListener
-public class Bootstrap implements ServletContextListener {
+@ApplicationScoped
+public class Bootstrap {
 	private static Log log = LogFactory.getLog(Bootstrap.class);
 	
 	public static boolean once = false;
@@ -37,52 +40,46 @@ public class Bootstrap implements ServletContextListener {
 		}
 		
 		try {
-			// load configurations either from file or from distribution server
-			final DispatcherConfig dispatcherConfig = DispatcherConfig.getInstance();
-			dispatcherConfig.loadConfig(filePath);
-			
-			log.info("configuration is loaded");
-			
-			final List<QueueConf> qcs = new ArrayList<QueueConf>(dispatcherConfig.getServers().values());
-			
-//			final List<ServerCfg> serverCfgs = DispatcherConfig.queueConfsToServerCfgs(qcs);
-			Collection<QueueCfg> queueCfgs = DispatcherConfig.dispatcherJobsToQueueCfgs(dispatcherConfig.getAllJobs());
-			
-			log.info(StringUtils.join(queueCfgs, '\n'));
-			
-			final MQueues mqueues = MQueues.instance();
-//			mqueues.setQueueCfgs(queueCfgs);
-			mqueues.initWithQueueCfgs(queueCfgs);
-			
-			Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
-			log.info("register MQueues.cleaner to shutdown hook");
-			
-			
-			
-			// determine if this one starts up as distribution master or distribution client or standalone
-//			DistributionManager.getInstance();
+//			Collection<QueueCfg> queueCfgs = loadDefaultQueueCfgs(filePath);
 //			
-//			JobAssign ja = new JobAssign();
-//			ja.startupJobs();
+//			final MQueues mqueues = MQueues.instance();
+//			mqueues.initWithQueueCfgs(queueCfgs);
 //			
-//			ConsumerDispatcherMonitor.enableMonitor();
+//			Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
+//			log.info("register MQueues.cleaner to shutdown hook");
+//			Bootstrap bs = WeldContext.INSTANCE.getBean(Bootstrap.class);
+//			bs.startup();
+//			O
+			startHttpServer();
 		} catch (Exception e) {
 			log.error(e, e);
 		}
 	}
 
-	@Override
-	public void contextInitialized(final ServletContextEvent paramServletContextEvent) {
-		log.info(MiscUtils.invocationInfo());
-		startup();
-	}
-
-	@Override
-	public void contextDestroyed(final ServletContextEvent paramServletContextEvent) {
-		log.info(MiscUtils.invocationInfo());
-		MQueues.instance().shutdown();
+	private static Collection<QueueCfg> loadDefaultQueueCfgs(String filePath) throws Exception {
+		// load configurations either from file or from distribution server
+		final DispatcherConfig dispatcherConfig = DispatcherConfig.getInstance();
+		dispatcherConfig.loadConfig(StringUtils.defaultIfBlank(filePath, "job.xml"));
+		
+		log.info("configuration is loaded");
+		
+//		final List<QueueConf> qcs = new ArrayList<QueueConf>(dispatcherConfig.getServers().values());
+		Collection<QueueCfg> queueCfgs = DispatcherConfig.dispatcherJobsToQueueCfgs(dispatcherConfig.getAllJobs());
+		
+		log.info(StringUtils.join(queueCfgs, '\n'));
+		return queueCfgs;
 	}
 	
+	private static void startHttpServer() {
+		log.info(MiscUtils.invocationInfo());
+		
+		URI baseUri = UriBuilder.fromUri("http://localhost/").port(9998).segment("mqueue_dispatcher").build();
+//		final PackagesResourceConfig resCfg = new PackagesResourceConfig("com.thenetcircle.services.rest");
+		ResourceConfig resCfg = new ResourceConfig();
+		resCfg.packages("com.thenetcircle.services.rest").register(new WeldBinder());
+		HttpServer server = JdkHttpServerFactory.createHttpServer(baseUri, resCfg, true);
+	}
+
 	@Inject
 	private QueueCfgDao qcDao;
 	

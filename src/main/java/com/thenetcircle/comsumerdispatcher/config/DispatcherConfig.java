@@ -105,8 +105,8 @@ public class DispatcherConfig {
 			if (sc == null) {
 				sc = queueConfToServerCfg(dj.getFetcherQConf());
 				nameAndServerCfgs.put(sc.getHost(), sc);
+				log.info(sc.getHost() + " server is loaded");
 			}
-			log.info(sc.getHost() + " server is loaded");
 			
 			qc.setServerCfg(sc);
 			qc.setQueueName(dj.getQueue());

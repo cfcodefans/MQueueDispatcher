@@ -6,5 +6,7 @@
 		<scan>
 		<exclude name="org.jboss.**">
 		</exclude>
+		<exclude name="javax.**">
+		</exclude>
 	</scan>
 </beans> 

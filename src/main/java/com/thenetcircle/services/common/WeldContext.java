@@ -1,5 +1,7 @@
 package com.thenetcircle.services.common;
 
+import java.util.List;
+
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 
@@ -24,4 +26,12 @@ public class WeldContext {
     public <T> T getBean(Class<T> type) {
         return container.instance().select(type).get();
     }
+
+	public Weld getWeld() {
+		return weld;
+	}
+
+	public WeldContainer getContainer() {
+		return container;
+	}
 }

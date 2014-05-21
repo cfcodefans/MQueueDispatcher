@@ -18,7 +18,7 @@ public class ServerCfg extends Configuration {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	private Integer id = -1;
 
 	public Integer getId() {
 		return id;

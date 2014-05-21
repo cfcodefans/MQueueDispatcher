@@ -1,5 +1,6 @@
 package mgr;
 
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -56,6 +57,15 @@ public class WeldTest {
 		} catch (Exception e) {
 			log.error("", e);
 		}
+	}
+	
+	@Test
+	public void testGetAllInjectedBeans() {
+//		for (Iterator it = container.instance().iterator(); it.hasNext();) {
+//			Object obj = it.next();
+//			log.info(obj);
+//		}
+
 	}
 	
 	@Before
