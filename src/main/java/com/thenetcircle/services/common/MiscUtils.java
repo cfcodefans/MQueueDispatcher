@@ -4,7 +4,7 @@ import java.lang.management.ManagementFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.collections4.iterators.ObjectArrayIterator;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 public class MiscUtils {
 	public static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();

@@ -13,7 +13,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 
-import com.thenetcircle.services.common.MiscUtils;
+//import com.thenetcircle.services.common.MiscUtils;
 
 //@Path("javascript")
 //@Produces(MediaType.APPLICATION_JSON)
@@ -26,12 +26,12 @@ public class JavaScriptProxyRes {
 			return;
 		}
 
-		log.info(MiscUtils.invocationInfo() + " {");
+//		log.info(MiscUtils.invocationInfo() + " {");
 		
 		for (final Resource res : resCfg.getResources()) {
 			traverse(res);
 		}
-		log.info("} " + MiscUtils.invocationInfo());
+//		log.info("} " + MiscUtils.invocationInfo());
 	}
 	
 	private static void traverse(final Resource res) {

@@ -13,12 +13,19 @@
 	</properties>
 
 	<dependencies>
+	<!-- 
 		<dependency>
 			<groupId>org.osgi</groupId>
 			<artifactId>org.osgi.core</artifactId>
 			<version>4.3.0</version>
 			<scope>provided</scope>
 		</dependency>
+	 -->
+	<dependency>
+		<groupId>log4j</groupId>
+		<artifactId>log4j</artifactId>
+		<version>1.2.16</version>
+	</dependency>
 		<dependency>
 			<groupId>com.rabbitmq</groupId>
 			<artifactId>amqp-client</artifactId>
@@ -38,6 +45,7 @@
 			<groupId>org.apache.zookeeper</groupId>
 			<artifactId>zookeeper</artifactId>
 			<version>3.4.6</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
@@ -50,12 +58,13 @@
 			<artifactId>httpasyncclient</artifactId>
 			<version>4.0.1</version>
 		</dependency>
-
+<!-- 
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
 		</dependency>
+ -->
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -130,8 +139,8 @@
 
 		<dependency>
 			<groupId>org.hibernate.javax.persistence</groupId>
-			<artifactId>hibernate-jpa-2.0-api</artifactId>
-			<version>1.0.1.Final</version>
+			<artifactId>hibernate-jpa-2.1-api</artifactId>
+			<version>1.0.0.Final</version>
 		</dependency>
 
 		<!-- <dependency> -->
@@ -145,7 +154,7 @@
 			<groupId>org.jboss.weld.se</groupId>
 			<artifactId>weld-se</artifactId>
 			<version>2.2.0.SP1</version>
-<!-- 			<scope>test</scope> -->
+			<scope>test</scope>
 		</dependency>
 <!-- 
  -->
@@ -156,6 +165,7 @@
 		</dependency>
 		
 		<!-- 
+		 -->
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-web-api</artifactId>
@@ -163,12 +173,7 @@
 			<optional>true</optional>
 		</dependency>
 
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-server</artifactId>
-			<version>1.18.1</version>
-		</dependency>
-		 -->
+
 
 		<dependency>
 			<groupId>org.jboss</groupId>
@@ -207,13 +212,44 @@
 			<artifactId>jersey-json</artifactId>
 			<version>1.18.1</version>
 		</dependency>
+
 		-->
+
 
 	<dependency>
 		<groupId>org.glassfish.jersey.containers</groupId>
 		<artifactId>jersey-container-jdk-http</artifactId>
 		<version>2.8</version>
+		<!-- <scope>test</scope> -->
 	</dependency>
+	<dependency>
+		<groupId>org.glassfish.jersey.containers</groupId>
+		<artifactId>jersey-container-servlet</artifactId>
+		<version>2.8</version>
+	</dependency>
+	<dependency>
+		<groupId>org.glassfish.jersey.core</groupId>
+		<artifactId>jersey-common</artifactId>
+		<version>2.8</version>
+	</dependency>
+	<dependency>
+		<groupId>javax.enterprise</groupId>
+		<artifactId>cdi-api</artifactId>
+		<version>1.1</version>
+	</dependency>
+	<dependency>
+		<groupId>org.glassfish.jersey.containers</groupId>
+		<artifactId>jersey-container-servlet-core</artifactId>
+		<version>2.8</version>
+	</dependency>
+	
+	<!-- 
+			<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>1.18.1</version>
+		</dependency>
+	 -->
 	</dependencies>
 
 	<build>
@@ -266,7 +302,8 @@
 			<!-- </executions> -->
 			<!-- </plugin> -->
 
-			<!-- copy dependencies into lib directory -->
+			<!-- copy dependencies into lib directory 
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -284,6 +321,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			-->
 
 
 			<plugin>
@@ -301,6 +339,25 @@
 					<warSourceDirectory>WebContent</warSourceDirectory>
 				</configuration>
 			</plugin>
+			
+			<plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>copy_package</id>
+                    <phase>install</phase>
+                    <goals>
+                        <goal>run</goal>
+                    </goals>
+                    <configuration>
+                        <tasks>
+                            <copy file="target/dispatcher-0.0.1.war"
+                                todir="D:\server\jetty-distribution-9\webapps" />
+                        </tasks>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
 		</plugins>
 	</build>
 </project>

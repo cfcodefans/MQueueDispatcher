@@ -9,7 +9,7 @@ import javax.inject.Inject;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
@@ -19,10 +19,10 @@ import com.sun.net.httpserver.HttpServer;
 import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
-import com.thenetcircle.services.dispatcher.cdi.WeldBinder;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
-import com.thenetcircle.services.rest.javascript.bridge.JavaScriptProxyRes;
+import com.thenetcircle.services.rest.WeldBinder;
+//import com.thenetcircle.services.rest.javascript.bridge.JavaScriptProxyRes;
 //import com.sun.jersey.api.core.PackagesResourceConfig;
 
 @ApplicationScoped
@@ -81,7 +81,9 @@ public class Bootstrap {
 		resCfg.packages("com.thenetcircle.services.rest").register(new WeldBinder());
 		
 		HttpServer server = JdkHttpServerFactory.createHttpServer(baseUri, resCfg, false);
-		JavaScriptProxyRes.build(resCfg);
+//		JavaScriptProxyRes.build(resCfg);
+		
+//		server.
 		
 		server.start();
 	}

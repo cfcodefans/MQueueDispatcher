@@ -3,7 +3,7 @@ package com.thenetcircle.comsumerdispatcher.config;
 import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Attribute;
 import org.dom4j.Element;
 import org.dom4j.VisitorSupport;

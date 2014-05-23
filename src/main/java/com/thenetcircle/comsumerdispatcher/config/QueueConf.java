@@ -2,7 +2,7 @@ package com.thenetcircle.comsumerdispatcher.config;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class QueueConf implements Serializable {
 	private static final long serialVersionUID = 1L;

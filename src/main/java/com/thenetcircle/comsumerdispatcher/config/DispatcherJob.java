@@ -2,7 +2,7 @@ package com.thenetcircle.comsumerdispatcher.config;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 
 public class DispatcherJob implements Serializable {

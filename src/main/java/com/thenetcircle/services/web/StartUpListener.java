@@ -11,7 +11,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.Bootstrap;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
@@ -21,20 +20,20 @@ import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 @WebListener
 public class StartUpListener implements ServletContextListener {
 
-	private static Log log = LogFactory.getLog(Bootstrap.class);
+	private static Log log = LogFactory.getLog(StartUpListener.class);
 	@Inject
 	private QueueCfgDao qcDao;
 
 	@Override
 	public void contextInitialized(final ServletContextEvent paramServletContextEvent) {
 		log.info(MiscUtils.invocationInfo());
-		startup();
+//		startup();
 	}
 
 	@Override
 	public void contextDestroyed(final ServletContextEvent paramServletContextEvent) {
 		log.info(MiscUtils.invocationInfo());
-		MQueues.instance().shutdown();
+//		MQueues.instance().shutdown();
 	}
 
 	private void startup() {
@@ -48,7 +47,7 @@ public class StartUpListener implements ServletContextListener {
 			return ;
 		}
 		
-		MQueues.instance().initWithQueueCfgs(qcList);
+//		MQueues.instance().initWithQueueCfgs(qcList);
 		Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
 	}
 

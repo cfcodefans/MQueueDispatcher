@@ -1,7 +1,5 @@
 package com.thenetcircle.services.common;
 
-import java.util.List;
-
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 

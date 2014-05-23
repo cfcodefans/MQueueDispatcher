@@ -4,7 +4,7 @@ package com.thenetcircle.services.common;
 import java.util.LinkedList;
 import java.util.Stack;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class ProcTrace {
 	private static final String INDENT = "    ";
