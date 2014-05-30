@@ -21,10 +21,10 @@
 	</servlet-mapping>
 	 -->
 	<listener>
-		<listener-class>org.jboss.weld.environment.servlet.BeanManagerResourceBindingListener</listener-class>
+		<listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>
 	</listener>
 	<listener>
-		<listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>
+		<listener-class>org.jboss.weld.environment.servlet.BeanManagerResourceBindingListener</listener-class>
 	</listener>
 
 	<servlet>
@@ -34,11 +34,11 @@
 			<param-name>javax.ws.rs.Application</param-name>
 			<param-value>com.thenetcircle.services.rest.ResLoader</param-value>
 		</init-param>
+		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ResLoader</servlet-name>
 		<url-pattern>/rest/*</url-pattern>
 	</servlet-mapping>
-<!-- 
- -->
+
 </web-app>
