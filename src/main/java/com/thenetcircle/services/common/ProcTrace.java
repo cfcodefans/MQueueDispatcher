@@ -122,7 +122,7 @@ public class ProcTrace {
 			return;
 		}
 		
-		final int layer = pt.stack.indexOf(te);
+//		final int layer = pt.stack.indexOf(te);
 //		pt.finishedStack.push(new StringBuilder("\n" + StringUtils.repeat(INDENT, layer + 1) + "Exception: " + logMsg));
 		for (TraceEntry _te = pt.stack.peek(); _te != te; _te = pt.stack.peek()) {
 			end();

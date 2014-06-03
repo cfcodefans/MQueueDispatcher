@@ -7,7 +7,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -278,5 +277,23 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		}
 	
 		return q.getResultList();
+	}
+
+	public T refresh(final T entity) {
+		em.refresh(entity);
+		return entity;
+	}
+
+	public <E> E findEntity(Class<E> cls, Object pk) {
+		if (pk == null || cls == null) {
+			return null;
+		}
+		return cls.cast(em.find(cls, pk));
+	}
+
+	@SuppressWarnings("rawtypes")
+	public Object queryOne(String hql, Object... params) {
+		final List result  = queryEntityPage(hql, 0, 1, params);
+		return CollectionUtils.isEmpty(result) ? null : result.get(0);
 	}
 }

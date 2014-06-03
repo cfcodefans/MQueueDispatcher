@@ -1,17 +1,9 @@
-package com.thenetcircle.services.rest;
+package com.thenetcircle.services.rest.utils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.model.Resource;
-import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
-import org.glassfish.jersey.server.model.RuntimeResource;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent.Type;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
@@ -22,6 +14,7 @@ import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.ProcTrace;
+import com.thenetcircle.services.rest.JavaScriptProxyRes;
 
 public class ResLoader extends ResourceConfig {
 	private static Log log = LogFactory.getLog(ResLoader.class);
@@ -65,6 +58,8 @@ public class ResLoader extends ResourceConfig {
 			log.info(MiscUtils.invocationInfo() + "\n\n\t");
 			if (Type.INITIALIZATION_APP_FINISHED == ev.getType()) {
 				resModel = ev.getResourceModel();
+				
+				JavaScriptProxyRes.build(resModel);
 			}
 		}
 

@@ -1,8 +1,11 @@
 package com.thenetcircle.services.common;
 
 import java.lang.management.ManagementFactory;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.iterators.ObjectArrayIterator;
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -69,5 +72,9 @@ public class MiscUtils {
 		}
 		
 		private AtomicInteger loopIdx = new AtomicInteger();
+	}
+	
+	public static Map map(Object...keyAndVals) {
+		return MapUtils.putAll(new HashMap(), keyAndVals);
 	}
 }
