@@ -5,9 +5,12 @@ target/*
 *.jar
 *.war
 *.ear
+.classpath
 
 # svn #
 .svn/*
+.settings/*
+test/*
 
 # log #
 *.log

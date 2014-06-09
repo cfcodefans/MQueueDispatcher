@@ -62,8 +62,6 @@ public class JavaScriptProxyRes {
 		}
 		
 		for (final ResourceMethod resMd : res.getAllMethods()) {
-			log.info(resMd.getHttpMethod() + "\t" + res.getPath());
-			
 			proxyList.add(ProxyBuilder.builder().with(resMd).build());
 		}
 	}

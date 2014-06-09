@@ -1,6 +1,6 @@
 package com.thenetcircle.services.rest;
 
-import javax.ws.rs.GET;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -16,7 +16,7 @@ import com.thenetcircle.services.common.MiscUtils;
 public class InfoRes {
 	protected static final Log log = LogFactory.getLog(InfoRes.class.getName());
 
-	@GET
+	@OPTIONS
 	@Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
 	public Response info() {
 		return Response.ok().entity("started").build();

@@ -19,7 +19,6 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.ShutdownListener;
 import com.rabbitmq.client.ShutdownSignalException;
-import com.rabbitmq.client.impl.ChannelN;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.dispatcher.IMessageActor;
