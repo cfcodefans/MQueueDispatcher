@@ -1,6 +1,5 @@
 package com.thenetcircle.services.rest.javascript.bridge;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.Builder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -8,7 +7,6 @@ import org.glassfish.jersey.server.model.Invocable;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 
-import com.thenetcircle.services.rest.JavaScriptProxyRes;
 import com.thenetcircle.services.rest.javascript.bridge.JQueryAjaxProxy.DataType;
 
 public class ProxyBuilder implements Builder<JQueryAjaxProxy> {
@@ -39,12 +37,12 @@ public class ProxyBuilder implements Builder<JQueryAjaxProxy> {
 
 		jp.url = sb.toString();
 		jp.type = resMd.getHttpMethod();
-		jp.dataTypes = StringUtils.join(DataType.convert(resMd.getProducedTypes()).iterator(), " ");
+		jp.dataTypes = DataType.convert(resMd.getProducedTypes());
 		final Invocable iv = resMd.getInvocable();
-		iv.getParameters();
+		jp.params = iv.getParameters();
 		jp.return_type = iv.getResponseType().toString();
 
-		jp.matedata = resMd.getInvocable();
+//		jp.matedata = resMd.getInvocable();
 
 		log.info(String.format("http method: \t%s url:\t%s", jp.type, jp.url));
 		return this;

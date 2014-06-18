@@ -12,6 +12,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -104,6 +105,13 @@ public class MQueueCfgRes {
 	public List<QueueCfg> getQueueCfgs() {
 		List<QueueCfg> qcList = qcDao.findAll();
 		return qcList;
+	}
+	
+	@GET
+	@Path("/page_{page_idx}")
+	public List<QueueCfg> getQueueCfgs(@PathParam("page_idx") int pageIdx, @QueryParam("size") int pageSize) {
+		List<QueueCfg> qcPage = qcDao.page(pageIdx, pageSize);
+		return qcPage;
 	}
 
 	@OPTIONS

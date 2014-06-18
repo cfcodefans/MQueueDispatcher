@@ -25,6 +25,7 @@ import com.thenetcircle.services.rest.WeldBinder;
 //import com.thenetcircle.services.rest.javascript.bridge.JavaScriptProxyRes;
 //import com.sun.jersey.api.core.PackagesResourceConfig;
 
+@SuppressWarnings("restriction")
 @ApplicationScoped
 public class Bootstrap {
 	private static Log log = LogFactory.getLog(Bootstrap.class);

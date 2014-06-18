@@ -67,6 +67,10 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 	public List<T> findAll() {
 		return em.createQuery(String.format("select object(o) from %s as o", getEntityClass().getName())).getResultList();
 	}
+	
+	public List<T> page(int pageIdx, int pageSize) {
+		return queryPage(String.format("select object(o) from %s as o", getEntityClass().getName()), pageIdx, pageSize);
+	}
 
 	public List<T> query(String hql, Object... params) {
 		if (StringUtils.isBlank(hql)) {

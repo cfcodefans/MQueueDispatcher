@@ -8,7 +8,6 @@ import javax.ws.rs.core.MediaType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.glassfish.jersey.server.model.Invocable;
 import org.glassfish.jersey.server.model.Parameter;
 
 import com.thenetcircle.services.common.MiscUtils;
@@ -49,11 +48,19 @@ public class JQueryAjaxProxy {
 		}
 	}
 	
+	public static class ParamInfo {
+		public Parameter.Source src;
+		public String keyStr;
+		
+	}
+	
 	public String return_type;
 	public String type; //GET or POST
 	public String url;  
-	public String dataTypes; //produced by restful api
+	public List<JQueryAjaxProxy.DataType> dataTypes; //produced by restful api
 	public String contentType; // consumed by restful api;
 	
-	public Invocable matedata;
+	public List<Parameter> params;
+	public String mdName;
+//	public Invocable matedata;
 }

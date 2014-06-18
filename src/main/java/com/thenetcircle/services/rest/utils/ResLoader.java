@@ -23,7 +23,10 @@ public class ResLoader extends ResourceConfig {
 		ProcTrace.start(MiscUtils.invocationInfo());
 		ProcTrace.ongoing("set packages scann");
 		
-		packages("com.thenetcircle.services.rest", "com.thenetcircle.services.rest.javascript.bridge");
+		packages("com.thenetcircle.services.rest",
+				"com.thenetcircle.services.rest.javascript.bridge");
+		
+//		this.registerClasses(ServerCfgRes.class);
 		
 		register(new ResLoaderListener());
 		

@@ -8,8 +8,10 @@ import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
@@ -38,7 +40,7 @@ public class JavaScriptProxyRes {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getJSProxy() {
+	public Response getJSProxy(@Context UriInfo uriInfo) {
 		return Response.ok(Jsons.toString(proxyList.toArray(new JQueryAjaxProxy[0]))).build(); 
 	}
 	
@@ -54,6 +56,8 @@ public class JavaScriptProxyRes {
 	}
 	
 	private static void traverse(final Resource res) {
+		log.info("traverse Resouce: " + res.getNames() + " path: " + res.getPath());
+		
 		List<Resource> childResList = res.getChildResources();
 		if (CollectionUtils.isNotEmpty(childResList)) {
 			for (final Resource childRes : childResList) {
@@ -62,6 +66,7 @@ public class JavaScriptProxyRes {
 		}
 		
 		for (final ResourceMethod resMd : res.getAllMethods()) {
+			if ("OPTIONS".equals(resMd.getHttpMethod())) continue;
 			proxyList.add(ProxyBuilder.builder().with(resMd).build());
 		}
 	}
