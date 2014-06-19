@@ -344,7 +344,7 @@
                     <configuration>
                         <tasks>
                             <copy file="target/dispatcher-0.0.1.war"
-                                todir="D:\server\jetty-distribution-9\webapps" />
+                                todir="D:\server\jetty-distribution-9.2.1\webapps" />
                         </tasks>
                     </configuration>
                 </execution>

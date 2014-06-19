@@ -14,22 +14,21 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.server.model.Resource;
-import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceModel;
 
 import com.thenetcircle.services.common.Jsons;
-import com.thenetcircle.services.rest.javascript.bridge.JQueryAjaxProxy;
-import com.thenetcircle.services.rest.javascript.bridge.ProxyBuilder;
+import com.thenetcircle.services.rest.ajax.AjaxResMetaData;
 
 
 //import com.thenetcircle.services.common.MiscUtils;
 
-@Path("js")
+@Path("ajax")
 @Singleton
-public class JavaScriptProxyRes {
+public class AjaxRes {
 
 //	@PostConstruct
 //	public void loadRess() {
@@ -41,7 +40,10 @@ public class JavaScriptProxyRes {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getJSProxy(@Context UriInfo uriInfo) {
-		return Response.ok(Jsons.toString(proxyList.toArray(new JQueryAjaxProxy[0]))).build(); 
+		for (AjaxResMetaData armd : proxyList) {
+			armd.setBaseUrl(StringUtils.removeEnd(uriInfo.getAbsolutePath().getPath(), "ajax"));
+		}
+		return Response.ok(Jsons.toString(proxyList.toArray(new AjaxResMetaData[0]))).build(); 
 	}
 	
 	public static void build(final ResourceModel resModel) {
@@ -51,27 +53,12 @@ public class JavaScriptProxyRes {
 		}
 		
 		for (final Resource res : resources) {
-			traverse(res);
+			proxyList.add(AjaxResMetaData.build(res));
 		}
 	}
 	
-	private static void traverse(final Resource res) {
-		log.info("traverse Resouce: " + res.getNames() + " path: " + res.getPath());
-		
-		List<Resource> childResList = res.getChildResources();
-		if (CollectionUtils.isNotEmpty(childResList)) {
-			for (final Resource childRes : childResList) {
-				traverse(childRes);
-			}
-		}
-		
-		for (final ResourceMethod resMd : res.getAllMethods()) {
-			if ("OPTIONS".equals(resMd.getHttpMethod())) continue;
-			proxyList.add(ProxyBuilder.builder().with(resMd).build());
-		}
-	}
-
-	private static Log log = LogFactory.getLog(JavaScriptProxyRes.class);
+	private static Log log = LogFactory.getLog(AjaxRes.class);
 	
-	private static List<JQueryAjaxProxy> proxyList = new ArrayList<JQueryAjaxProxy>();
+	private static List<AjaxResMetaData> proxyList = new ArrayList<AjaxResMetaData>();
 }
+

@@ -7,6 +7,9 @@
 	<Call name="prependServerClass">
 		<Arg>-org.eclipse.jetty.server.</Arg>
 	</Call>
+	<Call name="prependServerClass">
+		<Arg>org.apache.tomcat.InstanceManager</Arg>
+	</Call>
 </Configure>
 <!--
 

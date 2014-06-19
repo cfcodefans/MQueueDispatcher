@@ -14,7 +14,8 @@ import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.ProcTrace;
-import com.thenetcircle.services.rest.JavaScriptProxyRes;
+import com.thenetcircle.services.rest.AjaxRes;
+import com.thenetcircle.services.rest.FailedJobRes;
 
 public class ResLoader extends ResourceConfig {
 	private static Log log = LogFactory.getLog(ResLoader.class);
@@ -23,10 +24,10 @@ public class ResLoader extends ResourceConfig {
 		ProcTrace.start(MiscUtils.invocationInfo());
 		ProcTrace.ongoing("set packages scann");
 		
-		packages("com.thenetcircle.services.rest",
-				"com.thenetcircle.services.rest.javascript.bridge");
+//		packages("com.thenetcircle.services.rest");
 		
-//		this.registerClasses(ServerCfgRes.class);
+		this.registerClasses(FailedJobRes.class,
+				AjaxRes.class);
 		
 		register(new ResLoaderListener());
 		
@@ -62,7 +63,7 @@ public class ResLoader extends ResourceConfig {
 			if (Type.INITIALIZATION_APP_FINISHED == ev.getType()) {
 				resModel = ev.getResourceModel();
 				
-				JavaScriptProxyRes.build(resModel);
+				AjaxRes.build(resModel);
 			}
 		}
 
