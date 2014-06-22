@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -33,6 +34,14 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 	
 	public BaseDao(final EntityManager _em) {
 		this.em = _em;
+	}
+	
+	@PreDestroy
+	public void clean() {
+		log.info(MiscUtils.invocationInfo());
+		if (em.isOpen()) {
+			em.close();
+		}
 	}
 	
 	@Inject 

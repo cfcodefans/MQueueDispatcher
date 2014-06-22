@@ -15,6 +15,7 @@ import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.persistence.jpa.JpaModule;
 
 
 @WebListener
@@ -33,7 +34,8 @@ public class StartUpListener implements ServletContextListener {
 	@Override
 	public void contextDestroyed(final ServletContextEvent paramServletContextEvent) {
 		log.info(MiscUtils.invocationInfo());
-//		MQueues.instance().shutdown();
+		MQueues.instance().shutdown();
+		JpaModule.instance().destory();
 	}
 
 	private void startup() {
@@ -48,7 +50,7 @@ public class StartUpListener implements ServletContextListener {
 		}
 		
 //		MQueues.instance().initWithQueueCfgs(qcList);
-		Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
+//		Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
 	}
 
 }

@@ -22,7 +22,7 @@ import com.thenetcircle.services.dispatcher.dao.MessageContextDao;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 
 @Path("mqueue_cfgs/mqueue_{id}/failed_jobs")
-@Produces({ MediaType.APPLICATION_JSON })
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class FailedJobRes {
 
 	@PathParam("id")

@@ -6,17 +6,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
-import com.thenetcircle.services.dispatcher.entity.QueueCfg;
-import com.thenetcircle.services.dispatcher.failsafe.DefaultFailedMessageHandler;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
 import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
-import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 
 public class Responder implements IMessageActor, Runnable {
 

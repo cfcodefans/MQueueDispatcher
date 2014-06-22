@@ -9,7 +9,6 @@ import javax.enterprise.inject.Produces;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.persistence.PersistenceContext;
 
 import com.thenetcircle.services.common.MiscUtils;
 
@@ -34,7 +33,7 @@ public class JpaModule {
 //	@PersistenceContext
 	public static EntityManager getEntityManager() {
 		log.info(MiscUtils.invocationInfo());
-		if (emf == null) {
+		if (emf == null || !emf.isOpen()) {
 			emf = Persistence.createEntityManagerFactory(UN);
 		}
 		return emf.createEntityManager();
@@ -43,11 +42,12 @@ public class JpaModule {
 	@PreDestroy
 	public void destory() {
 		log.info(MiscUtils.invocationInfo());
-		log.info("closing EntityManagerFactory......\n");
+		log.info("\n\nclosing EntityManagerFactory......\n");
 		if (emf != null && emf.isOpen()) {
 			emf.close();
 		}
-		log.info("\nEntityManagerFactory is closed......\n");
+		emf = null;
+		log.info("\n\nEntityManagerFactory is closed......\n");
 	}
 	
 	public static JpaModule instance() {

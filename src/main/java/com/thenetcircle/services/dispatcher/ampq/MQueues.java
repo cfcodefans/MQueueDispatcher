@@ -144,6 +144,10 @@ public class MQueues {
 		}
 		
 		clearInstances();
+		
+		for (IMessageActor actor : actors.keySet()) {
+			actor.stop();
+		}
 	}
 
 	public synchronized void removeQueueCfg(final QueueCfg qc) {

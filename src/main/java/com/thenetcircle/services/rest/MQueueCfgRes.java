@@ -31,7 +31,7 @@ import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
 @Path("mqueue_cfgs")
-@Produces({ MediaType.TEXT_XML, MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN, MediaType.TEXT_HTML })
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MQueueCfgRes {
 
 	protected static final Log log = LogFactory.getLog(MQueueCfgRes.class.getName());

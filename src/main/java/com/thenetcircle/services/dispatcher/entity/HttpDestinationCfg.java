@@ -7,9 +7,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import com.thenetcircle.services.dispatcher.cfg.Configuration;
 
+@XmlRootElement
 @Entity
 @Table(name = "dest_cfg")
 @Cacheable

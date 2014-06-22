@@ -26,9 +26,9 @@ public class WeldBinder extends AbstractBinder {
 			bind(getBean(ServerCfgDao.class)).to(ServerCfgDao.class);
 			bind(getBean(MessageContextDao.class)).to(MessageContextDao.class);
 			
-			for (Iterator it = CDI.current().select(DefaultLiteral.INSTANCE).iterator(); it.hasNext();) {
-				log.info(it.next());
-			}
+//			for (Iterator it = CDI.current().select(DefaultLiteral.INSTANCE).iterator(); it.hasNext();) {
+//				log.info(it.next());
+//			}
 		} catch (Exception e) {
 			log.error("failed to bind", e);
 		}

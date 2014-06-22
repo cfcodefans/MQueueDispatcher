@@ -15,10 +15,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thenetcircle.services.dispatcher.cfg.Configuration;
 
+@XmlRootElement
 @Entity
 @Table(name = "exchange_cfg")
 @Cacheable

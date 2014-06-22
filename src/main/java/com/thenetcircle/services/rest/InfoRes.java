@@ -12,7 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import com.thenetcircle.services.common.MiscUtils;
 
 @Path("info")
-@Produces({ MediaType.TEXT_XML, MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN, MediaType.TEXT_HTML })
+@Produces({ MediaType.TEXT_XML, MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN })
 public class InfoRes {
 	protected static final Log log = LogFactory.getLog(InfoRes.class.getName());
 

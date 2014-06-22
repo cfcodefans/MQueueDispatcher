@@ -25,7 +25,7 @@ import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Path("server_cfgs")
-@Produces({ MediaType.TEXT_XML, MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN, MediaType.TEXT_HTML })
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class ServerCfgRes {
 
 	protected static final Log log = LogFactory.getLog(ServerCfgRes.class.getSimpleName());

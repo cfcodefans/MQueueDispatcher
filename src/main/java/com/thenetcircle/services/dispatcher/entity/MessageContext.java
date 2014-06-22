@@ -17,9 +17,11 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import com.rabbitmq.client.QueueingConsumer.Delivery;
 
+@XmlRootElement
 @Entity
 @Table(name = "msg_ctx", indexes= {@Index(columnList="")})
 @Cacheable

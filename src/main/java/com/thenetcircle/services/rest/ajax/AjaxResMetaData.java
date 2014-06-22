@@ -54,9 +54,16 @@ public class AjaxResMetaData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	@XmlTransient
 	public String path;
 	public String name;
+	
+	@XmlTransient
 	public String baseUrl;
+	
+	public String getUrl() {
+		return baseUrl + (StringUtils.endsWith(baseUrl, "/") ? "" : "/") + path;
+	}
 
 	public List<AjaxResMetaData> children = new ArrayList<AjaxResMetaData>();
 	
@@ -78,6 +85,7 @@ public class AjaxResMetaData implements Serializable {
 		AjaxResMetaData resMD = new AjaxResMetaData();
 
 		resMD.name = CollectionUtils.find(res.getNames(), NotPredicate.notPredicate(EqualPredicate.equalPredicate("[unnamed]")));
+		resMD.name = StringUtils.substringAfterLast(resMD.name, ".");
 		resMD.path = res.getPath();
 
 		for (final Resource subRes : res.getChildResources()) {

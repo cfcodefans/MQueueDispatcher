@@ -14,7 +14,7 @@ import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.ProcTrace;
 import com.thenetcircle.services.rest.AjaxRes;
-import com.thenetcircle.services.rest.FailedJobRes;
+import com.thenetcircle.services.rest.WeldBinder;
 
 public class ResLoader extends ResourceConfig {
 	private static Log log = LogFactory.getLog(ResLoader.class);
@@ -27,6 +27,8 @@ public class ResLoader extends ResourceConfig {
 //				AjaxRes.class);
 		this.packages("com.thenetcircle.services.rest");
 		register(new ResLoaderListener());
+		
+		register(new WeldBinder());
 		
 		ProcTrace.end();
 		log.info(ProcTrace.flush());

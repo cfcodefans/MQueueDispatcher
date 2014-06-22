@@ -19,7 +19,8 @@
 		<properties>
 			<!-- jdbc connection properties -->
 			<property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver" />
-			<property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:file:./test/data/mqueue-dispatcher" />
+<!-- 			<property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:file:D:/test/data/mqueue-dispatcher" /> -->
+			<property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:hsql://localhost/dispatcher" />
 			<property name="javax.persistence.jdbc.user" value="sa" />
 			<property name="javax.persistence.jdbc.password" value="" />
 			<!-- hibernate connection properties -->

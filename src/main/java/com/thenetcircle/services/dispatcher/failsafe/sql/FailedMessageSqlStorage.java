@@ -94,6 +94,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 
 	public void stop() {
 		executor.shutdownNow();
+		em.close();
 	}
 
 	public void retry(Collection<MessageContext> messages, QueueCfg qc) {
