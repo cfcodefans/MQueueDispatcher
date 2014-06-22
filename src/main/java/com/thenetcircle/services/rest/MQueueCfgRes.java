@@ -120,6 +120,7 @@ public class MQueueCfgRes {
 	}
 
 	@POST
+	@Path("/{qc_id}")
 	@Produces({ MediaType.APPLICATION_JSON })
 	@Consumes({ MediaType.APPLICATION_JSON })
 	public QueueCfg update(final String reqStr) {

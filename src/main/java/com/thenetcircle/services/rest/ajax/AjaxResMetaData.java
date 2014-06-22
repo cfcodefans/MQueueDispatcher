@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.functors.EqualPredicate;
@@ -58,12 +59,17 @@ public class AjaxResMetaData implements Serializable {
 	public String baseUrl;
 
 	public List<AjaxResMetaData> children = new ArrayList<AjaxResMetaData>();
+	
+	@XmlTransient
+	@JsonIgnore
+	public List<ParamMetaData> injectedParams = new ArrayList<ParamMetaData>();
 
+	@XmlTransient
 	@JsonIgnore
 	public AjaxResMetaData parent;
 
 	public List<AjaxResMethodMetaData> methods = new ArrayList<AjaxResMethodMetaData>();
-
+	
 	public static AjaxResMetaData build(Resource res) {
 		if (res == null) {
 			return null;
@@ -71,7 +77,7 @@ public class AjaxResMetaData implements Serializable {
 
 		AjaxResMetaData resMD = new AjaxResMetaData();
 
-		resMD.name = CollectionUtils.find(res.getNames(), NotPredicate.notPredicate(EqualPredicate.equalPredicate("unnamed")));
+		resMD.name = CollectionUtils.find(res.getNames(), NotPredicate.notPredicate(EqualPredicate.equalPredicate("[unnamed]")));
 		resMD.path = res.getPath();
 
 		for (final Resource subRes : res.getChildResources()) {
@@ -98,6 +104,15 @@ public class AjaxResMetaData implements Serializable {
 		this.baseUrl = _baseUrl;
 		for (AjaxResMetaData armd : children) {
 			armd.setBaseUrl(_baseUrl + (StringUtils.endsWith(_baseUrl, "/") ? "" : "/") + path);
+		}
+	}
+
+	public void appendInjectedParams(List<ParamMetaData> _params) {
+		for (AjaxResMetaData armd : children) {
+			armd.appendInjectedParams(_params);
+		}
+		for (AjaxResMethodMetaData md : methods) {
+			md.params.addAll(_params);
 		}
 	}
 }

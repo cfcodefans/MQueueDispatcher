@@ -27,4 +27,10 @@ public class ParamMetaData implements Serializable {
 		
 		return pmd;
 	}
+
+	@Override
+	public String toString() {
+		return "ParamMetaData [source=" + source + ", sourceName=" + sourceName + ", rawType=" + rawType + ", type=" + type + "]";
+	}
+	
 }

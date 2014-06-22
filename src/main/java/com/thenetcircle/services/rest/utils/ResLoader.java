@@ -3,7 +3,6 @@ package com.thenetcircle.services.rest.utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.model.ResourceModel;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent.Type;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
@@ -24,27 +23,24 @@ public class ResLoader extends ResourceConfig {
 		ProcTrace.start(MiscUtils.invocationInfo());
 		ProcTrace.ongoing("set packages scann");
 		
-//		packages("com.thenetcircle.services.rest");
-		
-		this.registerClasses(FailedJobRes.class,
-				AjaxRes.class);
-		
+//		this.registerClasses(FailedJobRes.class,
+//				AjaxRes.class);
+		this.packages("com.thenetcircle.services.rest");
 		register(new ResLoaderListener());
 		
 		ProcTrace.end();
 		log.info(ProcTrace.flush());
 	}
 	
-	private static ResourceModel resModel = null;
-	public static ResourceModel getResModel() {
-		return resModel;
-	}
+//	private static ResourceModel resModel = null;
+//	public static ResourceModel getResModel() {
+//		return resModel;
+//	}
 
 	public static class ResLoaderListener implements ContainerLifecycleListener, ApplicationEventListener {
 		@Override
 		public void onStartup(Container c) {
 			log.info(MiscUtils.invocationInfo() + "\n\n\t");
-//			log.info(StringUtils.join(c.getConfiguration().getResources().iterator(), "\n"));
 		}
 
 		@Override
@@ -61,9 +57,7 @@ public class ResLoader extends ResourceConfig {
 		public void onEvent(ApplicationEvent ev) {
 			log.info(MiscUtils.invocationInfo() + "\n\n\t");
 			if (Type.INITIALIZATION_APP_FINISHED == ev.getType()) {
-				resModel = ev.getResourceModel();
-				
-				AjaxRes.build(resModel);
+				AjaxRes.build(ev.getResourceModel(), ev.getResourceConfig());
 			}
 		}
 

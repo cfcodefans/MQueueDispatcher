@@ -12,6 +12,7 @@ import org.glassfish.jersey.server.model.Parameter;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceMethod.JaxrsType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.research.ws.wadl.HTTPMethods;
 
 @XmlRootElement
@@ -29,6 +30,9 @@ public class AjaxResMethodMetaData implements Serializable {
 	
 	public List<MediaType> produceMediaTypes = new ArrayList<MediaType>();
 	public List<MediaType> consumedMediaTypes = new ArrayList<MediaType>();
+	
+	@JsonIgnore
+	public AjaxResMetaData parent;
 
 	@SuppressWarnings("rawtypes")
 	public static AjaxResMethodMetaData build(ResourceMethod resMd) {
