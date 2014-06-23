@@ -27,6 +27,17 @@ public class HttpDestinationCfg extends Configuration {
 	
 //	@Basic
 //	private int retry;
+	
+	@Basic
+	private long timeout = 30000;
+
+	public long getTimeout() {
+		return timeout;
+	}
+
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
+	}
 
 	public Integer getId() {
 		return id;

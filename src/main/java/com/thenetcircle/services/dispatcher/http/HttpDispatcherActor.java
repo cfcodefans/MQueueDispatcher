@@ -16,6 +16,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
@@ -72,7 +73,7 @@ public class HttpDispatcherActor implements IMessageActor {
 		hacs = new ArrayList<CloseableHttpAsyncClient>();
 		for (int i = 0, j = 4; i < j; i++) {
 			CloseableHttpAsyncClient hac = null;
-			RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout(30000).build();
+			RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(DEFAULT_TIMEOUT).setConnectTimeout(DEFAULT_TIMEOUT).build();
 			hac = HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig).build();
 			hac.start();
 			hacs.add(hac);
@@ -80,6 +81,7 @@ public class HttpDispatcherActor implements IMessageActor {
 		httpClientIterator = new LoopingArrayIterator<CloseableHttpAsyncClient>(hacs.toArray(new CloseableHttpAsyncClient[0]));
 	}
 
+	public static final int DEFAULT_TIMEOUT = 30000;
 	private LoopingArrayIterator<CloseableHttpAsyncClient> httpClientIterator = null;
 
 	public MessageContext handle(final MessageContext mc) {
@@ -104,11 +106,17 @@ public class HttpDispatcherActor implements IMessageActor {
 			final HttpGet get = new HttpGet(destUrlStr + "?" + queryStr);
 			req = get;
 		}
-
+		
 		if (StringUtils.isNotBlank(destCfg.getHostHead())) {
 			req.addHeader("host", destCfg.getHostHead());
 		}
-		httpClientIterator.loop().execute(req, new RespHandler(mc));
+		
+		final HttpClientContext httpClientCtx = HttpClientContext.create();
+		if (destCfg.getTimeout() != DEFAULT_TIMEOUT) {
+			httpClientCtx.setRequestConfig(RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout(30000).build());
+		}
+		
+		httpClientIterator.loop().execute(req, httpClientCtx, new RespHandler(mc));
 		return mc;
 	}
 

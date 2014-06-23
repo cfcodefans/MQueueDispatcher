@@ -18,54 +18,31 @@ import com.thenetcircle.services.dispatcher.cfg.Configuration;
 public class ServerCfg extends Configuration {
 	private static final long serialVersionUID = 1L;
 
+	@Basic
+	private String host = "localhost";
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id = -1;
 
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
-	}
+	// log file configuration
+	// TODO need better abstraction
+	@Basic
+	private String logFilePath;
 
 	@Basic
-	private String host = "localhost";
+	private String maxFileSize = String.valueOf("2GB");
 	
 	@Basic
-	private int port = 5672;
+	private String password = "guest";
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("{class:\"ServerCfg\", id:'").append(id).append("', host:'").append(host).append("', port:'").append(port).append("', userName:'").append(userName).append("', password:'").append(password).append("', virtualHost:'").append(virtualHost)
-				.append("', logFilePath:'").append(logFilePath).append("', maxFileSize:'").append(maxFileSize).append("}");
-		return builder.toString();
-	}
+	@Basic
+	private int port = 5672;
 
 	@Basic
 	private String userName = "guest";
 	@Basic
-	private String password = "guest";
-	@Basic
 	private String virtualHost = "/";
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		
-		if (id != -1) {
-			return id;
-		}
-		
-		result = prime * result + ((host == null) ? 0 : host.hashCode());
-		result = prime * result + port;
-		result = prime * result + ((virtualHost == null) ? 0 : virtualHost.hashCode());
-		return result;
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -99,63 +76,86 @@ public class ServerCfg extends Configuration {
 		return host;
 	}
 
-	public void setHost(String host) {
-		this.host = host;
+	public Integer getId() {
+		return id;
 	}
-
-	public int getPort() {
-		return port;
-	}
-
-	public void setPort(int port) {
-		this.port = port;
-	}
-
-	public String getUserName() {
-		return userName;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public String getVirtualHost() {
-		return virtualHost;
-	}
-
-	public void setVirtualHost(String virtualHost) {
-		this.virtualHost = virtualHost;
-	}
-
-	// log file configuration
-	// TODO need better abstraction
-	@Basic
-	private String logFilePath;
-	
-	@Basic
-	private String maxFileSize = String.valueOf("2GB");
 
 	public String getLogFilePath() {
 		return logFilePath;
-	}
-
-	public void setLogFilePath(String logFilePath) {
-		this.logFilePath = logFilePath;
 	}
 
 	public String getMaxFileSize() {
 		return maxFileSize;
 	}
 
+	public String getPassword() {
+		return password;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public String getVirtualHost() {
+		return virtualHost;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		
+		if (id != -1) {
+			return id;
+		}
+		
+		result = prime * result + ((host == null) ? 0 : host.hashCode());
+		result = prime * result + port;
+		result = prime * result + ((virtualHost == null) ? 0 : virtualHost.hashCode());
+		return result;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public void setLogFilePath(String logFilePath) {
+		this.logFilePath = logFilePath;
+	}
+
 	public void setMaxFileSize(String maxFileSize) {
 		this.maxFileSize = maxFileSize;
+	}
+	
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public void setVirtualHost(String virtualHost) {
+		this.virtualHost = virtualHost;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("{class:\"ServerCfg\", id:'").append(id).append("', host:'").append(host).append("', port:'").append(port).append("', userName:'").append(userName).append("', password:'").append(password).append("', virtualHost:'").append(virtualHost)
+				.append("', logFilePath:'").append(logFilePath).append("', maxFileSize:'").append(maxFileSize).append("}");
+		return builder.toString();
 	}
 }

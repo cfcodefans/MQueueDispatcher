@@ -127,8 +127,10 @@ public class DispatcherConfig {
 //				destCfg.setRetry(dj.getRetryLimit());
 				destCfg.setUrl(dj.getUrl());
 				destCfg.setHostHead(dj.getUrlhost());
+				destCfg.setTimeout(dj.getTimeout());
 				qc.setDestCfg(destCfg);
 				qc.setRetryLimit(dj.retryLimit);
+				
 			}
 			
 			queueCfgs.add(qc);

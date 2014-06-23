@@ -42,8 +42,10 @@ public class Bootstrap {
 		}
 		
 		try {
-//			Collection<QueueCfg> queueCfgs = loadDefaultQueueCfgs(filePath);
+			Collection<QueueCfg> queueCfgs = loadDefaultQueueCfgs(filePath);
 //			
+			System.out.println(queueCfgs);
+			
 //			final MQueues mqueues = MQueues.instance();
 //			mqueues.initWithQueueCfgs(queueCfgs);
 //			
@@ -51,9 +53,8 @@ public class Bootstrap {
 //			log.info("register MQueues.cleaner to shutdown hook");
 //			Bootstrap bs = WeldContext.INSTANCE.getBean(Bootstrap.class);
 //			bs.startup();
-//			O
-			startHttpServer();
-			Thread.currentThread().join();
+//			startHttpServer();
+//			Thread.currentThread().join();
 		} catch (Exception e) {
 			log.error(e, e);
 		}
@@ -83,8 +84,6 @@ public class Bootstrap {
 		
 		HttpServer server = JdkHttpServerFactory.createHttpServer(baseUri, resCfg, false);
 //		JavaScriptProxyRes.build(resCfg);
-		
-//		server.
 		
 		server.start();
 	}
