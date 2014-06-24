@@ -47,13 +47,13 @@ public class ServerCfg extends Configuration {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (!(obj instanceof ServerCfg))
 			return false;
 		ServerCfg other = (ServerCfg) obj;
 		
-		if (id != -1) {
+		if (id != -1 && other.id != -1) {
 			return id.equals(other.id);
 		}
 		
@@ -62,7 +62,23 @@ public class ServerCfg extends Configuration {
 				return false;
 		} else if (!host.equals(other.host))
 			return false;
+
+		if (logFilePath == null) {
+			if (other.logFilePath != null)
+				return false;
+		} else if (!logFilePath.equals(other.logFilePath))
+			return false;
+		if (password == null) {
+			if (other.password != null)
+				return false;
+		} else if (!password.equals(other.password))
+			return false;
 		if (port != other.port)
+			return false;
+		if (userName == null) {
+			if (other.userName != null)
+				return false;
+		} else if (!userName.equals(other.userName))
 			return false;
 		if (virtualHost == null) {
 			if (other.virtualHost != null)
@@ -107,14 +123,16 @@ public class ServerCfg extends Configuration {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		
-		if (id != -1) {
-			return id;
-		}
-		
+		int result = super.hashCode();
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		if (id != -1)
+			return result;
+
 		result = prime * result + ((host == null) ? 0 : host.hashCode());
+		result = prime * result + ((logFilePath == null) ? 0 : logFilePath.hashCode());
+		result = prime * result + ((password == null) ? 0 : password.hashCode());
 		result = prime * result + port;
+		result = prime * result + ((userName == null) ? 0 : userName.hashCode());
 		result = prime * result + ((virtualHost == null) ? 0 : virtualHost.hashCode());
 		return result;
 	}

@@ -160,6 +160,7 @@
 			<artifactId>javaee-web-api</artifactId>
 			<version>6.0-RC2</version>
 			<optional>true</optional>
+			<scope>compile</scope>
 		</dependency>
 
 

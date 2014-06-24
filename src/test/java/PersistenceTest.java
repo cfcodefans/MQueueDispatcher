@@ -78,7 +78,7 @@ public class PersistenceTest {
 		Collection<QueueCfg> queueCfgs = DispatcherConfig.dispatcherJobsToQueueCfgs(dispatcherConfig.getAllJobs());
 		
 		log.info(queueCfgs.size() + " queues are loaded");
-		startTransaction();
+//		startTransaction();
 		for (final QueueCfg qc : queueCfgs) {
 			em.persist(qc.getServerCfg());
 			em.persist(qc.getDestCfg());

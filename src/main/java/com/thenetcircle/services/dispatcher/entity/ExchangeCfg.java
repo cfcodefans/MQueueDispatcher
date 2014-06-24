@@ -16,6 +16,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thenetcircle.services.dispatcher.cfg.Configuration;
@@ -54,6 +55,7 @@ public class ExchangeCfg extends Configuration {
 
 	@ManyToMany(fetch=FetchType.EAGER, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
 	@JsonIgnore
+	@XmlTransient
 	private Set<QueueCfg> queues = new HashSet<QueueCfg>();
 
 	public Set<QueueCfg> getQueues() {

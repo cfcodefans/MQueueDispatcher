@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Restful API Test</title>
+<title>MQueue Server Settings</title>
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 <!-- Optional theme -->
@@ -25,7 +25,9 @@
 			</div>
 			<div class="navbar-collapse collapse">
 				<ul class="nav navbar-nav">
-					<li class="active"><a href="#">Home</a></li>
+					<li><a href="#">Home</a></li>
+					<li class="active"><a href="#about">Server Settings</a></li>
+					<li><a href="#about">MQueue Settings</a></li>
 					<li><a href="#about">About</a></li>
 					<li><a href="#contact">Contact</a></li>
 					<!-- 
@@ -74,6 +76,7 @@
 					<th>virtual host</th>
 					<th>log file path</th>
 					<th>max file size</th>
+					<th></th>
 				</tr>
 			</thead>
 			<xsl:for-each select="serverCfgs/serverCfg">
@@ -81,11 +84,12 @@
 					<td>
 						<xsl:value-of select="host" />
 					</td>
-					<td></td>
-					<td></td>
-					<td></td>
-					<td></td>
-					<td></td>
+					<td><xsl:value-of select="port" /></td>
+					<td><xsl:value-of select="userName" /></td>
+					<td><xsl:value-of select="password" /></td>
+					<td><xsl:value-of select="virtualHost" /></td>
+					<td><xsl:value-of select="logFilePath" /></td>
+					<td><xsl:value-of select="maxFileSize" /></td>
 					<td></td>
 				</tr>
 			</xsl:for-each>
