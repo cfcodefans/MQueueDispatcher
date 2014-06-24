@@ -105,8 +105,13 @@ RS = {
 	}
 };
 
-$.getJSON("/dispatcher-0.0.1/rest/v1/ajax", 
-	function(ajaxMetaDatas) {
-		RS.init(ajaxMetaDatas);
-	});
+var xhr = $.ajax("/dispatcher-0.0.1/rest/v1/ajax", {
+	async : false,
+	dataType : "json",
+	complete : function(xhr) {
+		console.log("ajax loaded: " + xhr.responseJSON);
+	}
+});
+
+RS.init(xhr.responseJSON);
 

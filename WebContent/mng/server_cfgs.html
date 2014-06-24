@@ -53,10 +53,20 @@
 		</div>
 	</div>
 
-	<div class="container">
+	<div class="container" id="tbl_container">
+	</div>
+
+	<textarea id="template_xslt" style="display: none"> 
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+	<xsl:template match="/">
+<html>
+<head>
+</head>
+<body>
 		<table id="server_cfg_tbl">
 			<thead>
-				<tr> 
+				<tr>
 					<th>host</th>
 					<th>port</th>
 					<th>user name</th>
@@ -66,25 +76,58 @@
 					<th>max file size</th>
 				</tr>
 			</thead>
-			
+			<xsl:for-each select="serverCfgs/serverCfg">
+				<tr>
+					<td>
+						<xsl:value-of select="host" />
+					</td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+			</xsl:for-each>
 			<tfoot>
 				<tr>
-					
+
 				</tr>
 			</tfoot>
 		</table>
-	</div>
-
+</body>
+</html>
+	</xsl:template>
+</xsl:stylesheet>
+	</textarea>
 
 	<script type="text/javascript" src="../res/jquery-2.1.1.js"></script>
-	<script type="text/javascript" src="../res/rest.js"></script>
+	<script type="text/javascript" src="../res/jquery.xslt.js"></script>
+	
 	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="http://cdn.datatables.net/1.10.0/js/jquery.dataTables.js"></script>
 	<script type="text/javascript" src="http://cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+	
+	<script type="text/javascript" src="/dispatcher-0.0.1/rest/v1/ajax" id="ajax_metadata"></script>
+	<script type="text/javascript" src="../res/rest.js"></script>
+	
 	<script type="text/javascript">
-	$(document).ready(function() {
-	    $('#server_cfg_tbl').dataTable();
-	} );
+		//$(document).ready(loadData);
+
+		function loadData() {
+
+			var tx = $("#template_xslt")[0];
+			var cd = $("#tbl_container");
+
+			var xslt = tx.value.trim();
+			var xhr = RS.ctx.ServerCfgRes.getAll.call().done(
+					function(data, textStatus, jqXHR) {
+						cd.xslt(xhr.responseText, xslt);
+						$('#server_cfg_tbl').dataTable();
+					});
+		}
+		
+		loadData();
 	</script>
 </body>
 </html>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="xslt.xsl"?>
+<serverCfgs>
+	<serverCfg>
+		<version>0</version>
+		<host>snowball</host>
+		<id>1</id>
+		<logFilePath>/var/log/consumerDispatcher/poppen_a.log</logFilePath>
+		<maxFileSize>2GB</maxFileSize>
+		<password>guest</password>
+		<port>5672</port>
+		<userName>guest</userName>
+		<virtualHost>/</virtualHost>
+	</serverCfg>
+</serverCfgs> 
