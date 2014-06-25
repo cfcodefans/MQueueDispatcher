@@ -53,11 +53,11 @@ public class ExchangeCfg extends Configuration {
 	@JoinColumn(name = "server_id")
 	private ServerCfg serverCfg;
 
-	@ManyToMany(fetch=FetchType.EAGER, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
-	@JsonIgnore
-	@XmlTransient
+	@ManyToMany(fetch=FetchType.LAZY, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
 	private Set<QueueCfg> queues = new HashSet<QueueCfg>();
 
+	@JsonIgnore
+	@XmlTransient
 	public Set<QueueCfg> getQueues() {
 		return queues;
 	}

@@ -1,12 +1,21 @@
 package com.thenetcircle.services.common;
 
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.stream.StreamSource;
+
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.iterators.ObjectArrayIterator;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 public class MiscUtils {
@@ -76,5 +85,38 @@ public class MiscUtils {
 	
 	public static Map map(Object...keyAndVals) {
 		return MapUtils.putAll(new HashMap(), keyAndVals);
+	}
+
+	public static String toXML(final Object bean) {
+			final StringWriter sw = new StringWriter();
+			try {
+				JAXBContext jc = JAXBContext.newInstance(bean.getClass());
+	
+				Marshaller m = jc.createMarshaller();
+				m.setProperty(Marshaller.JAXB_FRAGMENT, true);
+				m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+	//			marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-16");
+	
+				m.marshal(bean, sw);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return sw.toString();
+		}
+
+	public static <T> T toObj(final String xmlStr, final Class<T> cls) {
+		if (StringUtils.isBlank(xmlStr) || cls == null) {
+			return null;
+		}
+		
+		try {
+			JAXBContext jc = JAXBContext.newInstance(cls);
+			Unmarshaller um = jc.createUnmarshaller();
+			return um.unmarshal(new StreamSource(new StringReader(xmlStr)), cls).getValue();
+		} catch (JAXBException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 }

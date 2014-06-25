@@ -95,17 +95,19 @@ public class DispatcherConfig {
 	
 	public static List<QueueCfg> dispatcherJobsToQueueCfgs(final List<DispatcherJob> jobs) {
 		final List<QueueCfg> queueCfgs = new ArrayList<QueueCfg>(jobs.size());
-		final Map<String, ServerCfg> nameAndServerCfgs = new HashMap<String, ServerCfg>();
+		final Map<Integer, ServerCfg> nameAndServerCfgs = new HashMap<Integer, ServerCfg>();
 		
 		for (final DispatcherJob dj : jobs) {
 			final QueueCfg qc = new QueueCfg();
 			
 			
-			ServerCfg sc = nameAndServerCfgs.get(dj.getFetcherQConf().host);
-			if (sc == null) {
-				sc = queueConfToServerCfg(dj.getFetcherQConf());
-				nameAndServerCfgs.put(sc.getHost(), sc);
+			ServerCfg sc = queueConfToServerCfg(dj.getFetcherQConf());
+			
+			if (!nameAndServerCfgs.containsKey(sc.hashCode())) {
+				nameAndServerCfgs.put(Integer.valueOf(sc.hashCode()), sc);
 				log.info(sc.getHost() + " server is loaded");
+			} else {
+				sc = nameAndServerCfgs.get(sc.hashCode());
 			}
 			
 			qc.setServerCfg(sc);
@@ -115,10 +117,13 @@ public class DispatcherConfig {
 			
 			{
 				final ExchangeCfg exchangeCfg = new ExchangeCfg();
+				
 				exchangeCfg.setServerCfg(qc.getServerCfg());
 				exchangeCfg.setExchangeName(dj.getExchange());
 				exchangeCfg.setType(dj.getType());
 				exchangeCfg.setDurable(dj.isExchangeDurable());
+				
+				exchangeCfg.getQueues().add(qc);
 				qc.getExchanges().add(exchangeCfg);
 			}
 			

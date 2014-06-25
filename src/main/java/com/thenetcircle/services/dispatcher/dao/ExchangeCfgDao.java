@@ -1,11 +1,14 @@
 package com.thenetcircle.services.dispatcher.dao;
 
+import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.persistence.EntityManager;
 
 import com.thenetcircle.services.common.BaseDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
 @Default
 @ApplicationScoped //for java se, only applicatoin scope available
@@ -23,5 +26,11 @@ public class ExchangeCfgDao extends BaseDao<ExchangeCfg> {
 	
 	public ExchangeCfgDao(final EntityManager em) {
 		super(em);
+	}
+	
+	public List<ExchangeCfg> findAll() {
+		return query("select ec from ExchangeCfg ec " +
+				" LEFT JOIN FETCH ec.queues " +
+				" LEFT JOIN FETCH ec.serverCfg ");
 	}
 }

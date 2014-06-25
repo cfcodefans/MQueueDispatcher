@@ -1,5 +1,7 @@
 package com.thenetcircle.services.dispatcher.dao;
 
+import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.persistence.EntityManager;
@@ -23,5 +25,12 @@ public class QueueCfgDao extends BaseDao<QueueCfg> {
 	
 	public QueueCfgDao(final EntityManager em) {
 		super(em);
+	}
+	
+	public List<QueueCfg> findAll() {
+		return query("select qc from QueueCfg qc " +
+				" LEFT JOIN FETCH qc.exchanges " +
+				" LEFT JOIN FETCH qc.serverCfg " +
+				" LEFT JOIN FETCH qc.destCfg");
 	}
 }

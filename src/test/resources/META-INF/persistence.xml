@@ -30,8 +30,8 @@
 			<property name="hibernate.jdbc.batch_size" value="50" />
 			<!-- hibernate debug properties -->
 <!-- 			<property name="hibernate.generate_statistics" value="true" /> -->
-<!-- 			<property name="hibernate.format_sql" value="true" /> -->
-<!-- 			<property name="hibernate.show_sql" value="true" /> -->
+			<property name="hibernate.format_sql" value="true" />
+			<property name="hibernate.show_sql" value="true" />
 			<property name="hibernate.archive.autodetection" value="class" />
 		</properties>
 	</persistence-unit>

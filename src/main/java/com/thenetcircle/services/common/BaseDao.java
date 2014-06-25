@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -61,6 +62,11 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		return em.merge(entity);
 	}
 
+	public T refresh(final T entity) {
+		em.refresh(entity);
+		return entity;
+	}
+
 //	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public T destroy(final T entity) {
 		em.remove(em.merge(entity));
@@ -70,15 +76,18 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 	public T find(Object pk) {
 		if (pk == null)
 			return null;
-		return (T) em.find(getEntityClass(), pk);
+		return getEntityClass().cast(em.find(getEntityClass(), pk));
+	}
+
+	public <E> E findEntity(Class<E> cls, Object pk) {
+		if (pk == null || cls == null) {
+			return null;
+		}
+		return cls.cast(em.find(cls, pk));
 	}
 
 	public List<T> findAll() {
-		return em.createQuery(String.format("select object(o) from %s as o", getEntityClass().getName())).getResultList();
-	}
-	
-	public List<T> page(int pageIdx, int pageSize) {
-		return queryPage(String.format("select object(o) from %s as o", getEntityClass().getName()), pageIdx, pageSize);
+		return em.createQuery(String.format("select object(o) from %s as o", getEntityClass().getSimpleName())).getResultList();
 	}
 
 	public List<T> query(String hql, Object... params) {
@@ -86,14 +95,15 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 			return Collections.EMPTY_LIST;
 		}
 		Query q = em.createQuery(hql);
-
+	
 		if (ArrayUtils.isNotEmpty(params)) {
 			for (int i = 0; i < params.length; i++) {
 				q.setParameter(1 + i, params[i]);
 			}
 		}
-
-		return q.getResultList();
+	
+		final List<T> resultList = q.getResultList();
+		return resultList == null ? Collections.EMPTY_LIST : resultList; 
 	}
 
 	/*
@@ -103,13 +113,13 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 	 * com.netcircle.paymentsystem.dao.impl.IBaseDao#queryPage(java.lang.String,
 	 * int, int, java.lang.Object)
 	 */
-
+	
 	public List<T> queryPage(String hql, int pageIdx, int pageSize, Object... params) {
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
 		}
 		Query q = em.createQuery(hql);
-
+	
 		if (ArrayUtils.isNotEmpty(params)) {
 			for (int i = 0; i < params.length; i++) {
 				q.setParameter(1 + i, params[i]);
@@ -129,12 +139,12 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 	 * com.netcircle.paymentsystem.dao.impl.IBaseDao#queryCount(java.lang.String
 	 * , java.lang.Object)
 	 */
-
+	
 	public long queryCount(String hql, Object... params) {
 		if (StringUtils.isBlank(hql)) {
 			return 0;
 		}
-		List<?> resultList = query(hql, params);
+		final List<?> resultList = query(hql, params);
 		if (CollectionUtils.isEmpty(resultList)) {
 			return 0;
 		}
@@ -148,7 +158,7 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		if (StringUtils.isBlank(hql)) {
 			return 0;
 		}
-		List<?> resultList = queryPageByNamedParams(hql, -1, -1, namedParams);
+		final List<?> resultList = queryPageByNamedParams(hql, -1, -1, namedParams);
 		if (CollectionUtils.isEmpty(resultList)) {
 			return 0;
 		}
@@ -162,7 +172,7 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		if (StringUtils.isBlank(hql)) {
 			return 0;
 		}
-		List<?> resultList = queryPageByPositionalParams(hql, -1, -1, positionalParams);
+		final List<?> resultList = queryPageByPositionalParams(hql, -1, -1, positionalParams);
 		if (CollectionUtils.isEmpty(resultList)) {
 			return 0;
 		}
@@ -176,18 +186,18 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
 		}
-		Query q = em.createQuery(hql);
+		final Query q = em.createQuery(hql);
 		if (pageIdx > 0 && pageSize > 0) {
 			q.setFirstResult(pageIdx * pageSize);
 			q.setMaxResults(pageSize);
 		}
-
+	
 		if (MapUtils.isNotEmpty(namedParams)) {
 			for (Map.Entry<String, Object> namedParam : namedParams.entrySet()) {
 				q.setParameter(namedParam.getKey(), namedParam.getValue());
 			}
 		}
-
+	
 		return q.getResultList();
 	}
 
@@ -195,18 +205,18 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
 		}
-		Query q = em.createQuery(hql);
+		final Query q = em.createQuery(hql);
 		if (pageIdx >= 0 && pageSize > 0) {
 			q.setFirstResult(pageIdx * pageSize);
 			q.setMaxResults(pageSize);
 		}
-
+	
 		if (MapUtils.isNotEmpty(positionalParams)) {
 			for (Map.Entry<Integer, Object> positionalParam : positionalParams.entrySet()) {
 				q.setParameter(positionalParam.getKey(), positionalParam.getValue());
 			}
 		}
-
+	
 		return q.getResultList();
 	}
 
@@ -215,7 +225,7 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
 		}
-		Query q = em.createQuery(hql);
+		final Query q = em.createQuery(hql);
 	
 		if (ArrayUtils.isNotEmpty(params)) {
 			for (int i = 0; i < params.length; i++) {
@@ -224,6 +234,17 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		}
 	
 		return q.getResultList();
+	}
+
+	@SuppressWarnings("rawtypes")
+	public Object findOneEntity(String hql, Object... params) {
+		final List result  = queryEntityPage(hql, 0, 1, params);
+		return CollectionUtils.isEmpty(result) ? null : result.get(0);
+	}
+
+	public T findOne(String hql, Object... params) {
+		final List result  = queryEntityPage(hql, 0, 1, params);
+		return getEntityClass().cast(CollectionUtils.isEmpty(result) ? null : result.get(0));
 	}
 
 	/*
@@ -292,21 +313,31 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		return q.getResultList();
 	}
 
-	public T refresh(final T entity) {
-		em.refresh(entity);
-		return entity;
-	}
-
-	public <E> E findEntity(Class<E> cls, Object pk) {
-		if (pk == null || cls == null) {
-			return null;
+	public void beginTransaction() {
+		final EntityTransaction transaction = em.getTransaction();
+		if (transaction.isActive()) {
+			return;
 		}
-		return cls.cast(em.find(cls, pk));
+		
+		transaction.begin();
 	}
 
-	@SuppressWarnings("rawtypes")
-	public Object queryOne(String hql, Object... params) {
-		final List result  = queryEntityPage(hql, 0, 1, params);
-		return CollectionUtils.isEmpty(result) ? null : result.get(0);
+	public void endTransaction() {
+		final EntityTransaction transaction = em.getTransaction();
+		if (!transaction.isActive()) {
+			log.error("transaction isn't active, not commit");
+			return;
+		}
+		
+		if (transaction.getRollbackOnly()) {
+			transaction.rollback();
+			return;
+		}
+		
+		transaction.commit();
+	}
+	
+	public List<T> page(int pageIdx, int pageSize) {
+		return queryPage(String.format("select object(o) from %s as o", getEntityClass().getSimpleName()), pageIdx, pageSize);
 	}
 }

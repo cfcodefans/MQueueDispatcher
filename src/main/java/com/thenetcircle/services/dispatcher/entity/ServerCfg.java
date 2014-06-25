@@ -63,11 +63,6 @@ public class ServerCfg extends Configuration {
 		} else if (!host.equals(other.host))
 			return false;
 
-		if (logFilePath == null) {
-			if (other.logFilePath != null)
-				return false;
-		} else if (!logFilePath.equals(other.logFilePath))
-			return false;
 		if (password == null) {
 			if (other.password != null)
 				return false;
@@ -129,7 +124,6 @@ public class ServerCfg extends Configuration {
 			return result;
 
 		result = prime * result + ((host == null) ? 0 : host.hashCode());
-		result = prime * result + ((logFilePath == null) ? 0 : logFilePath.hashCode());
 		result = prime * result + ((password == null) ? 0 : password.hashCode());
 		result = prime * result + port;
 		result = prime * result + ((userName == null) ? 0 : userName.hashCode());

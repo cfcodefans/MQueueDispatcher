@@ -110,7 +110,7 @@ public class MQueueCfgRes {
 	@GET
 	@Path("/page_{page_idx}")
 	public List<QueueCfg> getQueueCfgs(@PathParam("page_idx") int pageIdx, @QueryParam("size") int pageSize) {
-		List<QueueCfg> qcPage = qcDao.page(pageIdx, pageSize);
+		List<QueueCfg> qcPage = qcDao.findAll();//qcDao.page(pageIdx, pageSize);
 		return qcPage;
 	}
 

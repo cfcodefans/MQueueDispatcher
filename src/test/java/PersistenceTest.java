@@ -18,6 +18,8 @@ import org.junit.Test;
 
 import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
 import com.thenetcircle.services.common.Jsons;
+import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -65,6 +67,7 @@ public class PersistenceTest {
 		log.info("remove QueueCfg " + em.createQuery("delete from QueueCfg").executeUpdate());
 		log.info("remove QueueCfg " + em.createQuery("delete from ExchangeCfg").executeUpdate());
 		log.info("remove QueueCfg " + em.createQuery("delete from ServerCfg").executeUpdate());
+		log.info("remove QueueCfg " + em.createQuery("delete from HttpDestinationCfg").executeUpdate());
 	}
 	
 	
@@ -105,6 +108,26 @@ public class PersistenceTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void testQueries() {
+		QueueCfgDao qcDao = new QueueCfgDao(em);
+		List<QueueCfg> qcs = qcDao.findAll();
+		
+		System.out.println(qcs.get(0).getExchanges());
+		
+		ExchangeCfgDao ecDao = new ExchangeCfgDao(em);
+		List<ExchangeCfg> ecs = ecDao.findAll();
+		System.out.println(ecs.get(0).getQueues());
+	}
+	
+	@Test
+	public void testBinding() {
+		QueueCfgDao qcDao = new QueueCfgDao(em);
+		List<QueueCfg> qcs = qcDao.findAll();
+		
+		System.out.println(MiscUtils.toXML(qcs.get(0)));
 	}
 	
 	@AfterClass

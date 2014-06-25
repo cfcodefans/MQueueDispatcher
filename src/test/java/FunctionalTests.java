@@ -93,7 +93,7 @@ public class FunctionalTests {
 		em.getTransaction().commit();
 	}
 
-	static Logger log = Logger.getLogger(HttpAsynClientTest.class.getSimpleName());
+	static Logger log = Logger.getLogger(FunctionalTests.class.getSimpleName());
 	
 	final ServerCfg sc = qc.getServerCfg();
 	final ConnectionFactory cf = new ConnectionFactory();
