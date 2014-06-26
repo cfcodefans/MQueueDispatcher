@@ -302,7 +302,8 @@
 					<warSourceDirectory>WebContent</warSourceDirectory>
 				</configuration>
 			</plugin>
-
+<!-- 
+ -->
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
@@ -314,7 +315,7 @@
 						</goals>
 						<configuration>
 							<tasks>
-								<copy file="target/dispatcher-0.0.1" todir="D:\server\jetty-distribution-9\webapps\" />
+								<copy file="target/dispatcher-0.0.1.war" todir="D:\server\jetty-distribution-9\webapps\" />
 							</tasks>
 						</configuration>
 					</execution>

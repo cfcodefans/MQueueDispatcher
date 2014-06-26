@@ -66,6 +66,13 @@ public class ServerCfgRes {
 
 		return sc;
 	}
+	
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("{id}/json")
+	public String getJson(@PathParam("id") Integer id) {
+		return Jsons.toString(get(id));
+	}
 
 	@GET
 	public List<ServerCfg> getAll() {

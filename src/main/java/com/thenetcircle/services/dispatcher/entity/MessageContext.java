@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import javax.persistence.Basic;
 import javax.persistence.Cacheable;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -45,7 +46,7 @@ public class MessageContext implements Serializable {
 	@Lob
 	private byte[] messageBody;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.EAGER, cascade=CascadeType.REFRESH)
 	@JoinColumn(name = "queue_cfg_id")
 	private QueueCfg queueCfg;
 

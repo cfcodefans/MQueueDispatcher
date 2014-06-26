@@ -26,10 +26,10 @@ function MethodBuilder(_method, _metadata) {
 			if (p.source == "PATH") {
 				url = url.replace("{" + p.sourceName + "}", this.paramAndValues[p.sourceName]);
 			} else if (p.source == "QUERY") {
-				url = url + url.indexOf("?") > 0 ? "&" : "?";
+				url = url + (url.indexOf("?") > 0 ? "&" : "?");
 				url = url + p.sourceName + "=" + this.paramAndValues[p.sourceName];
 			} else if (p.source == "MATRIX") {
-				url = url + url.indexOf("?") > 0 ? ";" : "?";
+				url = url + (url.indexOf("?") > 0 ? ";" : "?");
 				url = url + p.sourceName + "=" + this.paramAndValues[p.sourceName];
 			} else {
 				console.log("unsupported parameter source: " + JSON.stringify(p));

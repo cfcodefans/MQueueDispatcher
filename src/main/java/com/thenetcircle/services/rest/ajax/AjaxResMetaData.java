@@ -62,7 +62,7 @@ public class AjaxResMetaData implements Serializable {
 	public String baseUrl;
 	
 	public String getUrl() {
-		return baseUrl + (StringUtils.endsWith(baseUrl, "/") ? "" : "/") + path;
+		return baseUrl + (StringUtils.endsWith(baseUrl, "/") || StringUtils.startsWith(path, "/") ? "" : "/") + path;
 	}
 
 	public List<AjaxResMetaData> children = new ArrayList<AjaxResMetaData>();

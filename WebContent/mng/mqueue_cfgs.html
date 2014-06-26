@@ -77,6 +77,7 @@
 					<th>http method</th>
 					<th>timeout</th>
 					<th>host header</th>
+					<th>retry limit</th>
 					<th></th>
 				</tr>
 			</thead>
@@ -88,6 +89,7 @@
 					<td><xsl:value-of select="destCfg/httpMethod" /></td>
 					<td><xsl:value-of select="destCfg/timeout" /></td>
 					<td><xsl:value-of select="destCfg/hostHead" /></td>
+					<td><xsl:value-of select="retryLimit" /></td>
 					<td></td>
 				</tr>
 			</xsl:for-each>

@@ -29,8 +29,8 @@
 		<div class="navbar-collapse collapse">
 			<ul class="nav navbar-nav">
 				<li><a href="#">Home</a></li>
-				<li class="active"><a href="#about">Server Settings</a></li>
-				<li><a href="#about">MQueue Settings</a></li>
+				<li><a href="#about">Server Settings</a></li>
+				<li class="active"><a href="#about">MQueue Settings</a></li>
 				<li><a href="#about">About</a></li>
 				<li><a href="#contact">Contact</a></li>
 			</ul>
@@ -197,12 +197,7 @@
 					virtualHost : "/"
 				};
 			} else {
-				var xhr = RS.ctx.ServerCfgRes.getJson.with_id(11).call();
-				if (xhr.statusCode().status != 200) {
-					console.log(xhr);
-					return;
-				}
-				serverCfg = xhr.responseJSON;
+				
 			}
 			window.serverCfg = serverCfg;
 			fillForm(window.serverCfg);
@@ -243,7 +238,7 @@
 			var cd = $("#tbl_container");
 
 			var xslt = tx.value.trim();
-			var xhr = RS.ctx.ServerCfgRes.getAll.call().done(
+			var xhr = $.ajax("data.xml").done(
 					function(data, textStatus, jqXHR) {
 						cd.xslt(xhr.responseText, xslt);
 						$('#server_cfg_tbl').dataTable();

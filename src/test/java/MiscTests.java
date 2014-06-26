@@ -10,8 +10,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.ClassUtils;
 import org.junit.Test;
 
+import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
+import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 
 public class MiscTests {
@@ -61,5 +63,10 @@ public class MiscTests {
 		}
 		
 		System.out.println(Arrays.toString(lai.getArray()));
+	}
+	
+	@Test
+	public void testEntityToJson() {
+		System.out.println(Jsons.toString(new ServerCfg()));
 	}
 }
