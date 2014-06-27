@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
@@ -34,7 +35,7 @@ public class ServerCfgRes {
 
 	@PUT
 	@Consumes({ MediaType.APPLICATION_JSON })
-	public ServerCfg create(final String reqStr) {
+	public ServerCfg create(@FormParam("entity") final String reqStr) {
 		if (StringUtils.isEmpty(reqStr)) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ServerCfg: " + reqStr).build());
 		}
@@ -45,7 +46,7 @@ public class ServerCfgRes {
 				throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ServerCfg: " + reqStr).build());
 			}
 
-			return scDao.edit(sc);
+			return scDao.create(sc);
 		} catch (Exception e) {
 			log.error("failed to save ServerCfg: \n\t" + reqStr, e);
 			throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("can't save ServerCfg: " + e.getMessage()).build());
@@ -85,7 +86,21 @@ public class ServerCfgRes {
 	}
 
 	@POST
-	public ServerCfg update(final String reqStr) {
-		return create(reqStr);
+	public ServerCfg update(@FormParam("entity") final String reqStr) {
+		if (StringUtils.isEmpty(reqStr)) {
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ServerCfg: " + reqStr).build());
+		}
+
+		try {
+			ServerCfg sc = Jsons.read(reqStr, ServerCfg.class);
+			if (sc == null) {
+				throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ServerCfg: " + reqStr).build());
+			}
+
+			return scDao.edit(sc);
+		} catch (Exception e) {
+			log.error("failed to save ServerCfg: \n\t" + reqStr, e);
+			throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("can't save ServerCfg: " + e.getMessage()).build());
+		}
 	}
 }
