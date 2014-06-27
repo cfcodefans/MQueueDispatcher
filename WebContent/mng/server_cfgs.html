@@ -237,6 +237,7 @@
 		}
 
 		function save(serverCfg) {
+			serverCfg = toEntity(serverCfg);
 			var xhr = null; 
 						
 			if (serverCfg.id < 0) {
@@ -252,12 +253,14 @@
 			
 			var newServerCfg = xhr.responseJSON;
 			updateTable(serverCfg);
+			
+			$('#edit_modal_div').modal('hide');
 		}
 		
 		function updateTable(serverCfg) {
-			if (!serverCfg || serverCfg.id < 0) return;
-			var row = $("tr[data_id='" + serverCfg.id + "']");
-			
+			//if (!serverCfg || serverCfg.id < 0) return;
+			//var row = $("tr[data_id='" + serverCfg.id + "']");
+			loadData();
 		}
 		
 		function loadData() {
