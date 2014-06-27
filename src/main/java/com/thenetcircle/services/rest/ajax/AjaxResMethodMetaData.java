@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.glassfish.jersey.server.model.Parameter;
@@ -32,6 +33,7 @@ public class AjaxResMethodMetaData implements Serializable {
 	public List<MediaType> consumedMediaTypes = new ArrayList<MediaType>();
 	
 	@JsonIgnore
+	@XmlTransient
 	public AjaxResMetaData parent;
 
 	@SuppressWarnings("rawtypes")

@@ -54,7 +54,7 @@ function MethodBuilder(_method, _metadata) {
 		for (var i = 0, j = this.method.params.length; i < j; i++)	{
 			var p = this.method.params[i];
 			if (p.source == "FORM" || p.source == "ENTITY") {
-				data.append({name:p.sourceName, value: this.paramAndValues[p.sourceName]});
+				data.push({name:p.sourceName, value: this.paramAndValues[p.sourceName]});
 			}
 		}
 

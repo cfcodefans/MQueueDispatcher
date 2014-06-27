@@ -18,6 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.thenetcircle.services.weld.Transactional;
+
 
 /**
  * abstraction for most of JPA operations
@@ -25,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
  * @param <T>
  */
 @SuppressWarnings("unchecked")
+@Transactional
 public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<T> {
 	private static final long serialVersionUID = 1L;
 	private static final Log log = LogFactory.getLog(BaseDao.class.getSimpleName());

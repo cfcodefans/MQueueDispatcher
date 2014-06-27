@@ -1,13 +1,10 @@
 package com.thenetcircle.services.rest;
 
-import java.util.Iterator;
-
 import javax.enterprise.inject.spi.CDI;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.jboss.weld.literal.DefaultLiteral;
 
 import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
 import com.thenetcircle.services.dispatcher.dao.MessageContextDao;

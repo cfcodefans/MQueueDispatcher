@@ -5,6 +5,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
@@ -47,9 +48,9 @@ public class MQueueCfgRes {
 	}
 
 	@PUT
-	@Produces({ MediaType.APPLICATION_JSON })
-	@Consumes({ MediaType.APPLICATION_JSON })
-	public QueueCfg create(final String reqStr) {
+//	@Produces({ MediaType.APPLICATION_JSON })
+//	@Consumes({ MediaType.APPLICATION_JSON })
+	public QueueCfg create(@FormParam("entity") final String reqStr) {
 		if (StringUtils.isEmpty(reqStr)) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid MQueueCfg: " + reqStr).build());
 		}
@@ -121,9 +122,9 @@ public class MQueueCfgRes {
 
 	@POST
 	@Path("/{qc_id}")
-	@Produces({ MediaType.APPLICATION_JSON })
-	@Consumes({ MediaType.APPLICATION_JSON })
-	public QueueCfg update(final String reqStr) {
+//	@Produces({ MediaType.APPLICATION_JSON })
+//	@Consumes({ MediaType.APPLICATION_JSON })
+	public QueueCfg update(@FormParam("entity") final String reqStr) {
 		if (StringUtils.isEmpty(reqStr)) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid MQueueCfg: " + reqStr).build());
 		}

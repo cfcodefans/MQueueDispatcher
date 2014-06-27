@@ -3,7 +3,6 @@ package com.thenetcircle.services.rest;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
@@ -34,7 +33,6 @@ public class ServerCfgRes {
 	private ServerCfgDao scDao;
 
 	@PUT
-	@Consumes({ MediaType.APPLICATION_JSON })
 	public ServerCfg create(@FormParam("entity") final String reqStr) {
 		if (StringUtils.isEmpty(reqStr)) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ServerCfg: " + reqStr).build());
@@ -55,6 +53,7 @@ public class ServerCfgRes {
 
 	@GET
 	@Path("{id}")
+	@Produces(MediaType.APPLICATION_XML)
 	public ServerCfg get(@PathParam("id") Integer id) {
 		if (id == null) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ServerCfg.id: " + id).build());
@@ -69,13 +68,14 @@ public class ServerCfgRes {
 	}
 	
 	@GET
-	@Produces(MediaType.APPLICATION_JSON)
 	@Path("{id}/json")
-	public String getJson(@PathParam("id") Integer id) {
-		return Jsons.toString(get(id));
+	@Produces(MediaType.APPLICATION_JSON)
+	public ServerCfg getJson(@PathParam("id") Integer id) {
+		return get(id);
 	}
 
 	@GET
+	@Produces(MediaType.APPLICATION_XML)
 	public List<ServerCfg> getAll() {
 		return scDao.findAll();
 	}
@@ -86,6 +86,7 @@ public class ServerCfgRes {
 	}
 
 	@POST
+	@Produces({MediaType.APPLICATION_JSON})
 	public ServerCfg update(@FormParam("entity") final String reqStr) {
 		if (StringUtils.isEmpty(reqStr)) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ServerCfg: " + reqStr).build());

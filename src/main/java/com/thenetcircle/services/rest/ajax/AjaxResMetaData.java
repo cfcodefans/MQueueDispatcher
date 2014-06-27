@@ -55,10 +55,12 @@ public class AjaxResMetaData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@XmlTransient
+	@JsonIgnore
 	public String path;
 	public String name;
 	
 	@XmlTransient
+	@JsonIgnore
 	public String baseUrl;
 	
 	public String getUrl() {

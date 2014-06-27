@@ -21,6 +21,8 @@ public class JpaModule {
 	static Logger log = Logger.getLogger(JpaModule.class.getSimpleName());
 	private static JpaModule instance; 
 	
+	private static ThreadLocal<EntityManager> ems = new ThreadLocal<EntityManager>();
+	
 	@PostConstruct
 	public void init() {
 		log.info(MiscUtils.invocationInfo());
@@ -32,11 +34,22 @@ public class JpaModule {
 	@Produces 
 //	@PersistenceContext
 	public static EntityManager getEntityManager() {
+		
+		EntityManager em = ems.get();
+		if (em != null && em.isOpen()) {
+			return em;
+		}
+		
+		ems.remove();
+		
 		log.info(MiscUtils.invocationInfo());
 		if (emf == null || !emf.isOpen()) {
 			emf = Persistence.createEntityManagerFactory(UN);
 		}
-		return emf.createEntityManager();
+		
+		final EntityManager newEM = emf.createEntityManager();
+		ems.set(newEM);
+		return newEM;
 	}
 	
 	@PreDestroy

@@ -77,7 +77,7 @@
 			</tr>
 		</thead>
 		<xsl:for-each select="serverCfgs/serverCfg">
-			<tr>
+			<tr data_id="{id}">
 				<td><xsl:value-of select="host" /></td>
 				<td><xsl:value-of select="port" /></td>
 				<td><xsl:value-of select="userName" /></td>
@@ -181,7 +181,6 @@
 	<script type="text/javascript" src="../res/rest.js"></script>
 	
 	<script type="text/javascript">
-		//$(document).ready(loadData);
 		function editServerCfg(idx) {
 			window.serverCfg = null;
 			var serverCfg = null;
@@ -197,7 +196,7 @@
 					virtualHost : "/"
 				};
 			} else {
-				var xhr = RS.ctx.ServerCfgRes.getJson.with_id(11).call();
+				var xhr = RS.ctx.ServerCfgRes.getJson.with_id(idx).call({async:false});
 				if (xhr.statusCode().status != 200) {
 					console.log(xhr);
 					return;
@@ -238,11 +237,30 @@
 		}
 
 		function save(serverCfg) {
+			var xhr = null; 
+						
+			if (serverCfg.id < 0) {
+				xhr = RS.ctx.ServerCfgRes.create.with_entity(JSON.stringify(serverCfg)).call({async:false});	
+			} else {
+				xhr = RS.ctx.ServerCfgRes.update.with_entity(JSON.stringify(serverCfg)).call({async:false});	
+			}			
+
+			if (xhr.statusCode().status != 200) {
+				console.log(xhr);
+				return;
+			}
+			
+			var newServerCfg = xhr.responseJSON;
+			updateTable(serverCfg);
+		}
+		
+		function updateTable(serverCfg) {
+			if (!serverCfg || serverCfg.id < 0) return;
+			var row = $("tr[data_id='" + serverCfg.id + "']");
 			
 		}
 		
 		function loadData() {
-
 			var tx = $("#template_xslt")[0];
 			var cd = $("#tbl_container");
 

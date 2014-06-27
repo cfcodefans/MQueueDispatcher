@@ -2,6 +2,7 @@ package com.thenetcircle.services.rest.utils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent.Type;
@@ -23,8 +24,8 @@ public class ResLoader extends ResourceConfig {
 		ProcTrace.start(MiscUtils.invocationInfo());
 		ProcTrace.ongoing("set packages scann");
 		
-//		this.registerClasses(FailedJobRes.class,
-//				AjaxRes.class);
+		register(JacksonFeature.class);
+		
 		this.packages("com.thenetcircle.services.rest");
 		register(new ResLoaderListener());
 		
@@ -33,11 +34,6 @@ public class ResLoader extends ResourceConfig {
 		ProcTrace.end();
 		log.info(ProcTrace.flush());
 	}
-	
-//	private static ResourceModel resModel = null;
-//	public static ResourceModel getResModel() {
-//		return resModel;
-//	}
 
 	public static class ResLoaderListener implements ContainerLifecycleListener, ApplicationEventListener {
 		@Override

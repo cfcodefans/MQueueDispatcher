@@ -12,10 +12,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import com.sun.net.httpserver.HttpServer;
 import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
@@ -82,10 +80,10 @@ public class Bootstrap {
 		ResourceConfig resCfg = new ResourceConfig();
 		resCfg.packages("com.thenetcircle.services.rest").register(new WeldBinder());
 		
-		HttpServer server = JdkHttpServerFactory.createHttpServer(baseUri, resCfg, false);
+//		HttpServer server = JdkHttpServerFactory.createHttpServer(baseUri, resCfg, false);
 //		JavaScriptProxyRes.build(resCfg);
 		
-		server.start();
+//		server.start();
 	}
 
 	@Inject
