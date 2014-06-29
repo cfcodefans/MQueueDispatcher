@@ -44,12 +44,14 @@ public class TransactionalInterceptor {
 		Object returnValue = null;
 		try {
 			returnValue = ctx.proceed();
+			em.flush();
 			transaction.commit();
+			log.info("transaction committed");
 		} catch (Throwable t) {
 			try {
 				if (em.getTransaction().isActive()) {
 					em.getTransaction().rollback();
-					log.debug("Rolled back transaction");
+					log.warn("Rolled back transaction");
 				}
 			} catch (HibernateException e1) {
 				log.warn("Rollback of transaction failed -> " + e1);

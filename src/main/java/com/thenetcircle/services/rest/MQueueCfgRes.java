@@ -48,8 +48,8 @@ public class MQueueCfgRes {
 	}
 
 	@PUT
-//	@Produces({ MediaType.APPLICATION_JSON })
-//	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	@Consumes({ MediaType.APPLICATION_JSON })
 	public QueueCfg create(@FormParam("entity") final String reqStr) {
 		if (StringUtils.isEmpty(reqStr)) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid MQueueCfg: " + reqStr).build());
@@ -93,6 +93,7 @@ public class MQueueCfgRes {
 
 	@GET
 	@Path("/{qc_id}")
+	@Produces({ MediaType.APPLICATION_XML })
 	public QueueCfg get(@PathParam("qc_id") int id) {
 		QueueCfg qc = qcDao.find(new Integer(id));
 		if (qc == null) {
@@ -101,9 +102,17 @@ public class MQueueCfgRes {
 
 		return qc;
 	}
+	
+	@GET
+	@Path("/{qc_id}/json")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public QueueCfg getJson(@PathParam("qc_id") int id) {
+		return get(id);
+	}
 
 	@GET
-	public List<QueueCfg> getQueueCfgs() {
+	@Produces({ MediaType.APPLICATION_XML })
+	public List<QueueCfg> getAll() {
 		List<QueueCfg> qcList = qcDao.findAll();
 		return qcList;
 	}
@@ -150,5 +159,17 @@ public class MQueueCfgRes {
 			log.error("failed to save QueueCfg with: \n" + reqStr, e);
 			throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("can't save MQueueCfgRes: " + e.getMessage()).build());
 		}
+	}
+	
+	@GET
+	@Path("new/json")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public QueueCfg newQueueCfg() {
+		QueueCfg qc = new QueueCfg();
+		{
+			ExchangeCfg ec = new ExchangeCfg();
+			qc.getExchanges().add(ec);
+		}
+		return qc;
 	}
 }

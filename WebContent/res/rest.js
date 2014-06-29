@@ -16,7 +16,7 @@ function MethodBuilder(_method, _metadata) {
 
 	invocable.call = function(settings) {
 		if (!settings) {
-			settings = {};
+			settings = {async:false};
 		}
 
 		settings["type"] = invocable.method.httpMethod;

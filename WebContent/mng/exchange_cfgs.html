@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>MQueue Settings</title>
+<title>Exchange Settings</title>
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 <!-- Optional theme -->
@@ -29,8 +29,8 @@
 				<ul class="nav navbar-nav">
 					<li><a href="#">Home</a></li>
 					<li><a href="server_cfgs.html">Server Settings</a></li>
-					<li class="active"><a href="mqueue_cfgs.html">MQueue Settings</a></li>
-					<li><a href="exchange_cfgs.html">Exchanges Settings</a></li>
+					<li><a href="mqueue_cfgs.html">MQueue Settings</a></li>
+					<li class="active"><a href="exchange_cfgs.html">Exchanges Settings</a></li>
 					<li><a href="about.html">About</a></li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
@@ -42,7 +42,7 @@
 
 	<div class="panel container">
 		<div class="panel-heading">
-			<button type="button" id="createBtn" class="btn btn-default btn-sm">create</button>
+			<button type="button" id="createBtn" class="btn btn-default btn-sm" onclick="createExchangeCfg()">create</button>
 		</div>
 		<div class="panel-body" id="tbl_container"></div>
 	</div>
@@ -55,34 +55,30 @@
 <head>
 </head>
 <body>
-		<table id="mqueue_cfg_tbl">
+		<table id="exchange_cfg_tbl">
 			<thead>
 				<tr>
 					<th>id</th>
 					<th>server user name</th>
-					<th>queue name</th>
-					<th>url</th>
-					<th>http method</th>
-					<th>timeout</th>
-					<th>host header</th>
-					<th>retry limit</th>
+					<th>exchange name</th>
+					<th>type</th>
+					<th>durable</th>
+					<th>autoDelete</th>
 					<th></th>
 				</tr>
 			</thead>
-			<xsl:for-each select="queueCfgs/queueCfg">
+			<xsl:for-each select="exchangeCfgs/exchangeCfg">
 				<tr data_id="{id}">
 					<td><xsl:value-of select="id" /></td>
 					<td><xsl:value-of select="serverCfg/userName" /></td>
-					<td style="word-break:break-all"><xsl:value-of select="queueName" />	</td>
-					<td style="word-break:break-all"><xsl:value-of select="destCfg/url" /></td>
-					<td><xsl:value-of select="destCfg/httpMethod" /></td>
-					<td><xsl:value-of select="destCfg/timeout" /></td>
-					<td style="word-break:break-all"><xsl:value-of select="destCfg/hostHead" /></td>
-					<td><xsl:value-of select="retryLimit" /></td>
+					<td><xsl:value-of select="exchangeName" />	</td>
+					<td><xsl:value-of select="type" /></td>
+					<td><xsl:value-of select="durable" /></td>
+					<td><xsl:value-of select="autoDelete" /></td>
 					<td>
 						<div class="btn-group">
-						  <button type="button" id="editBtn" class="btn btn-default btn-sm" onclick="editQueueCfg({id})">edit</button>
-						  <button type="button" id="copyBtn" class="btn btn-default btn-sm" onclick="copyQueueCfg({id})">copy</button>
+						  <button type="button" id="editBtn" class="btn btn-default btn-sm" onclick="editExchangeCfg({id})">edit</button>
+						  <button type="button" id="copyBtn" class="btn btn-default btn-sm" onclick="copyExchangeCfg({id})">copy</button>
 						  <button type="button" id="deleteBtn" class="btn btn-default btn-sm">delete</button>
 						</div>
 					</td>
@@ -107,45 +103,28 @@
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-						<h4 class="modal-title">Edit Queue</h4>
+						<h4 class="modal-title">Edit Exchange</h4>
 					</div>
 					<div class="modal-body">
 						<div class="form-group">
-							<label for="queueName" class="col-sm-2 control-label">queue name</label>
-							<div class="col-sm-10">
-								<input type="text" class="form-control" id="queueName">
+							<label for="exchangeName" class="col-sm-4 control-label">exchange name</label>
+							<div class="col-sm-8">
+								<input type="text" class="form-control" id="exchangeName" required="required">
 							</div>
 						</div>
 						<div class="form-group">
-							<label for="queueCfg" class="col-sm-2 control-label">Server</label>
-							<div class="col-sm-10" id="serverCfg_select_div">
+							<label for="exchangeCfg" class="col-sm-4 control-label">Server</label>
+							<div class="col-sm-8" id="serverCfg_select_div">
 								
 							</div>
 						</div>
 						<div class="form-group">
-							<label for="routeKey" class="col-sm-2 control-label">route key</label>
-							<div class="col-sm-10">
-								<input type="text" class="form-control" id="routeKey">
-							</div>
-						</div>
-						<div class="form-group">
-							<label for="retryLimit" class="col-sm-2 control-label">retry limit</label>
-							<div class="col-sm-10">
-								<input type="number" class="form-control" id="retryLimit" min="0">
-							</div>
-						</div>
-						<div id="row">
-							<div class="col-xs-4">
-								<label class="checkbox-inline"> 
-									<input type="checkbox" id="exclusive"> exclusive
-								</label>
-							</div>
-	  						<div class="col-xs-4">
+							<label class="col-sm-4 control-label">options</label>
+							<div class="col-sm-8">
 								<label class="checkbox-inline"> 
 									<input type="checkbox" id="durable"> durable
 								</label>  						
-	  						</div>
-	  						<div class="col-xs-4">
+	  						
 								<label class="checkbox-inline"> 
 									<input type="checkbox" id="autoDelete"> autoDelete
 								</label>  						
@@ -153,38 +132,23 @@
 						</div>
 						
 						<div class="form-group">
-							<label for="url" class="col-sm-2 control-label">url</label>
-							<div class="col-sm-10">
-								<input type="text" class="form-control" id="url">
-							</div>
-						</div>
-						<div class="form-group">
-							<label for="hostHead" class="col-sm-2 control-label">host header</label>
-							<div class="col-sm-10">
-								<input type="text" class="form-control" id="hostHead">
-							</div>
-						</div>	
-						<div class="form-group">
-							<label for="httpMethod" class="col-sm-2 control-label">http method</label>
-							<div class="col-sm-10">
+							<label for="type" class="col-sm-4 control-label">exchange type</label>
+							<div class="col-sm-8">
 								<label class="radio-inline">
-								  <input type="radio" name="httpMethod" id="httpMethod_post" value="post"> post
+								  <input type="radio" name="type" id="type_direct" value="direct"> direct
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="httpMethod" id="httpMethod_get" value="get"> get
+								  <input type="radio" name="type" id="type_fanout" value="fanout"> fanout
+								</label>
+								<label class="radio-inline">
+								  <input type="radio" name="type" id="type_topic" value="topic"> topic
 								</label>
 							</div>
 						</div>	
-						<div class="form-group">
-							<label for="timeout" class="col-sm-2 control-label">timeout</label>
-							<div class="col-sm-10">
-								<input type="number" class="form-control" id="timeout" min="0">
-							</div>
-						</div>				
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary" onclick="save(queueCfg)">Save</button>
+						<button type="button" class="btn btn-primary" onclick="save(ExchangeCfg)">Save</button>
 					</div>
 					
 				</div>
@@ -206,7 +170,102 @@
 	<script type="text/javascript" src="../res/rest.js"></script>
 	
 	<script type="text/javascript">
-		//$(document).ready(loadData);
+		function newExchangeCfg(original) {
+			var ExchangeCfg = null;
+			if (original) {
+				ExchangeCfg = $.extend({}, original);
+				ExchangeCfg.id = -1;
+			} else {
+				ExchangeCfg = {"version":0,"id":-1,"exchangeName":null,"durable":true,"autoDelete":false,"type":"direct","serverCfg":null};
+			}
+			return ExchangeCfg;
+		}
+	
+		function getExchangeCfg(idx) {
+			if (!idx || idx < 0) {
+				return newExchangeCfg();
+			}
+	
+			var ExchangeCfg = null;
+			var xhr = RS.ctx.ExchangeCfgRes.getJson.with_id(idx).call();
+			if (xhr.statusCode().status != 200) {
+				console.log(xhr);
+				return;
+			}
+			ExchangeCfg = xhr.responseJSON;
+			return ExchangeCfg;
+		}
+	
+		function createExchangeCfg() {
+			window.ExchangeCfg = null;
+			window.ExchangeCfg = newExchangeCfg();
+			fillForm(window.ExchangeCfg);
+			$('#edit_modal_div').modal();
+		}
+		
+		function editExchangeCfg(idx) {
+			window.ExchangeCfg = null;
+			window.ExchangeCfg = getExchangeCfg(idx);
+			fillForm(window.ExchangeCfg);
+			$('#edit_modal_div').modal();
+		}
+	
+		function copyExchangeCfg(idx) {
+			window.ExchangeCfg = null;
+			window.ExchangeCfg = newExchangeCfg(getExchangeCfg(idx));
+			fillForm(window.ExchangeCfg);
+			$('#edit_modal_div').modal();
+		}
+	
+		function fillForm(ec) {
+			if (!ec)
+				return;
+			var ef = $("#edit_form");
+	
+			ef.find("#exchangeName").val(ec.exchangeName);
+			ef.find("#durable").attr("checked", ec.durable);
+			ef.find("#autoDelete").attr("checked", ec.autoDelete);
+			ef.find("[name='type']").filter("[value='" + ec.type + "']").attr("checked", true);
+			if (ec.serverCfg) {
+				ef.find("#serverCfg").val(ec.serverCfg.id);
+			}
+		}
+		
+		function toEntity(ec) {
+			var ef = $("#edit_form")[0];
+	
+			ec.exchangeName = ef["exchangeName"].value;
+			ec.durable = ef["durable"].checked;
+			ec.autoDelete = ef["autoDelete"].checked;
+			ec.type = ef["type"].value;
+			ec.serverCfg = {id: ef["serverCfg"].value};
+			
+			return ec;
+		}
+	
+		function save(ExchangeCfg) {
+			ExchangeCfg = toEntity(ExchangeCfg);
+			var xhr = null; 
+						
+			if (ExchangeCfg.id < 0) {
+				xhr = RS.ctx.ExchangeCfgRes.create.with_entity(JSON.stringify(ExchangeCfg)).call({async:false});	
+			} else {
+				xhr = RS.ctx.ExchangeCfgRes.update.with_entity(JSON.stringify(ExchangeCfg)).call({async:false});	
+			}			
+	
+			if (xhr.statusCode().status != 200) {
+				console.log(xhr);
+				return;
+			}
+			
+			var newExchangeCfg = xhr.responseJSON;
+			updateTable();
+			
+			$('#edit_modal_div').modal('hide');
+		}
+		function updateTable() {
+			loadData();
+		}		
 
 		function loadData() {
 
@@ -214,13 +273,13 @@
 			var cd = $("#tbl_container");
 
 			var xslt = tx.value.trim();
-			var xhr = RS.ctx.MQueueCfgRes.getAll.call().done(
+			var xhr = RS.ctx.ExchangeCfgRes.getAll.call().done(
 					function(data, textStatus, jqXHR) {
 						cd.xslt(jqXHR.responseText, xslt);
-						$('#mqueue_cfg_tbl').dataTable();
+						$('#exchange_cfg_tbl').dataTable();
 					});
 			
-			var xhr1 = RS.ctx.ServerCfgRes.getAll.call().done(
+			var xhr1 = RS.ctx.ServerCfgRes.getAll.call({async:false}).done(
 					function(data, textStatus, jqXHR) {
 						$("#serverCfg_select_div").xslt(
 								jqXHR.responseText,

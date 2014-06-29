@@ -1,5 +1,7 @@
 package com.thenetcircle.services.dispatcher.dao;
 
+import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.persistence.EntityManager;
@@ -25,5 +27,9 @@ public class ServerCfgDao extends BaseDao<ServerCfg> {
 	
 	public ServerCfgDao() {
 		super();
+	}
+	
+	public List<ServerCfg> findAll() {
+		return super.query("select sc from ServerCfg sc where sc.enabled=true");
 	}
 }

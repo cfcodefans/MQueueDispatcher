@@ -18,8 +18,6 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thenetcircle.services.dispatcher.cfg.Configuration;
 
 @XmlRootElement
@@ -57,7 +55,6 @@ public class ExchangeCfg extends Configuration {
 	@ManyToMany(fetch=FetchType.LAZY, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
 	private Set<QueueCfg> queues = new HashSet<QueueCfg>();
 
-	@JsonIgnore
 	@XmlTransient
 	public Set<QueueCfg> getQueues() {
 		return queues;
@@ -156,6 +153,15 @@ public class ExchangeCfg extends Configuration {
 		return builder.toString();
 	}
 	
+	@Basic
+	private boolean enabled = true;
 	
+	public boolean isEnabled() {
+		return enabled;
+	}
+	
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
 
 }

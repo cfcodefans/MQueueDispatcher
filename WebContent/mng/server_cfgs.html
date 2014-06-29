@@ -8,53 +8,44 @@
 <!-- Optional theme -->
 <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
 <!-- Latest compiled and minified JavaScript -->
-
 <link rel="stylesheet" href="http://cdn.datatables.net/1.10.0/css/jquery.dataTables.css">
 <link rel="stylesheet" href="http://cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.css">
-
 <link rel="stylesheet" href="../res/style.css">
 </head>
 <body>
-
 	<header>
-	<!-- Fixed navbar navbar-fixed-top -->
-<div class="navbar navbar-default " role="navigation">
-	<div class="container">
-		<div class="navbar-header">
-			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-				<span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
-			</button>
-			<a class="navbar-brand" href="#">MQueue Dispatcher</a>
+		<!-- Fixed navbar navbar-fixed-top -->
+		<div class="navbar navbar-default " role="navigation">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+						<span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#">MQueue Dispatcher</a>
+				</div>
+				<div class="navbar-collapse collapse">
+					<ul class="nav navbar-nav">
+						<li><a href="#">Home</a></li>
+						<li class="active"><a href="server_cfgs.html">Server Settings</a></li>
+						<li><a href="mqueue_cfgs.html">MQueue Settings</a></li>
+						<li><a href="exchange_cfgs.html">Exchanges Settings</a></li>
+						<li><a href="about.html">About</a></li>
+					</ul>
+					<ul class="nav navbar-nav navbar-right">
+					</ul>
+				</div>
+				<!--/.nav-collapse -->
+			</div>
 		</div>
-		<div class="navbar-collapse collapse">
-			<ul class="nav navbar-nav">
-				<li><a href="#">Home</a></li>
-				<li class="active"><a href="#about">Server Settings</a></li>
-				<li><a href="#about">MQueue Settings</a></li>
-				<li><a href="#about">About</a></li>
-				<li><a href="#contact">Contact</a></li>
-			</ul>
-			<ul class="nav navbar-nav navbar-right">
-				<!-- 
-					<li><a href="../navbar/">Default</a></li>
-					<li><a href="../navbar-static-top/">Static top</a></li>
-					<li class="active"><a href="./">Fixed top</a></li>
-				 -->
-			</ul>
-		</div>
-		<!--/.nav-collapse -->
-	</div>
-</div>
 	</header>
-
+	
 	<div class="panel container">
 		<div class="panel-heading">
-			<button type="button" id="createBtn" class="btn btn-default">create</button>
+			<button type="button" id="createBtn" class="btn btn-default btn-sm">create</button>
 		</div>
-		<div class="panel-body" id="tbl_container">
-		</div>
+		<div class="panel-body" id="tbl_container"></div>
 	</div>
-
+	
 	<textarea id="template_xslt" style="display: none"> 
 <?xml version="1.0" encoding="UTF-8"?>
 	<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
@@ -66,18 +57,20 @@
 	<table id="server_cfg_tbl" class="stripe table">
 		<thead>
 			<tr>
+				<th>id</th>
 				<th>host</th>
 				<th>port</th>
 				<th>user name</th>
 				<th>password</th>
 				<th>virtual host</th>
-				<th>log file path</th>
-				<th>max file size</th>
+				<th>log path</th>
+				<th>log size</th>
 				<th></th>
 			</tr>
 		</thead>
 		<xsl:for-each select="serverCfgs/serverCfg">
 			<tr data_id="{id}">
+				<td><xsl:value-of select="id" /></td>
 				<td><xsl:value-of select="host" /></td>
 				<td><xsl:value-of select="port" /></td>
 				<td><xsl:value-of select="userName" /></td>
@@ -87,9 +80,9 @@
 				<td><xsl:value-of select="maxFileSize" /></td>
 				<td>
 					<div class="btn-group">
-					  <button type="button" id="editBtn" class="btn btn-default" onclick="editServerCfg({id})">edit</button>
-					  <button type="button" id="copyBtn" class="btn btn-default">copy</button>
-					  <button type="button" id="deleteBtn" class="btn btn-default">delete</button>
+					  <button type="button" id="editBtn" class="btn btn-default btn-sm" onclick="editServerCfg({id})">edit</button>
+					  <button type="button" id="copyBtn" class="btn btn-default btn-sm" onclick="copyServerCfg({id})">copy</button>
+					  <button type="button" id="deleteBtn" class="btn btn-default btn-sm">delete</button>
 					</div>
 				</td>
 			</tr>
@@ -105,7 +98,7 @@
 		</xsl:template>
 	</xsl:stylesheet>
 	</textarea>
-
+	
 	<div class="modal fade" id="edit_modal_div">
 		<div class="modal-dialog">
 			<form class="form-horizontal" role="form" id="edit_form">
@@ -118,13 +111,13 @@
 						<div class="form-group">
 							<label for="host" class="col-sm-2 control-label">host</label>
 							<div class="col-sm-10">
-								<input type="text" class="form-control" id="host" >
+								<input type="text" class="form-control" id="host">
 							</div>
 						</div>
 						<div class="form-group">
 							<label for="virtualHost" class="col-sm-2 control-label">virtual host</label>
 							<div class="col-sm-10">
-								<input type="text" class="form-control" id="virtualHost" >
+								<input type="text" class="form-control" id="virtualHost">
 							</div>
 						</div>
 						<div class="form-group">
@@ -136,27 +129,27 @@
 						<div class="form-group">
 							<label for="userName" class="col-sm-2 control-label">user name</label>
 							<div class="col-sm-10">
-								<input type="text" class="form-control" id="userName" >
+								<input type="text" class="form-control" id="userName">
 							</div>
 						</div>
 						<div class="form-group">
 							<label for="password" class="col-sm-2 control-label">password</label>
 							<div class="col-sm-10">
-								<input type="text" class="form-control" id="password" >
+								<input type="text" class="form-control" id="password">
 							</div>
 						</div>
 						<div class="form-group">
 							<label for="logFilePath" class="col-sm-2 control-label">log file path</label>
 							<div class="col-sm-10">
-								<input type="text" class="form-control" id="logFilePath" >
+								<input type="text" class="form-control" id="logFilePath">
 							</div>
 						</div>
 						<div class="form-group">
 							<label for="maxFileSize" class="col-sm-2 control-label">max file size</label>
 							<div class="col-sm-10">
-								<input type="text" class="form-control" id="maxFileSize" >
+								<input type="text" class="form-control" id="maxFileSize">
 							</div>
-						</div>																																				
+						</div>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -169,72 +162,98 @@
 		<!-- /.modal-dialog -->
 	</div>
 	<!-- /.modal -->
-
+	
 	<script type="text/javascript" src="../res/jquery-2.1.1.js"></script>
 	<script type="text/javascript" src="../res/jquery.xslt.js"></script>
-	
 	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="http://cdn.datatables.net/1.10.0/js/jquery.dataTables.js"></script>
 	<script type="text/javascript" src="http://cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.js"></script>
-	
 	<script type="text/javascript" src="/dispatcher-0.0.1/rest/v1/ajax" id="ajax_metadata"></script>
 	<script type="text/javascript" src="../res/rest.js"></script>
-	
 	<script type="text/javascript">
-		function editServerCfg(idx) {
-			window.serverCfg = null;
-			var serverCfg = null;
-			if (idx < 0) {
-				serverCfg = {
-					version : 0,
-					host : "localhost",
-					id : -1,
-					maxFileSize : "2GB",
-					password : "guest",
-					port : 5672,
-					userName : "guest",
-					virtualHost : "/"
-				};
-			} else {
-				var xhr = RS.ctx.ServerCfgRes.getJson.with_id(idx).call({async:false});
-				if (xhr.statusCode().status != 200) {
-					console.log(xhr);
-					return;
-				}
-				serverCfg = xhr.responseJSON;
-			}
-			window.serverCfg = serverCfg;
-			fillForm(window.serverCfg);
-			$('#edit_modal_div').modal();
+	function newServerCfg(original) {
+		var serverCfg = null;
+		if (original) {
+			serverCfg = $.extend({}, original);
+			serverCfg.id = -1;
+		} else {
+			serverCfg = {
+				version : 0,
+				host : "localhost",
+				id : -1,
+				maxFileSize : "2GB",
+				password : "guest",
+				port : 5672,
+				userName : "guest",
+				virtualHost : "/"
+			};
+		}
+		return serverCfg;
+	}
+
+	function getServerCfg(idx) {
+		if (!idx || idx < 0) {
+			return newServerCfg();
 		}
 
-		function fillForm(sc) {
-			if (!sc)
-				return;
-			var ef = $("#edit_form");
-
-			ef.find("#host").val(sc.host);
-			ef.find("#virtualHost").val(sc.virtualHost);
-			ef.find("#port").val(sc.port);
-			ef.find("#userName").val(sc.userName);
-			ef.find("#password").val(sc.password);
-			ef.find("#logFilePath").val(sc.logFilePath);
-			ef.find("#maxFileSize").val(sc.maxFileSize);
+		var serverCfg = null;
+		var xhr = RS.ctx.ServerCfgRes.getJson.with_id(idx).call();
+		if (xhr.statusCode().status != 200) {
+			console.log(xhr);
+			return;
 		}
+		serverCfg = xhr.responseJSON;
+		return serverCfg;
+	}
+
+	function createServerCfg() {
+		window.serverCfg = null;
+		window.serverCfg = newServerCfg();
+		fillForm(window.serverCfg);
+		$('#edit_modal_div').modal();
+	}
+	
+	function editServerCfg(idx) {
+		window.serverCfg = null;
+		window.serverCfg = getServerCfg(idx);
+		fillForm(window.serverCfg);
+		$('#edit_modal_div').modal();
+	}
+
+	function copyServerCfg(idx) {
+		window.serverCfg = null;
+		window.serverCfg = newServerCfg(getServerCfg(idx));
+		fillForm(window.serverCfg);
+		$('#edit_modal_div').modal();
+	}
+
+	function fillForm(sc) {
+		if (!sc)
+			return;
+		var ef = $("#edit_form");
+
+		ef.find("#host").val(sc.host);
+		ef.find("#virtualHost").val(sc.virtualHost);
+		ef.find("#port").val(sc.port);
+		ef.find("#userName").val(sc.userName);
+		ef.find("#password").val(sc.password);
+		ef.find("#logFilePath").val(sc.logFilePath);
+		ef.find("#maxFileSize").val(sc.maxFileSize);
+	}
+	
+	function toEntity(sc) {
+		var ef = $("#edit_form");
+
+		sc.host = ef.find("#host").val();
+		sc.virtualHost = ef.find("#virtualHost").val();
+		sc.port = ef.find("#port").val();
+		sc.userName = ef.find("#userName").val();
+		sc.password = ef.find("#password").val();
+		sc.logFilePath = ef.find("#logFilePath").val();
+		sc.maxFileSize = ef.find("#maxFileSize").val();
 		
-		function toEntity(sc) {
-			var ef = $("#edit_form");
-
-			sc.host = ef.find("#host").val();
-			sc.virtualHost = ef.find("#virtualHost").val();
-			sc.port = ef.find("#port").val();
-			sc.userName = ef.find("#userName").val();
-			sc.password = ef.find("#password").val();
-			sc.logFilePath = ef.find("#logFilePath").val();
-			sc.maxFileSize = ef.find("#maxFileSize").val();
-			
-			return sc;
-		}
+		return sc;
+	}
 
 		function save(serverCfg) {
 			serverCfg = toEntity(serverCfg);
@@ -252,14 +271,12 @@
 			}
 			
 			var newServerCfg = xhr.responseJSON;
-			updateTable(serverCfg);
+			updateTable();
 			
 			$('#edit_modal_div').modal('hide');
 		}
 		
-		function updateTable(serverCfg) {
-			//if (!serverCfg || serverCfg.id < 0) return;
-			//var row = $("tr[data_id='" + serverCfg.id + "']");
+		function updateTable() {
 			loadData();
 		}
 		
@@ -270,7 +287,7 @@
 			var xslt = tx.value.trim();
 			var xhr = RS.ctx.ServerCfgRes.getAll.call().done(
 					function(data, textStatus, jqXHR) {
-						cd.xslt(xhr.responseText, xslt);
+						cd.xslt(jqXHR.responseText, xslt);
 						$('#server_cfg_tbl').dataTable();
 					});
 		}
@@ -280,13 +297,11 @@
 		$(document).ready(function() {
 			$("#createBtn").click(
 				function() {
-					editServerCfg(-1);
+					createServerCfg();
 				}
 			);
 		});
 	</script>
-	
-	<footer>
-	</footer>
+	<footer> </footer>
 </body>
 </html>

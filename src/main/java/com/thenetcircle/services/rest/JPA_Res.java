@@ -17,6 +17,7 @@ public class JPA_Res {
 	
 	@Inject GeneralDao dao;
 	
+	@SuppressWarnings("rawtypes")
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	public List query(@FormParam("hql") String hqlStr) {

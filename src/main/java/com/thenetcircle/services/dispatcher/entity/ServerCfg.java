@@ -2,6 +2,7 @@ package com.thenetcircle.services.dispatcher.entity;
 
 import javax.persistence.Basic;
 import javax.persistence.Cacheable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -13,7 +14,7 @@ import com.thenetcircle.services.dispatcher.cfg.Configuration;
 
 @XmlRootElement
 @Entity
-@Table(name="server_cfg")
+@Table(name = "server_cfg")
 @Cacheable
 public class ServerCfg extends Configuration {
 	private static final long serialVersionUID = 1L;
@@ -32,7 +33,7 @@ public class ServerCfg extends Configuration {
 
 	@Basic
 	private String maxFileSize = String.valueOf("2GB");
-	
+
 	@Basic
 	private String password = "guest";
 
@@ -41,8 +42,21 @@ public class ServerCfg extends Configuration {
 
 	@Basic
 	private String userName = "guest";
+	
 	@Basic
 	private String virtualHost = "/";
+	
+	@Basic
+	private boolean enabled = true;
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -52,22 +66,17 @@ public class ServerCfg extends Configuration {
 		if (!(obj instanceof ServerCfg))
 			return false;
 		ServerCfg other = (ServerCfg) obj;
-		
+
 		if (id != -1 && other.id != -1) {
 			return id.equals(other.id);
 		}
-		
+
 		if (host == null) {
 			if (other.host != null)
 				return false;
 		} else if (!host.equals(other.host))
 			return false;
 
-		if (password == null) {
-			if (other.password != null)
-				return false;
-		} else if (!password.equals(other.password))
-			return false;
 		if (port != other.port)
 			return false;
 		if (userName == null) {
@@ -124,7 +133,6 @@ public class ServerCfg extends Configuration {
 			return result;
 
 		result = prime * result + ((host == null) ? 0 : host.hashCode());
-		result = prime * result + ((password == null) ? 0 : password.hashCode());
 		result = prime * result + port;
 		result = prime * result + ((userName == null) ? 0 : userName.hashCode());
 		result = prime * result + ((virtualHost == null) ? 0 : virtualHost.hashCode());
@@ -146,7 +154,7 @@ public class ServerCfg extends Configuration {
 	public void setMaxFileSize(String maxFileSize) {
 		this.maxFileSize = maxFileSize;
 	}
-	
+
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -166,8 +174,9 @@ public class ServerCfg extends Configuration {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("{class:\"ServerCfg\", id:'").append(id).append("', host:'").append(host).append("', port:'").append(port).append("', userName:'").append(userName).append("', password:'").append(password).append("', virtualHost:'").append(virtualHost)
-				.append("', logFilePath:'").append(logFilePath).append("', maxFileSize:'").append(maxFileSize).append("}");
+		builder.append("{class:\"ServerCfg\", id:'").append(id).append("', host:'").append(host).append("', port:'").append(port).append("', userName:'").append(userName)
+				.append("', password:'").append(password).append("', virtualHost:'").append(virtualHost).append("', logFilePath:'").append(logFilePath).append("', maxFileSize:'")
+				.append(maxFileSize).append("'}");
 		return builder.toString();
 	}
 }

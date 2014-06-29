@@ -19,6 +19,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import com.thenetcircle.services.dispatcher.cfg.Configuration;
 import com.thenetcircle.services.dispatcher.failsafe.FailsafeCfg;
@@ -28,116 +29,51 @@ import com.thenetcircle.services.dispatcher.failsafe.FailsafeCfg;
 @Table(name="queue_cfg")
 @Cacheable
 public class QueueCfg extends Configuration {
-	private static final long serialVersionUID = 1L;
-
 	public static final String DEFAULT_ROUTE_KEY = "default_route_key";
+
+	private static final long serialVersionUID = 1L;
+	
+	@Basic
+	private boolean autoDelete = false;
+
+	@OneToOne(fetch=FetchType.EAGER, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
+	@JoinColumn(name = "dest_cfg_id")
+	private HttpDestinationCfg destCfg;
+
+	@Basic
+	private boolean durable = true;
+
+	@Basic
+	private boolean enabled = true;
+	
+	@ManyToMany(fetch=FetchType.EAGER, mappedBy="queues", cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
+	private Set<ExchangeCfg> exchanges = new HashSet<ExchangeCfg>();
+	
+	@Basic
+	private boolean exclusive = false;
+	
+	@Transient
+	private FailsafeCfg failsafeCfg = new FailsafeCfg();
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id = -1;
 
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
-	}
+	@Basic
+	private int priority;
 
 	@Basic
 	private String queueName;
-	
-	@Basic
-	private boolean durable = true;
-	
-	@Basic
-	private boolean exclusive = false;
-	
-	@Basic
-	private boolean autoDelete = false;
-	
+
+	@Column(name = "retry_limit")
+	private int retryLimit;
+
 	@Basic
 	private String routeKey = DEFAULT_ROUTE_KEY;
-
-	@ManyToMany(fetch=FetchType.EAGER, mappedBy="queues", cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
-	private Set<ExchangeCfg> exchanges = new HashSet<ExchangeCfg>();
-
-	public String getRouteKey() {
-		return routeKey;
-	}
-
-	public void setRouteKey(String routeKey) {
-		this.routeKey = routeKey;
-	}
 
 	@ManyToOne(fetch=FetchType.EAGER, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "server_id")
 	private ServerCfg serverCfg;
-
-	@Basic
-	private int priority;
-
-	public int getPriority() {
-		return priority;
-	}
-
-	public void setPriority(int priority) {
-		this.priority = priority;
-	}
-
-	public String getQueueName() {
-		return queueName;
-	}
-
-	public void setQueueName(String queueName) {
-		this.queueName = queueName;
-	}
-
-	public boolean isDurable() {
-		return durable;
-	}
-
-	public void setDurable(boolean durable) {
-		this.durable = durable;
-	}
-
-	public boolean isExclusive() {
-		return exclusive;
-	}
-
-	public void setExclusive(boolean exclusive) {
-		this.exclusive = exclusive;
-	}
-
-	public boolean isAutoDelete() {
-		return autoDelete;
-	}
-
-	public void setAutoDelete(boolean autoDelete) {
-		this.autoDelete = autoDelete;
-	}
-
-	public ServerCfg getServerCfg() {
-		return serverCfg;
-	}
-
-	public void setServerCfg(ServerCfg serverCfg) {
-		this.serverCfg = serverCfg;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		
-		if (id != -1) {
-			return id;
-		}
-		
-		result = prime * result + ((queueName == null) ? 0 : queueName.hashCode());
-		result = prime * result + ((serverCfg == null) ? 0 : serverCfg.hashCode());
-		return result;
-	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -167,12 +103,123 @@ public class QueueCfg extends Configuration {
 		return true;
 	}
 
+	public HttpDestinationCfg getDestCfg() {
+		return destCfg;
+	}
+
 	public Set<ExchangeCfg> getExchanges() {
 		return exchanges;
 	}
 
+	@XmlTransient
+	public FailsafeCfg getFailsafeCfg() {
+		return failsafeCfg;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public int getPriority() {
+		return priority;
+	}
+
+	public String getQueueName() {
+		return queueName;
+	}
+
+	public int getRetryLimit() {
+		return retryLimit;
+	}
+
+	public String getRouteKey() {
+		return routeKey;
+	}
+
+	public ServerCfg getServerCfg() {
+		return serverCfg;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		
+		if (id != -1) {
+			return id;
+		}
+		
+		result = prime * result + ((queueName == null) ? 0 : queueName.hashCode());
+		result = prime * result + ((serverCfg == null) ? 0 : serverCfg.hashCode());
+		return result;
+	}
+
+	public boolean isAutoDelete() {
+		return autoDelete;
+	}
+
+	public boolean isDurable() {
+		return durable;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public boolean isExclusive() {
+		return exclusive;
+	}
+
+	public void setAutoDelete(boolean autoDelete) {
+		this.autoDelete = autoDelete;
+	}
+
+	public void setDestCfg(HttpDestinationCfg destCfg) {
+		this.destCfg = destCfg;
+	}
+	
+	public void setDurable(boolean durable) {
+		this.durable = durable;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
 	public void setExchanges(Set<ExchangeCfg> exchanges) {
 		this.exchanges = exchanges;
+	}
+	
+	public void setExclusive(boolean exclusive) {
+		this.exclusive = exclusive;
+	}
+
+	public void setFailsafeCfg(FailsafeCfg failsafeCfg) {
+		this.failsafeCfg = failsafeCfg;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	
+	public void setPriority(int priority) {
+		this.priority = priority;
+	}
+
+	public void setQueueName(String queueName) {
+		this.queueName = queueName;
+	}
+
+	public void setRetryLimit(int retryLimit) {
+		this.retryLimit = retryLimit;
+	}
+	
+	public void setRouteKey(String routeKey) {
+		this.routeKey = routeKey;
+	}
+
+	public void setServerCfg(ServerCfg serverCfg) {
+		this.serverCfg = serverCfg;
 	}
 
 	@Override
@@ -184,48 +231,4 @@ public class QueueCfg extends Configuration {
 		return builder.toString();
 	}
 	
-	@OneToOne(fetch=FetchType.EAGER, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
-	@JoinColumn(name = "dest_cfg_id")
-	private HttpDestinationCfg destCfg;
-
-	public HttpDestinationCfg getDestCfg() {
-		return destCfg;
-	}
-
-	public void setDestCfg(HttpDestinationCfg destCfg) {
-		this.destCfg = destCfg;
-	}
-	
-	@Basic
-	private boolean enabled = true;
-
-	public boolean isEnabled() {
-		return enabled;
-	}
-
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
-	
-	@Transient
-	private FailsafeCfg failsafeCfg = new FailsafeCfg();
-
-	public FailsafeCfg getFailsafeCfg() {
-		return failsafeCfg;
-	}
-
-	public void setFailsafeCfg(FailsafeCfg failsafeCfg) {
-		this.failsafeCfg = failsafeCfg;
-	}
-	
-	@Column(name = "retry_limit")
-	private int retryLimit;
-
-	public int getRetryLimit() {
-		return retryLimit;
-	}
-
-	public void setRetryLimit(int retryLimit) {
-		this.retryLimit = retryLimit;
-	}
 }

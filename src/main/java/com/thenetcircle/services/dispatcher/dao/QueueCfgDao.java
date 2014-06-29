@@ -31,6 +31,6 @@ public class QueueCfgDao extends BaseDao<QueueCfg> {
 		return query("select qc from QueueCfg qc " +
 				" LEFT JOIN FETCH qc.exchanges " +
 				" LEFT JOIN FETCH qc.serverCfg " +
-				" LEFT JOIN FETCH qc.destCfg");
+				" LEFT JOIN FETCH qc.destCfg where qc.enabled=true");
 	}
 }

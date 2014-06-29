@@ -103,7 +103,7 @@
                     xm.responseXML = new DOMParser().parseFromString(xml, "text/xml");
                 }
                 else {
-                    xm = $.ajax({ dataType: "xml", url: xml}).done(change);
+                    xm = $.ajax({async:true, dataType: "xml", url: xml}).done(change);
                 }
 
                 if (str.test(xslt)) {
@@ -111,7 +111,7 @@
                     change();
                 }
                 else {
-                    xs = $.ajax({ dataType: "xml", url: xslt}).done(change);
+                    xs = $.ajax({async:true, dataType: "xml", url: xslt}).done(change);
                 }
                 return this;
             };

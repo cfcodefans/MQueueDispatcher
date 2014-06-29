@@ -1,6 +1,5 @@
 package mgr;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -30,9 +29,9 @@ public class WeldTest {
 	public static void startUp() {
 		log.info(MiscUtils.invocationInfo());
 		try {
-		weld = new Weld();
-		container = weld.initialize();
-		bm = container.getBeanManager();
+			weld = new Weld();
+			container = weld.initialize();
+			bm = container.getBeanManager();
 		} catch (Exception e) {
 			log.error("", e);
 			System.exit(-1);
