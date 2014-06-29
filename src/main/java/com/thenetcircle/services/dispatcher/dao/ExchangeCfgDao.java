@@ -9,6 +9,7 @@ import javax.persistence.EntityManager;
 import com.thenetcircle.services.common.BaseDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Default
 @ApplicationScoped //for java se, only applicatoin scope available
@@ -32,5 +33,9 @@ public class ExchangeCfgDao extends BaseDao<ExchangeCfg> {
 		return query("select ec from ExchangeCfg ec " +
 				" LEFT JOIN FETCH ec.queues " +
 				" LEFT JOIN FETCH ec.serverCfg ");
+	}
+
+	public List<ExchangeCfg> findExchangesByServer(ServerCfg find) {
+		return query("select ec from ExchangeCfg ec where ec.serverCfg=1?", find);
 	}
 }

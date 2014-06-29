@@ -133,4 +133,10 @@ public class ExchangeCfgRes {
 	public ExchangeCfg newExchangeCfg() {
 		return new ExchangeCfg();
 	}
+	
+	@POST
+	@Path("/by_server")
+	public List<ExchangeCfg> getExchangesByServer(@FormParam("server_id") int srvId) {
+		return ecDao.findExchangesByServer(scDao.find(srvId));
+	}
 }

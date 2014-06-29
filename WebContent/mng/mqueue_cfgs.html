@@ -42,7 +42,7 @@
 
 	<div class="panel container">
 		<div class="panel-heading">
-			<button type="button" id="createBtn" class="btn btn-default btn-sm">create</button>
+			<button type="button" id="createBtn" class="btn btn-default btn-sm" onclick="createQueueCfg()">create</button>
 		</div>
 		<div class="panel-body" id="tbl_container"></div>
 	</div>
@@ -123,6 +123,12 @@
 							</div>
 						</div>
 						<div class="form-group">
+							<label for="queueCfg" class="col-sm-2 control-label">Server</label>
+							<div class="col-sm-10" id="exchangeCfg_select_div">
+								
+							</div>
+						</div>
+						<div class="form-group">
 							<label for="routeKey" class="col-sm-2 control-label">route key</label>
 							<div class="col-sm-10">
 								<input type="text" class="form-control" id="routeKey">
@@ -184,7 +190,7 @@
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary" onclick="save(queueCfg)">Save</button>
+						<button type="button" class="btn btn-primary" onclick="save(QueueCfg)">Save</button>
 					</div>
 					
 				</div>
@@ -206,7 +212,129 @@
 	<script type="text/javascript" src="../res/rest.js"></script>
 	
 	<script type="text/javascript">
-		//$(document).ready(loadData);
+	function newQueueCfg(original) {
+		var QueueCfg = null;
+		if (original) {
+			QueueCfg = $.extend({}, original);
+			QueueCfg.id = -1;
+		} else {
+			QueueCfg = {"version":0, "autoDelete":false,"destCfg":{},"durable":true,"enabled":true,"exchanges":[],"exclusive":false,
+			            "id":-1,"priority":0,"queueName":null,"retryLimit":0,"routeKey":"default_route_key","serverCfg":null};
+		}
+		return QueueCfg;
+	}
+
+	function getQueueCfg(idx) {
+		if (!idx || idx < 0) {
+			return newQueueCfg();
+		}
+
+		var QueueCfg = null;
+		var xhr = RS.ctx.QueueCfgRes.getJson.with_id(idx).call();
+		if (xhr.statuqcode().status != 200) {
+			console.log(xhr);
+			return;
+		}
+		QueueCfg = xhr.responseJSON;
+		return QueueCfg;
+	}
+
+	function createQueueCfg() {
+		window.QueueCfg = null;
+		window.QueueCfg = newQueueCfg();
+		fillForm(window.QueueCfg);
+		$('#edit_modal_div').modal();
+	}
+	
+	function editQueueCfg(idx) {
+		window.QueueCfg = null;
+		window.QueueCfg = getQueueCfg(idx);
+		fillForm(window.QueueCfg);
+		$('#edit_modal_div').modal();
+	}
+
+	function copyQueueCfg(idx) {
+		window.QueueCfg = null;
+		window.QueueCfg = newQueueCfg(getQueueCfg(idx));
+		fillForm(window.QueueCfg);
+		$('#edit_modal_div').modal();
+	}
+
+	function fillForm(qc) {
+		if (!qc)
+			return;
+		var ef = $("#edit_form")[0];
+
+		ef.find("#queueName").val(qc.queueName);
+		ef.find("#routeKey").val(qc.routeKey);
+		ef.find("#retryLimit").val(qc.retryLimit);
+
+		ef.find("#exclusive").attr("checked", ec.exclusive);
+		ef.find("#durable").attr("checked", ec.durable);
+		ef.find("#autoDelete").attr("checked", ec.autoDelete);
+
+		ef.find("#hostHead").val(qc.destCfg.hostHead);
+		ef.find("[name='httpMethod']").filter("[value='" + qc.destCfg.httpMethod + "']").attr("checked", true);
+		ef.find("#timeout").val(qc.destCfg.timeout);
+		ef.find("#url").val(qc.destCfg.url);
+		
+		ef.find("#serverCfg").val(qc.serverCfg.id);
+		
+		var ecs = ef.find("#exchangeCfgs").find("option");
+		ecs.attr("selected", false);
+		for (var i = 0, j = qc.exchanges.length; i < j; i++) {
+			var ec = qc.exchanges[i];
+			ecs.filter("[value='" + ec.id + "']").attr("selected", true);			
+		}
+	}
+	
+	function toEntity(qc) {
+		var ef = $("#edit_form")[0];
+
+		qc.queueName = ef["queueName"].value;
+		qc.routeKey = ef["routeKey"].value;
+		qc.retryLimit = ef["retryLimit"].value;
+		
+		qc.exclusive = ef["exclusive"].checked;
+		qc.durable = ef["durable"].checked;
+		qc.autoDelete = ef["autoDelete"].checked;
+		
+		qc.destCfg.hostHead = ef["hostHead"].value;
+		qc.destCfg.httpMethod = ef["httpMethod"].value;
+		qc.destCfg.timeout = ef["timeout"].value;
+		qc.destCfg.url = ef["url"].value;
+		
+		qc.serverCfg = {id:ef["serverCfg"].value}
+		for (var ex_ids = ef["exchangeCfgs"].value.split(","), i = 0;
+			 i < ex_ids.length;
+			 i++) {
+			if (parseInt(ex_ids[i]) > 0)
+			qc.exchanges.push({id:ex_ids[i]});
+		}
+		
+		return qc;
+	}
+
+		function save(QueueCfg) {
+			QueueCfg = toEntity(QueueCfg);
+			var xhr = null; 
+						
+			if (QueueCfg.id < 0) {
+				xhr = RS.ctx.QueueCfgRes.create.with_entity(JSON.stringify(QueueCfg)).call({async:false});	
+			} else {
+				xhr = RS.ctx.QueueCfgRes.update.with_entity(JSON.stringify(QueueCfg)).call({async:false});	
+			}			
+
+			if (xhr.statusCode().status != 200) {
+				console.log(xhr);
+				return;
+			}
+			
+			var newQueueCfg = xhr.responseJSON;
+			loadData();
+			
+			$('#edit_modal_div').modal('hide');
+		}
 
 		function loadData() {
 
@@ -220,6 +348,12 @@
 						$('#mqueue_cfg_tbl').dataTable();
 					});
 			
+
+		}
+		
+		loadData();
+		
+		function loadServerCfgOpts() {
 			var xhr1 = RS.ctx.ServerCfgRes.getAll.call().done(
 					function(data, textStatus, jqXHR) {
 						$("#serverCfg_select_div").xslt(
@@ -229,7 +363,19 @@
 					});
 		}
 		
-		loadData();
+		loadServerCfgOpts();
+
+		function loadExchangeCfgOpts() {
+			var xhr1 = RS.ctx.ServerCfgRes.getAll.call().done(
+					function(data, textStatus, jqXHR) {
+						$("#exchangeCfg_select_div").xslt(
+								jqXHR.responseText,
+								"exchange_cfg_opts.xsl"
+								);
+					});
+		}
+		
+		loadExchangeCfgOpts();
 	</script>
 </body>
 </html>

@@ -231,4 +231,7 @@ public class QueueCfg extends Configuration {
 		return builder.toString();
 	}
 	
+	public static ExchangeCfg defaultExchange(QueueCfg qc) {
+		return new ExchangeCfg(qc.getQueueName()+"_router", qc.getServerCfg());
+	}
 }

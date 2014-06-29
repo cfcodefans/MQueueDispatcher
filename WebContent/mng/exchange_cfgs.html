@@ -278,8 +278,12 @@
 						cd.xslt(jqXHR.responseText, xslt);
 						$('#exchange_cfg_tbl').dataTable();
 					});
-			
-			var xhr1 = RS.ctx.ServerCfgRes.getAll.call({async:false}).done(
+		}
+		
+		loadData();
+
+		function loadServerCfgOpts() {
+			var xhr1 = RS.ctx.ServerCfgRes.getAll.call().done(
 					function(data, textStatus, jqXHR) {
 						$("#serverCfg_select_div").xslt(
 								jqXHR.responseText,
@@ -288,7 +292,7 @@
 					});
 		}
 		
-		loadData();
+		loadServerCfgOpts();
 	</script>
 </body>
 </html>

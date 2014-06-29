@@ -27,6 +27,16 @@ import com.thenetcircle.services.dispatcher.cfg.Configuration;
 public class ExchangeCfg extends Configuration {
 	private static final long serialVersionUID = 1L;
 
+	public ExchangeCfg() {
+		
+	}
+	
+	public ExchangeCfg(String exchangeName, ServerCfg serverCfg) {
+		super();
+		this.exchangeName = exchangeName;
+		this.serverCfg = serverCfg;
+	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id = -1;
