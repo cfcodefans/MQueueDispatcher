@@ -7,6 +7,8 @@ import javax.persistence.Basic;
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -233,5 +235,37 @@ public class QueueCfg extends Configuration {
 	
 	public static ExchangeCfg defaultExchange(QueueCfg qc) {
 		return new ExchangeCfg(qc.getQueueName()+"_router", qc.getServerCfg());
+	}
+	
+	@Embeddable
+	public static class Status {
+		@Basic
+		private long processed = 0;
+		@Basic
+		private long failed = 0;
+		
+		public long getProcessed() {
+			return processed;
+		}
+		public void setProcessed(long processed) {
+			this.processed = processed;
+		}
+		public long getFailed() {
+			return failed;
+		}
+		public void setFailed(long failed) {
+			this.failed = failed;
+		}
+	}
+	
+	@Embedded
+	private Status status;
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
 	}
 }

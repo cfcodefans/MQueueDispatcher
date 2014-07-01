@@ -6,8 +6,8 @@
 			<head>
 			</head>
 			<body>
-				<select class="form-control" id="exchangeCfgs" multiple="multiple">
-					<xsl:for-each select="exchangeCfgs/exchange">
+				<select class="form-control" id="exchangeCfgs" multiple="multiple" size="7">
+					<xsl:for-each select="exchangeCfgs/exchangeCfg">
 						<option value="{id}">
 							<xsl:value-of select="exchangeName" /> &#160;
 							<xsl:value-of select="serverCfg/userName" /> &#160;

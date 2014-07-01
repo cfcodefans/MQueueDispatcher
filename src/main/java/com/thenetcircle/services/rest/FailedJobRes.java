@@ -25,12 +25,6 @@ import com.thenetcircle.services.dispatcher.entity.MessageContext;
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class FailedJobRes {
 
-	@PathParam("id")
-	private Integer mqueueId;
-	
-	@QueryParam("status_code")
-	private Integer statusCode;
-
 	protected static final Log log = LogFactory.getLog(FailedJobRes.class.getName());
 
 	@Inject
@@ -66,4 +60,6 @@ public class FailedJobRes {
 	public String options() {
 		return "this endpoint is for MQueueCfg management";
 	}
+	
+	
 }

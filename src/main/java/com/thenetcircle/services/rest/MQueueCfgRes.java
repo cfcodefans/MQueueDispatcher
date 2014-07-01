@@ -30,6 +30,7 @@ import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
+import com.thenetcircle.services.dispatcher.dao.MessageContextDao;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
@@ -172,8 +173,8 @@ public class MQueueCfgRes {
 	@GET
 	@Path("/page_{page_idx}")
 	public List<QueueCfg> getQueueCfgs(@PathParam("page_idx") int pageIdx, @QueryParam("size") int pageSize) {
-		List<QueueCfg> qcPage = qcDao.findAll();// qcDao.page(pageIdx,
-												// pageSize);
+		// qcDao.page(pageIdx,  pageSize);
+		List<QueueCfg> qcPage = qcDao.findAll();
 		return qcPage;
 	}
 
@@ -227,4 +228,5 @@ public class MQueueCfgRes {
 		}
 		return qc;
 	}
+	
 }

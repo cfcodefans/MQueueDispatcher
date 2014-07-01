@@ -44,26 +44,11 @@
 	<article>
 	<div class="panel container-fluid">
 		<div class="panel-heading">
-			<button type="button" id="createBtn" class="btn btn-default btn-sm" onclick="createQueueCfg()">create</button>
+			<h3 class="panel-title">Queue: </h3>
 		</div>
-		<div class="panel-body" id="tbl_container"></div>
-	</div>
-	</article>
-
-	<textarea id="template_xslt" style="display: none"> 
-
-	</textarea>
-	
-		<div class="modal fade" id="edit_modal_div">
-		<div class="modal-dialog">
-			<form class="form-horizontal" role="form" id="edit_form">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-						<h4 class="modal-title">Edit Queue</h4>
-					</div>
-					<div class="modal-body">
-						<div class="form-group">
+		<div class="panel-body" id="main_div">
+			<form class="form-horizontal" role="form" id="queue_form">
+				<div class="form-group">
 							<label for="queueName" class="col-sm-2 control-label">queue name</label>
 							<div class="col-sm-10">
 								<input type="text" class="form-control" id="queueName">
@@ -138,21 +123,16 @@
 							<div class="col-sm-10">
 								<input type="number" class="form-control" id="timeout" min="0">
 							</div>
-						</div>				
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary" onclick="save(QueueCfg)">Save</button>
-					</div>
-					
-				</div>
-			</form>
-			<!-- /.modal-content -->
+						</div>		
+			</form>	
 		</div>
-		<!-- /.modal-dialog -->
 	</div>
-	<!-- /.modal -->
+	</article>
 
+	<textarea id="template_xslt" style="display: none"> 
+
+	</textarea>
+	
 	<script type="text/javascript" src="../res/jquery-2.1.1.js"></script>
 	<script type="text/javascript" src="../res/jquery.xslt.js"></script>
 	

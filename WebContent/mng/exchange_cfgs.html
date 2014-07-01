@@ -16,6 +16,7 @@
 <body>
 
 	<!-- Fixed navbar navbar-fixed-top -->
+	<header>
 	<div class="navbar navbar-default " role="navigation">
 		<div class="container">
 			<div class="navbar-header">
@@ -38,13 +39,16 @@
 			<!--/.nav-collapse -->
 		</div>
 	</div>
+	</header>
 
+	<article>
 	<div class="panel container-fluid">
 		<div class="panel-heading">
 			<button type="button" id="createBtn" class="btn btn-default btn-sm" onclick="createExchangeCfg()">create</button>
 		</div>
 		<div class="panel-body" id="tbl_container"></div>
 	</div>
+	</article>
 
 	<textarea id="template_xslt" style="display: none"> 
 
@@ -225,12 +229,12 @@
 			var tx = $("#template_xslt")[0];
 			var cd = $("#tbl_container");
 
-			var xslt = $.get("exchange_cfg_table.xsl");
-			var xhr = RS.ctx.ExchangeCfgRes.getAll.call().done(
-					function(data, textStatus, jqXHR) {
-						cd.xslt(jqXHR.responseText, xslt);
-						$('#exchange_cfg_tbl').dataTable();
-					});
+			var xslt_xhr = $.ajax({url:"exchange_cfg_table.xsl", async:false});
+			var xslt = xslt_xhr.responseText;
+			var xhr = RS.ctx.ExchangeCfgRes.getAll.call({async:false});
+			var data = xhr.responseText;
+			cd.xslt(data, xslt);
+			$('#exchange_cfg_tbl').dataTable();
 		}
 		
 		loadData();
