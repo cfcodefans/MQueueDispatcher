@@ -26,13 +26,14 @@ public class AjaxResMetaData implements Serializable {
 		text, html, script, json, jsonp, xml;
 
 		@SuppressWarnings("unchecked")
-		public static final Map<MediaType, DataType> internalMap = MiscUtils.map(MediaType.APPLICATION_JSON_TYPE, json,
-
-		MediaType.TEXT_PLAIN_TYPE, text,
-
-		MediaType.APPLICATION_XML_TYPE, xml, MediaType.TEXT_XML_TYPE, xml,
-
-		MediaType.TEXT_HTML, html, MediaType.APPLICATION_XHTML_XML_TYPE, html);
+		public static final Map<MediaType, DataType> internalMap = MiscUtils.map(
+				MediaType.APPLICATION_JSON_TYPE, json,
+				MediaType.TEXT_PLAIN_TYPE, text,
+				MediaType.APPLICATION_XML_TYPE, xml, 
+				MediaType.TEXT_XML_TYPE, xml,
+				MediaType.TEXT_HTML, html, 
+				MediaType.APPLICATION_XHTML_XML_TYPE, html,
+				MediaType.valueOf("text/event-stream"), text);
 
 		public static List<DataType> convert(List<MediaType> mediaTypes) {
 			final List<DataType> dataTypeList = new ArrayList<DataType>();

@@ -11,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
 import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
 
@@ -63,26 +64,27 @@ public class Responder implements IMessageActor, Runnable {
 	}
 
 	@Override
-	public MessageContext handle(MessageContext mc) {
-		if (mc == null) return null;
+	public MessageContext handle(final MessageContext mc) {
+		if (mc == null) {
+			return null;
+		}
 		
+		final QueueCfg queueCfg = mc.getQueueCfg();
+		queueCfg.getStatus().processed();
 		try {
 			if (mc.isSucceeded()) {
-//				MQueues.instance().acknowledge(mc);
 				if (mc.getFailTimes() > 1) {
 					failsafe.handover(mc);
 				}
 				return MQueues.instance().acknowledge(mc);
 			}
 			
+			queueCfg.getStatus().failed();
 			if (!mc.isExceedFailTimes()) {
-//			MQueues.getInstance().reject(mc, true);
 				return failsafe.handover(mc);
-//				return HttpDispatcherActor.instance().handover(mc);
 			}
 			
 			log.info(String.format("MessageContext: %d exceeds the retryLimit: %d", mc.getId(), mc.getQueueCfg().getRetryLimit()));
-//		return MQueues.getInstance().reject(mc, false);
 			return MQueues.instance().acknowledge(mc);
 		} catch (Exception e) {
 			log.error("failed to handle: \n\t" + mc, e);

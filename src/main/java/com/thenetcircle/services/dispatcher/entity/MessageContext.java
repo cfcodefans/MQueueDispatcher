@@ -173,7 +173,11 @@ public class MessageContext implements Serializable {
 
 	@Transient
 	public boolean isExceedFailTimes() {
-		return failTimes > queueCfg.getRetryLimit();
+		final int retryLimit = queueCfg.getRetryLimit();
+		if (retryLimit == 0) {
+			return false;
+		}
+		return failTimes > retryLimit;
 	}
 
 	public long fail() {

@@ -28,7 +28,7 @@ public class StartUpListener implements ServletContextListener {
 	@Override
 	public void contextInitialized(final ServletContextEvent paramServletContextEvent) {
 		log.info(MiscUtils.invocationInfo());
-//		startup();
+		startup();
 	}
 
 	@Override
@@ -49,8 +49,8 @@ public class StartUpListener implements ServletContextListener {
 			return ;
 		}
 		
-//		MQueues.instance().initWithQueueCfgs(qcList);
-//		Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
+		MQueues.instance().initWithQueueCfgs(qcList);
+		Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
 	}
 
 }

@@ -15,7 +15,7 @@ import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 public class ConsumerActor extends DefaultConsumer {
 
 	private QueueCfg queueCfg;
-	protected static final Log log = LogFactory.getLog(ConsumerActor.class.getSimpleName());
+	protected static final Log log = LogFactory.getLog(ConsumerActor.class.getName());
 
 	public ConsumerActor(final QueueCfg queueCfg) {
 		super(MQueues.instance().getChannel(queueCfg));

@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
+import com.thenetcircle.services.dispatcher.dao.GeneralDao;
 import com.thenetcircle.services.dispatcher.dao.MessageContextDao;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
@@ -22,6 +23,7 @@ public class WeldBinder extends AbstractBinder {
 			bind(getBean(ExchangeCfgDao.class)).to(ExchangeCfgDao.class);
 			bind(getBean(ServerCfgDao.class)).to(ServerCfgDao.class);
 			bind(getBean(MessageContextDao.class)).to(MessageContextDao.class);
+			bind(GeneralDao.class);
 			
 //			for (Iterator it = CDI.current().select(DefaultLiteral.INSTANCE).iterator(); it.hasNext();) {
 //				log.info(it.next());

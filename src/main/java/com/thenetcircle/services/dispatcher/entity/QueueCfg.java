@@ -31,6 +31,8 @@ import com.thenetcircle.services.dispatcher.failsafe.FailsafeCfg;
 @Table(name="queue_cfg")
 @Cacheable
 public class QueueCfg extends Configuration {
+	private static final int DEFAUTL_RETRY_TIMES = 100;
+
 	public static final String DEFAULT_ROUTE_KEY = "default_route_key";
 
 	private static final long serialVersionUID = 1L;
@@ -212,8 +214,11 @@ public class QueueCfg extends Configuration {
 		this.queueName = queueName;
 	}
 
-	public void setRetryLimit(int retryLimit) {
-		this.retryLimit = retryLimit;
+	public void setRetryLimit(int _retryLimit) {
+		if (_retryLimit < 0) {
+			_retryLimit = DEFAUTL_RETRY_TIMES;
+		}
+		this.retryLimit = _retryLimit;
 	}
 	
 	public void setRouteKey(String routeKey) {
@@ -256,10 +261,18 @@ public class QueueCfg extends Configuration {
 		public void setFailed(long failed) {
 			this.failed = failed;
 		}
+		
+		public long processed() {
+			return ++processed;
+		}
+		
+		public long failed() {
+			return ++failed;
+		}
 	}
 	
 	@Embedded
-	private Status status;
+	private Status status = new Status();
 
 	public Status getStatus() {
 		return status;

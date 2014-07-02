@@ -1,4 +1,4 @@
-package com.thenetcircle.services;
+
 
 import java.net.URI;
 import java.util.Collection;
@@ -16,6 +16,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
 import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.common.WeldContext;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -49,8 +50,8 @@ public class Bootstrap {
 //			
 //			Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
 //			log.info("register MQueues.cleaner to shutdown hook");
-//			Bootstrap bs = WeldContext.INSTANCE.getBean(Bootstrap.class);
-//			bs.startup();
+			Bootstrap bs = WeldContext.INSTANCE.getBean(Bootstrap.class);
+			bs.startup();
 //			startHttpServer();
 //			Thread.currentThread().join();
 		} catch (Exception e) {
