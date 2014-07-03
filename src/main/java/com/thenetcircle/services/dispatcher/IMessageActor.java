@@ -4,12 +4,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
+import com.thenetcircle.services.dispatcher.mgr.Monitor;
 
 public interface IMessageActor {
 	MessageContext handover(final MessageContext mc);
@@ -76,4 +80,54 @@ public interface IMessageActor {
 		
 		public static final DefaultMessageActor instance = new DefaultMessageActor();
 	}
+	
+	public static class AsyncMessageActor implements IMessageActor, Runnable {
+
+		protected boolean stopped = false;
+		protected BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
+		protected static final Log log = LogFactory.getLog(AsyncMessageActor.class.getName());
+
+		@Override
+		public void run() {
+			stopped = false;
+			try {
+				while (!(Thread.interrupted() || stopped)) {
+					handle(buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT));
+				}
+			} catch (Exception e) {
+				log.error("Responder is interrupted", e);
+			}
+			stopped = true;
+			log.info("Responder quits");
+		}
+
+		@Override
+		public MessageContext handover(final MessageContext mc) {
+			buf.offer(mc); 
+			return mc;
+		}
+
+		@Override
+		public void handover(final Collection<MessageContext> mcs) {
+			buf.addAll(mcs);
+		}
+
+		@Override
+		public void handle(final Collection<MessageContext> mcs) {
+			for (final MessageContext mc : mcs) {
+				handle(mc);
+			}
+		}
+
+		@Override
+		public void stop() {
+			stopped = true;
+		}
+
+		@Override
+		public MessageContext handle(final MessageContext mc) {
+			return null;
+		}
+	}
+	
 }

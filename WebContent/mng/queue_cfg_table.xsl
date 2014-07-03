@@ -16,6 +16,9 @@
 					<th>timeout</th>
 					<th>host header</th>
 					<th>retry limit</th>
+					<th>processed</th>
+					<th>failed</th>
+					
 					<th></th>
 				</tr>
 			</thead>
@@ -24,7 +27,7 @@
 					<td><xsl:value-of select="id" /></td>
 					<td><xsl:value-of select="serverCfg/userName" /></td>
 					<td style="word-break:break-all"> 
-						<a href="queue_ctrl.html">
+						<a href="queue_ctrl.html?qc_id={id}">
 						<xsl:value-of select="queueName" />	
 						</a>
 					</td>
@@ -33,6 +36,8 @@
 					<td><xsl:value-of select="destCfg/timeout" /></td>
 					<td style="word-break:break-all"><xsl:value-of select="destCfg/hostHead" /></td>
 					<td><xsl:value-of select="retryLimit" /></td>
+					<td><xsl:value-of select="status/processed" /></td>
+					<td><xsl:value-of select="status/failed" /></td>
 					<td>
 						<div class="btn-group">
 						  <button type="button" id="editBtn" class="btn btn-default btn-sm" onclick="editQueueCfg({id})">edit</button>

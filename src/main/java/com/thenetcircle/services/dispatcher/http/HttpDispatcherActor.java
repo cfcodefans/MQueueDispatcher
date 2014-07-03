@@ -31,16 +31,16 @@ import com.thenetcircle.services.dispatcher.entity.MessageContext;
 
 public class HttpDispatcherActor implements IMessageActor {
 
-	private List<CloseableHttpAsyncClient> hacs;
-	
-
 	private static class RespHandler implements FutureCallback<HttpResponse> {
-//		private static IFailsafe failsafe = DefaultFailedMessageHandler.instance();
 		private MessageContext mc;
 
 		public RespHandler(final MessageContext mc) {
 			super();
 			this.mc = mc;
+		}
+
+		public void cancelled() {
+
 		}
 
 		public void completed(final HttpResponse resp) {
@@ -52,9 +52,7 @@ public class HttpDispatcherActor implements IMessageActor {
 				respStr = e.getMessage();
 			}
 
-			mc.setResponse(respStr.trim());
-//			Responder.instance().handover(mc);
-//			log.info(String.format("msg: %d, \tresponse: '%s', \tfailTimes: %d", mc.getId(), StringUtils.left(mc.getResponse(), 5), mc.getFailTimes()));
+			mc.setResponse(String.format("{status: %d, resp: '%s'}", resp.getStatusLine().getStatusCode(), respStr.trim()));
 			MQueues.instance().getNextActor(instance).handover(mc);
 		}
 
@@ -63,26 +61,30 @@ public class HttpDispatcherActor implements IMessageActor {
 			mc.setResponse(e.getMessage());
 			MQueues.instance().getNextActor(instance).handover(mc);
 		}
-
-		public void cancelled() {
-
-		}
-	}
-
-	private void initHttpAsyncClients() {
-		hacs = new ArrayList<CloseableHttpAsyncClient>();
-		for (int i = 0, j = 4; i < j; i++) {
-			CloseableHttpAsyncClient hac = null;
-			RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(DEFAULT_TIMEOUT).setConnectTimeout(DEFAULT_TIMEOUT).build();
-			hac = HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig).build();
-			hac.start();
-			hacs.add(hac);
-		}
-		httpClientIterator = new LoopingArrayIterator<CloseableHttpAsyncClient>(hacs.toArray(new CloseableHttpAsyncClient[0]));
 	}
 
 	public static final int DEFAULT_TIMEOUT = 30000;
+
+	private static HttpDispatcherActor instance = new HttpDispatcherActor();
+
+	protected static final Log log = LogFactory.getLog(HttpDispatcherActor.class.getSimpleName());
+	public static HttpDispatcherActor instance() {
+		return instance;
+	}
+
+	private List<CloseableHttpAsyncClient> hacs;
+
 	private LoopingArrayIterator<CloseableHttpAsyncClient> httpClientIterator = null;
+
+	private HttpDispatcherActor() {
+		initHttpAsyncClients();
+	}
+
+	public void handle(Collection<MessageContext> mcs) {
+		for (final MessageContext mc : mcs) {
+			handle(mc);
+		}
+	}
 
 	public MessageContext handle(final MessageContext mc) {
 		final HttpDestinationCfg destCfg = mc.getQueueCfg().getDestCfg();
@@ -120,6 +122,15 @@ public class HttpDispatcherActor implements IMessageActor {
 		return mc;
 	}
 
+	public void handover(Collection<MessageContext> mcs) {
+		handle(mcs);
+	}
+
+	public MessageContext handover(MessageContext mc) {
+		handle(mc);
+		return mc;
+	}
+
 	public void shutdown() {
 		if (CollectionUtils.isEmpty(hacs))
 			return;
@@ -132,40 +143,12 @@ public class HttpDispatcherActor implements IMessageActor {
 		}
 	}
 
-	protected static final Log log = LogFactory.getLog(HttpDispatcherActor.class.getSimpleName());
-
-	private static HttpDispatcherActor instance = new HttpDispatcherActor();
-
-	private HttpDispatcherActor() {
-		initHttpAsyncClients();
-	}
-
-	public static HttpDispatcherActor instance() {
-		return instance;
-	}
-
-	public MessageContext handover(MessageContext mc) {
-//		log.info(" deliveryTag: " + mc.getDelivery().getEnvelope().getDeliveryTag());
-		handle(mc);
-		return mc;
-	}
-
-	public void handover(Collection<MessageContext> mcs) {
-		handle(mcs);
-	}
-
-	public void handle(Collection<MessageContext> mcs) {
-		for (final MessageContext mc : mcs) {
-			handle(mc);
-		}
-	}
-	
 	public void stop() {
 		for (final CloseableHttpAsyncClient hac : hacs) {
 			close(hac);
 		}
 	}
-
+	
 	private void close(final CloseableHttpAsyncClient hac) {
 		if (!hac.isRunning()) {
 			return;
@@ -175,6 +158,18 @@ public class HttpDispatcherActor implements IMessageActor {
 		} catch (IOException e) {
 			log.error("failed to close CloseableHttpAsyncClient", e);
 		}
+	}
+
+	private void initHttpAsyncClients() {
+		hacs = new ArrayList<CloseableHttpAsyncClient>();
+		for (int i = 0, j = 4; i < j; i++) {
+			CloseableHttpAsyncClient hac = null;
+			RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(DEFAULT_TIMEOUT).setConnectTimeout(DEFAULT_TIMEOUT).build();
+			hac = HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig).build();
+			hac.start();
+			hacs.add(hac);
+		}
+		httpClientIterator = new LoopingArrayIterator<CloseableHttpAsyncClient>(hacs.toArray(new CloseableHttpAsyncClient[0]));
 	}
 
 }

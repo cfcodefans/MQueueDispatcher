@@ -8,12 +8,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.junit.Test;
 
 import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
-import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import com.thenetcircle.services.dispatcher.entity.MessageContext;
 
 
 public class MiscTests {
@@ -67,6 +68,13 @@ public class MiscTests {
 	
 	@Test
 	public void testEntityToJson() {
-		System.out.println(Jsons.toString(new ServerCfg()));
+//		System.out.println(Jsons.toString(new ServerCfg()));
+//		System.out.println(Jsons.toString(new MessageContext()));
+		System.out.println(MiscUtils.toXML(new MessageContext()));
+	}
+	
+	@Test
+	public void testDateFormat() {
+		System.out.println(DateFormatUtils.format(System.currentTimeMillis(), "yy-MM-dd HH:mm:ss"));
 	}
 }

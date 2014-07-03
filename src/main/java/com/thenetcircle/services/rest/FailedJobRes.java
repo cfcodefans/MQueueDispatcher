@@ -1,5 +1,6 @@
 package com.thenetcircle.services.rest;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -14,21 +15,29 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.dao.MessageContextDao;
+import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
-@Path("mqueue_cfgs/mqueue_{id}/failed_jobs")
+@Path("mqueue_cfgs/queue_{qc_id}/failed_jobs")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class FailedJobRes {
 
 	protected static final Log log = LogFactory.getLog(FailedJobRes.class.getName());
 
+	@PathParam("qc_id")
+	private int qcId;
+	
 	@Inject
 	private MessageContextDao mcDao;
+	@Inject
+	private QueueCfgDao qcDao;	
 
 	public FailedJobRes() {
 		log.info(MiscUtils.invocationInfo());
@@ -37,7 +46,7 @@ public class FailedJobRes {
 	@GET
 	@Path("/{mc_id}")
 	public MessageContext get(@PathParam("mc_id") int id) {
-		MessageContext mc = mcDao.find(new Integer(id));
+		MessageContext mc = mcDao.find(new Long(id));
 		if (mc == null) {
 			throw new WebApplicationException(Response.status(Status.NOT_FOUND).entity("invalid QueueCfg: " + id).build());
 		}
@@ -47,12 +56,15 @@ public class FailedJobRes {
 
 	@GET
 	public List<MessageContext> getFailedJobs() {
-		return mcDao.findAll();
+		final QueueCfg qc = qcDao.find(qcId);
+		final Date now = new Date();
+		final Date start = DateUtils.addDays(now, -1);
+		return mcDao.queryFailedJobs(qc, start, now);
 	}
 
 	@GET
 	@Path("/page_{page_idx}")
-	public List<MessageContext> getQueueCfgs(@PathParam("page_idx") int pageIdx, @QueryParam("size") int pageSize) {
+	public List<MessageContext> getFailedMessages(@PathParam("page_idx") int pageIdx, @QueryParam("size") int pageSize) {
 		return mcDao.page(pageIdx, pageSize);
 	}
 
@@ -60,6 +72,4 @@ public class FailedJobRes {
 	public String options() {
 		return "this endpoint is for MQueueCfg management";
 	}
-	
-	
 }

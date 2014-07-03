@@ -2,6 +2,7 @@ package com.thenetcircle.services.dispatcher.entity;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Date;
 
 import javax.persistence.Basic;
 import javax.persistence.Cacheable;
@@ -18,7 +19,11 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+
+import org.apache.commons.lang3.time.DateFormatUtils;
 
 import com.rabbitmq.client.QueueingConsumer.Delivery;
 
@@ -27,16 +32,19 @@ import com.rabbitmq.client.QueueingConsumer.Delivery;
 @Table(name = "msg_ctx", indexes= {@Index(columnList="")})
 @Cacheable
 public class MessageContext implements Serializable {
+	public static final int DEFAULT_RETRY_LIMIT = 100;
+
 	private static final long serialVersionUID = 1L;
 
 	@Transient
 	private int bodyHash = 1;
 
 	@Transient
+	@XmlTransient
 	private Delivery delivery;
 
 	@Basic
-	private long failTimes;
+	private long failTimes = 0;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,14 +52,17 @@ public class MessageContext implements Serializable {
 
 	@Column(name = "msg_content", length = 10000)
 	@Lob
-	private byte[] messageBody;
+	private byte[] messageBody = new byte[0];
 
 	@ManyToOne(fetch = FetchType.EAGER, cascade=CascadeType.REFRESH)
 	@JoinColumn(name = "queue_cfg_id")
 	private QueueCfg queueCfg;
 
 	@Basic
-	private String response;
+	private String response = "ok";
+
+	@Basic
+	private long timestamp;
 
 	public MessageContext() {
 		super();
@@ -92,6 +103,12 @@ public class MessageContext implements Serializable {
 		return true;
 	}
 
+	public long fail() {
+		this.timestamp = System.currentTimeMillis();
+		return ++failTimes;
+	}
+
+	@XmlTransient
 	public Delivery getDelivery() {
 		return delivery;
 	}
@@ -104,16 +121,43 @@ public class MessageContext implements Serializable {
 		return id;
 	}
 
+	@XmlTransient
 	public byte[] getMessageBody() {
 		return messageBody;
+	}
+	
+	@XmlElement
+	public String getMessageContent() {
+		return new String(messageBody);
+	}
+
+	public long getMessageKey() {
+		final long prime = 31;
+		long result = 1;
+
+		result = prime * result + bodyHash;
+		result = prime * result + ((queueCfg == null) ? 0 : queueCfg.hashCode());
+		result = prime * result + ((response == null) ? 0 : response.hashCode());
+		return result;
 	}
 
 	public QueueCfg getQueueCfg() {
 		return queueCfg;
 	}
 
+	@XmlElement
 	public String getResponse() {
 		return response;
+	}
+
+	@XmlTransient
+	public long getTimestamp() {
+		return timestamp;
+	}
+	
+	@XmlElement
+	public String getTimestampStr() {
+		return DateFormatUtils.format(timestamp, "yy-MM-dd HH:mm:ss");
 	}
 
 	@Override
@@ -129,6 +173,25 @@ public class MessageContext implements Serializable {
 		result = prime * result + ((queueCfg == null) ? 0 : queueCfg.hashCode());
 		result = prime * result + ((response == null) ? 0 : response.hashCode());
 		return result;
+	}
+
+	@Transient
+	public boolean isExceedFailTimes() {
+		int retryLimit = (queueCfg != null ? queueCfg.getRetryLimit() : DEFAULT_RETRY_LIMIT);
+		if (retryLimit == 0) {
+			return false;
+		}
+		
+		if (retryLimit < 0) {
+			retryLimit = DEFAULT_RETRY_LIMIT;
+		}
+		
+		return failTimes > retryLimit;
+	}
+
+	@Transient
+	public boolean isSucceeded() {
+		return "ok".equalsIgnoreCase(response);
 	}
 
 	public void setDelivery(Delivery delivery) {
@@ -158,52 +221,22 @@ public class MessageContext implements Serializable {
 		this.response = response;
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("{class:\"MessageContext\",id:").append(id).append(", queueCfg:").append(queueCfg).append(", delivery:").append(delivery).append(", messageBody:").append(Arrays.toString(messageBody)).append(", response:").append(response).append(", bodyHash:")
-				.append(bodyHash).append(", failTimes:").append(failTimes).append("}");
-		return builder.toString();
-	}
-
-	@Transient
-	public boolean isSucceeded() {
-		return "ok".equalsIgnoreCase(response);
-	}
-
-	@Transient
-	public boolean isExceedFailTimes() {
-		final int retryLimit = queueCfg.getRetryLimit();
-		if (retryLimit == 0) {
-			return false;
-		}
-		return failTimes > retryLimit;
-	}
-
-	public long fail() {
-		return ++failTimes;
-	}
-
-	@Basic
-	private long timestamp;
-
-	public long getTimestamp() {
-		return timestamp;
-	}
-
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
 	
 	
-	public long getMessageKey() {
-		final long prime = 31;
-		long result = 1;
-
-		result = prime * result + bodyHash;
-//		result = prime * result + timestamp;
-		result = prime * result + ((queueCfg == null) ? 0 : queueCfg.hashCode());
-		result = prime * result + ((response == null) ? 0 : response.hashCode());
-		return result;
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("{class:\"MessageContext\",id:").append(id)
+				.append(", queueCfg:").append(queueCfg)
+				.append(", delivery:").append(delivery)
+				.append(", messageBody:'").append(new String(messageBody))
+				.append("', response:'").append(response)
+				.append(", failTimes:").append(failTimes)
+				.append("', timestamp: '").append(new Date(timestamp))
+				.append("'}");
+		return builder.toString();
 	}
 }

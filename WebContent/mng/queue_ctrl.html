@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <title>MQueue Settings</title>
 <!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="../res/bootstrap/css/bootstrap.min.css">
 <!-- Optional theme -->
-<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="../res/bootstrap/css/bootstrap-theme.min.css">
 <!-- Latest compiled and minified JavaScript -->
 
 <link rel="stylesheet" href="http://cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.css">
@@ -42,280 +42,279 @@
 	</header>
 
 	<article>
-	<div class="panel container-fluid">
-		<div class="panel-heading">
-			<h3 class="panel-title">Queue: </h3>
-		</div>
-		<div class="panel-body" id="main_div">
-			<form class="form-horizontal" role="form" id="queue_form">
-				<div class="form-group">
-							<label for="queueName" class="col-sm-2 control-label">queue name</label>
-							<div class="col-sm-10">
-								<input type="text" class="form-control" id="queueName">
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">Queue:</h3>
+					</div>
+					<div class="panel-body" id="main_div">
+						<form class="form-horizontal" role="form" id="queue_form">
+							<div class="form-group">
+								<label for="queueName" class="col-sm-2 control-label">queue name</label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control input-sm" id="queueName">
+								</div>
 							</div>
-						</div>
-						<div class="form-group">
-							<label for="queueCfg" class="col-sm-2 control-label">Server</label>
-							<div class="col-sm-10" id="serverCfg_select_div">
-								
+							<div class="form-group">
+								<label for="queueCfg" class="col-sm-2 control-label">Server</label>
+								<div class="col-sm-10" id="serverCfg_select_div"></div>
 							</div>
-						</div>
-						<div class="form-group">
-							<label for="exchanges" class="col-sm-2 control-label">Exchanges</label>
-							<div class="col-sm-10" id="exchangeCfg_select_div">
-								
+							<div class="form-group">
+								<label for="exchanges" class="col-sm-2 control-label">Exchanges</label>
+								<div class="col-sm-10" id="exchangeCfg_select_div"></div>
 							</div>
-						</div>
-						<div class="form-group">
-							<label for="routeKey" class="col-sm-2 control-label">route key</label>
-							<div class="col-sm-10">
-								<input type="text" class="form-control" id="routeKey">
+							<div class="form-group">
+								<label for="routeKey" class="col-sm-2 control-label">route key</label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control input-sm" id="routeKey">
+								</div>
 							</div>
-						</div>
-						<div class="form-group">
-							<label for="retryLimit" class="col-sm-2 control-label">retry limit</label>
-							<div class="col-sm-10">
-								<input type="number" class="form-control" id="retryLimit" min="0">
+							<div class="form-group">
+								<label for="retryLimit" class="col-sm-2 control-label">retry limit</label>
+								<div class="col-sm-10">
+									<input type="number" class="form-control input-sm" id="retryLimit" min="0">
+								</div>
 							</div>
-						</div>
 
+							<div class="form-group">
+								<label class="col-sm-2 control-label">options</label>
+								<div class="col-sm-10">
+									<label class="checkbox-inline"> <input type="checkbox" id="exclusive"> exclusive
+									</label> <label class="checkbox-inline"> <input type="checkbox" id="durable"> durable
+									</label> <label class="checkbox-inline"> <input type="checkbox" id="autoDelete"> autoDelete
+									</label>
+								</div>
+							</div>
 
-						<div class="form-group">
-							<label class="col-sm-2 control-label">options</label>
-							<div class="col-sm-10">								
-								<label class="checkbox-inline"> 
-									<input type="checkbox" id="exclusive"> exclusive
-								</label>
-								<label class="checkbox-inline"> 
-									<input type="checkbox" id="durable"> durable
-								</label>  						
-								<label class="checkbox-inline"> 
-									<input type="checkbox" id="autoDelete"> autoDelete
-								</label>  						
+							<div class="form-group">
+								<label for="url" class="col-sm-2 control-label">url</label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control input-sm" id="url">
+								</div>
 							</div>
-						</div>	
-						
-						<div class="form-group">
-							<label for="url" class="col-sm-2 control-label">url</label>
-							<div class="col-sm-10">
-								<input type="text" class="form-control" id="url">
+							<div class="form-group">
+								<label for="hostHead" class="col-sm-2 control-label">host header</label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control input-sm" id="hostHead">
+								</div>
 							</div>
+							<div class="form-group">
+								<label for="httpMethod" class="col-sm-2 control-label">http method</label>
+								<div class="col-sm-10">
+									<label class="radio-inline"> <input type="radio" name="httpMethod" id="httpMethod_post" value="post"> post
+									</label> <label class="radio-inline"> <input type="radio" name="httpMethod" id="httpMethod_get" value="get"> get
+									</label>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="timeout" class="col-sm-2 control-label">timeout</label>
+								<div class="col-sm-10">
+									<input type="number" class="form-control input-sm" id="timeout" min="0">
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<i class="fa fa-bell fa-fw"></i> Running Messages
+					</div>
+					<!-- /.panel-heading -->
+					<div class="panel-body">
+						<div class="list-group">
+							<a href="#" class="list-group-item"> <i class="fa fa-envelope fa-fw"></i> Message Sent <span class="pull-right text-muted small"><em>27 minutes ago</em> </span>
+							</a> <a href="#" class="list-group-item"> <i class="fa fa-bolt fa-fw"></i> Server Crashed! <span class="pull-right text-muted small"><em>11:13 AM</em> </span>
+							</a> <a href="#" class="list-group-item"> <i class="fa fa-warning fa-fw"></i> Server Not Responding <span class="pull-right text-muted small"><em>10:57 AM</em> </span>
+							</a>
 						</div>
-						<div class="form-group">
-							<label for="hostHead" class="col-sm-2 control-label">host header</label>
-							<div class="col-sm-10">
-								<input type="text" class="form-control" id="hostHead">
-							</div>
-						</div>	
-						<div class="form-group">
-							<label for="httpMethod" class="col-sm-2 control-label">http method</label>
-							<div class="col-sm-10">
-								<label class="radio-inline">
-								  <input type="radio" name="httpMethod" id="httpMethod_post" value="post"> post
-								</label>
-								<label class="radio-inline">
-								  <input type="radio" name="httpMethod" id="httpMethod_get" value="get"> get
-								</label>
-							</div>
-						</div>	
-						<div class="form-group">
-							<label for="timeout" class="col-sm-2 control-label">timeout</label>
-							<div class="col-sm-10">
-								<input type="number" class="form-control" id="timeout" min="0">
-							</div>
-						</div>		
-			</form>	
+						<!-- /.list-group -->
+					</div>
+					<!-- /.panel-body -->
+				</div>
+			</div>
 		</div>
-	</div>
+
+		<div class="row">
+			<div class="col-lg-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<i class="fa fa-bell fa-fw"></i> Failed Messages
+				</div>
+				<!-- /.panel-heading -->
+				<div class="panel-body" id="message_ctx_tbl_div">
+					
+				</div>
+				<!-- /.panel-body -->
+			</div>
+			</div>
+		</div>
 	</article>
 
-	<textarea id="template_xslt" style="display: none"> 
-
-	</textarea>
-	
 	<script type="text/javascript" src="../res/jquery-2.1.1.js"></script>
 	<script type="text/javascript" src="../res/jquery.xslt.js"></script>
 	
-	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+	<script src="../res/bootstrap/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="http://cdn.datatables.net/1.10.0/js/jquery.dataTables.js"></script>
 	<script type="text/javascript" src="http://cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.js"></script>
 	
 	<script type="text/javascript" src="/dispatcher-0.0.1/rest/v1/ajax" id="ajax_metadata"></script>
 	<script type="text/javascript" src="../res/rest.js"></script>
+	<script type="text/javascript" src="mng.js"></script>
 	
 	<script type="text/javascript">
-	function newQueueCfg(original) {
-		var QueueCfg = null;
-		if (original) {
-			QueueCfg = $.extend({}, original);
-			QueueCfg.id = -1;
-		} else {
-			QueueCfg = {"version":0,"autoDelete":false,
-						"destCfg":{"version":0,"hostHead":null,"httpMethod":"post","id":-1,"timeout":30000,"url":null},
-						"durable":true,"enabled":true,
-						"exchanges":[],
-						"exclusive":false,"id":-1,"priority":0,"queueName":null,"retryLimit":0,"routeKey":"default_route_key",
-						"serverCfg":null}
-		}
-		return QueueCfg;
-	}
 
-	function getQueueCfg(idx) {
-		if (!idx || idx < 0) {
-			return newQueueCfg();
+		function getQueueCfg(idx) {
+			if (!idx || idx < 0) {
+				return newQueueCfg();
+			}
+
+			var QueueCfg = null;
+			var xhr = RS.ctx.MQueueCfgRes.getJson.with_qc_id(idx).call();
+			if (xhr.statusCode().status != 200) {
+				console.log(xhr);
+				return;
+			}
+			QueueCfg = xhr.responseJSON;
+			return QueueCfg;
 		}
 
-		var QueueCfg = null;
-		var xhr = RS.ctx.MQueueCfgRes.getJson.with_qc_id(idx).call();
-		if (xhr.statusCode().status != 200) {
-			console.log(xhr);
-			return;
+		function editQueueCfg(idx) {
+			window.QueueCfg = null;
+			window.QueueCfg = getQueueCfg(idx);
+			fillForm(window.QueueCfg);
 		}
-		QueueCfg = xhr.responseJSON;
-		return QueueCfg;
-	}
 
-	function createQueueCfg() {
-		window.QueueCfg = null;
-		window.QueueCfg = newQueueCfg();
-		fillForm(window.QueueCfg);
-		$('#edit_modal_div').modal();
-	}
-	
-	function editQueueCfg(idx) {
-		window.QueueCfg = null;
-		window.QueueCfg = getQueueCfg(idx);
-		fillForm(window.QueueCfg);
-		$('#edit_modal_div').modal();
-	}
+		function fillForm(qc) {
+			if (!qc)
+				return;
+			var ef = $("#queue_form");
 
-	function copyQueueCfg(idx) {
-		window.QueueCfg = null;
-		window.QueueCfg = newQueueCfg(getQueueCfg(idx));
-		fillForm(window.QueueCfg);
-		$('#edit_modal_div').modal();
-	}
+			ef.find("#queueName").val(qc.queueName);
+			ef.find("#routeKey").val(qc.routeKey);
+			ef.find("#retryLimit").val(qc.retryLimit);
 
-	function fillForm(qc) {
-		if (!qc)
-			return;
-		var ef = $("#edit_form");
+			ef.find("#exclusive").attr("checked", qc.exclusive);
+			ef.find("#durable").attr("checked", qc.durable);
+			ef.find("#autoDelete").attr("checked", qc.autoDelete);
 
-		ef.find("#queueName").val(qc.queueName);
-		ef.find("#routeKey").val(qc.routeKey);
-		ef.find("#retryLimit").val(qc.retryLimit);
+			ef.find("#hostHead").val(qc.destCfg.hostHead);
+			ef.find("[name='httpMethod']").filter(
+					"[value='" + qc.destCfg.httpMethod + "']").attr("checked",
+					true);
+			ef.find("#timeout").val(qc.destCfg.timeout);
+			ef.find("#url").val(qc.destCfg.url);
 
-		ef.find("#exclusive").attr("checked", qc.exclusive);
-		ef.find("#durable").attr("checked", qc.durable);
-		ef.find("#autoDelete").attr("checked", qc.autoDelete);
+			if (qc.serverCfg) {
+				ef.find("#serverCfg").val(qc.serverCfg.id);
+			}
 
-		ef.find("#hostHead").val(qc.destCfg.hostHead);
-		ef.find("[name='httpMethod']").filter("[value='" + qc.destCfg.httpMethod + "']").attr("checked", true);
-		ef.find("#timeout").val(qc.destCfg.timeout);
-		ef.find("#url").val(qc.destCfg.url);
-		
-		if (qc.serverCfg) {			
-			ef.find("#serverCfg").val(qc.serverCfg.id);
+			var ecs = ef.find("#exchangeCfgs").find("option");
+			ecs.attr("selected", false);
+			for ( var i = 0, j = qc.exchanges.length; i < j; i++) {
+				var ec = qc.exchanges[i];
+				ecs.filter("[value='" + ec.id + "']").attr("selected", true);
+			}
 		}
-		
-		var ecs = ef.find("#exchangeCfgs").find("option");
-		ecs.attr("selected", false);
-		for (var i = 0, j = qc.exchanges.length; i < j; i++) {
-			var ec = qc.exchanges[i];
-			ecs.filter("[value='" + ec.id + "']").attr("selected", true);			
-		}
-	}
-	
-	function toEntity(qc) {
-		var ef = $("#edit_form")[0];
 
-		qc.queueName = ef["queueName"].value;
-		qc.routeKey = ef["routeKey"].value;
-		qc.retryLimit = ef["retryLimit"].value;
-		
-		qc.exclusive = ef["exclusive"].checked;
-		qc.durable = ef["durable"].checked;
-		qc.autoDelete = ef["autoDelete"].checked;
-		
-		qc.destCfg.hostHead = ef["hostHead"].value;
-		qc.destCfg.httpMethod = ef["httpMethod"].value;
-		qc.destCfg.timeout = ef["timeout"].value;
-		qc.destCfg.url = ef["url"].value;
-		
-		qc.serverCfg = {id:ef["serverCfg"].value}
-		for (var ex_ids = ef["exchangeCfgs"].value.split(","), i = 0;
-			 i < ex_ids.length;
-			 i++) {
-			if (parseInt(ex_ids[i]) > 0)
-			qc.exchanges.push({id:ex_ids[i]});
+		function toEntity(qc) {
+			var ef = $("#queue_form")[0];
+
+			qc.queueName = ef["queueName"].value;
+			qc.routeKey = ef["routeKey"].value;
+			qc.retryLimit = ef["retryLimit"].value;
+
+			qc.exclusive = ef["exclusive"].checked;
+			qc.durable = ef["durable"].checked;
+			qc.autoDelete = ef["autoDelete"].checked;
+
+			qc.destCfg.hostHead = ef["hostHead"].value;
+			qc.destCfg.httpMethod = ef["httpMethod"].value;
+			qc.destCfg.timeout = ef["timeout"].value;
+			qc.destCfg.url = ef["url"].value;
+
+			qc.serverCfg = {
+				id : ef["serverCfg"].value
+			}
+			for ( var ex_ids = ef["exchangeCfgs"].value.split(","), i = 0; i < ex_ids.length; i++) {
+				if (parseInt(ex_ids[i]) > 0)
+					qc.exchanges.push({
+						id : ex_ids[i]
+					});
+			}
+
+			return qc;
 		}
-		
-		return qc;
-	}
 
 		function save(QueueCfg) {
 			QueueCfg = toEntity(QueueCfg);
-			var xhr = null; 
-						
+			var xhr = null;
+
 			if (QueueCfg.id < 0) {
-				xhr = RS.ctx.QueueCfgRes.create.with_entity(JSON.stringify(QueueCfg)).call({async:false});	
+				xhr = RS.ctx.QueueCfgRes.create.with_entity(
+						JSON.stringify(QueueCfg)).call({
+					async : false
+				});
 			} else {
-				xhr = RS.ctx.QueueCfgRes.update.with_entity(JSON.stringify(QueueCfg)).call({async:false});	
-			}			
+				xhr = RS.ctx.QueueCfgRes.update.with_entity(
+						JSON.stringify(QueueCfg)).call({
+					async : false
+				});
+			}
 
 			if (xhr.statusCode().status != 200) {
 				console.log(xhr);
 				return;
 			}
-			
+
 			var newQueueCfg = xhr.responseJSON;
 			loadData();
-			
+
 			$('#edit_modal_div').modal('hide');
 		}
 
-		function loadData() {
+		function loadFailedMsgs() {
 
 			var tx = $("#template_xslt")[0];
 			var cd = $("#tbl_container");
-			
-			var xslt_xhr = $.ajax({url:"queue_cfg_table.xsl", async:false});
+
+			var xslt_xhr = $.ajax({
+				url : "queue_cfg_table.xsl",
+				async : false
+			});
 			var xslt = xslt_xhr.responseText;
-			var xhr = RS.ctx.MQueueCfgRes.getAll.call({async:false});
+			var xhr = RS.ctx.MQueueCfgRes.getAll.call({
+				async : false
+			});
 			var data = xhr.responseText;
 			cd.xslt(data, xslt);
 			$('#mqueue_cfg_tbl').dataTable();
 		}
-		
-		loadData();
-		
-		function loadServerCfgOpts() {
-			var xhr = RS.ctx.ServerCfgRes.getAll.call({async:false});
-			var xslt_xhr = $.ajax({url:"server_cfg_opts.xsl", async:false});
-			var xslt = xslt_xhr.responseText;
-			$("#serverCfg_select_div").xslt(xhr.responseText, xslt);
-			$("#serverCfg").change(
-				function() {
-					loadExchangeCfgOpts($(this).val());
-				});
+
+		function loadFailedJobs(qc_id) {
+			var xhr = RS.ctx.FailedJobRes.getFailedJobs.with_qc_id(qc_id).call();
+			var data = xhr.responseText;
+			loadIntoDom("#message_ctx_tbl_div", data, "message_ctx_table.xsl");
+			$("#message_ctx_tbl").dataTable();
 		}
 		
-		loadServerCfgOpts();
-
-		function loadExchangeCfgOpts(serverCfgId) {
-			var ecs = null;
-			var xhr = null;
-			if (serverCfgId && serverCfgId > 0) {
-				xhr = RS.ctx.ExchangeCfgRes.getExchangesByServer.with_server_id(serverCfgId).call({async:false});
-			} else {
-				xhr = RS.ctx.ExchangeCfgRes.getAll.call({async:false});
+		function loadQueueCfg() {
+			var searchStr = document.location.search;
+			var matches = searchStr.match(/id=\d*/);
+			if (!matches || matches.length == 0) {
+				return;
 			}
-
-			ecs = xhr.responseText;
-
-			$("#exchangeCfg_select_div").xslt(ecs, "exchange_cfg_opts.xsl");
+			
+			var idx = parseInt(matches[0].match(/\d+/)[0]);
+			editQueueCfg(idx);
+			
+			loadFailedJobs(idx);
 		}
 		
+		loadQueueCfg();
+		loadServerCfgOpts();
 		loadExchangeCfgOpts();
 	</script>
 </body>

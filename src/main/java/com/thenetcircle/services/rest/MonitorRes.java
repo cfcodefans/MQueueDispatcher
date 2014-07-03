@@ -1,5 +1,6 @@
 package com.thenetcircle.services.rest;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -9,16 +10,21 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.media.sse.EventOutput;
+import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.glassfish.jersey.media.sse.SseFeature;
 
+import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
+import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.mgr.Monitor;
 
 @Path("monitor")
 public class MonitorRes {
@@ -27,17 +33,42 @@ public class MonitorRes {
 	
 	private static final ExecutorService es = Executors.newCachedThreadPool();
 	
-	private static class Worker implements Runnable {
+	private static class Watcher extends IMessageActor.AsyncMessageActor {
 		private EventOutput eventOutput = null;
 		
-		public Worker(EventOutput eventOutput) {
+		public Watcher(EventOutput eventOutput) {
 			super();
 			this.eventOutput = eventOutput;
 		}
 
 		@Override
+		public MessageContext handle(final MessageContext mc) {
+			final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
+			OutboundEvent oe = eventBuilder.mediaType(MediaType.APPLICATION_ATOM_XML_TYPE).data(mc).build();
+			try {
+				eventOutput.write(oe);
+			} catch (IOException e) {
+				throw new RuntimeException("Error when writing the event.", e);
+			} finally {
+				try {
+					eventOutput.close();
+				} catch (IOException ioClose) {
+					throw new RuntimeException("Error when closing the event output.", ioClose);
+				}
+			}
+			return mc;
+		}
+		
+		@Override
 		public void run() {
-			
+			try {
+				while (!(Thread.interrupted())) {
+					handle(buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT));
+				}
+			} catch (Exception e) {
+				log.error("Responder is interrupted", e);
+			}
+			log.info("Responder quits");
 		}
 	}
 	
@@ -54,6 +85,10 @@ public class MonitorRes {
 		}
 		
 		final EventOutput eventOutput = new EventOutput();
+		
+		Watcher watcher = new Watcher(eventOutput);
+		Monitor.instance().register(qc, watcher);
+		es.submit(watcher);
 		
 		return eventOutput;
 	}

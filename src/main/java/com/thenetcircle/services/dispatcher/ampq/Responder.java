@@ -8,12 +8,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
 import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
+import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
+import com.thenetcircle.services.dispatcher.mgr.Monitor;
 
 public class Responder implements IMessageActor, Runnable {
 
@@ -71,6 +74,9 @@ public class Responder implements IMessageActor, Runnable {
 		
 		final QueueCfg queueCfg = mc.getQueueCfg();
 		queueCfg.getStatus().processed();
+		
+		Monitor.instance().handover(mc);
+		
 		try {
 			if (mc.isSucceeded()) {
 				if (mc.getFailTimes() > 1) {
@@ -80,6 +86,18 @@ public class Responder implements IMessageActor, Runnable {
 			}
 			
 			queueCfg.getStatus().failed();
+			
+			QueueCfg qc = mc.getQueueCfg();
+			Logger srvLog = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());
+			String logStr = String.format("\nMessage failed %d times\n\tfrom queue: %s\n\tto url: %s\n\tcontent: %s\n\tresponse: %s\n", 
+					mc.getFailTimes(), 
+					qc.getQueueName(), 
+					qc.getDestCfg().getUrl(),
+					mc.getMessageContent(), 
+					mc.getResponse());
+			log.info(logStr);
+			srvLog.info(logStr);
+			
 			if (!mc.isExceedFailTimes()) {
 				return failsafe.handover(mc);
 			}

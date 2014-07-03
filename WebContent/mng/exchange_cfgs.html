@@ -125,6 +125,7 @@
 	
 	<script type="text/javascript" src="/dispatcher-0.0.1/rest/v1/ajax" id="ajax_metadata"></script>
 	<script type="text/javascript" src="../res/rest.js"></script>
+	<script type="text/javascript" src="mng.js"></script>
 	
 	<script type="text/javascript">
 		function newExchangeCfg(original) {
@@ -225,29 +226,13 @@
 		}		
 
 		function loadData() {
-
-			var tx = $("#template_xslt")[0];
-			var cd = $("#tbl_container");
-
-			var xslt_xhr = $.ajax({url:"exchange_cfg_table.xsl", async:false});
-			var xslt = xslt_xhr.responseText;
 			var xhr = RS.ctx.ExchangeCfgRes.getAll.call({async:false});
 			var data = xhr.responseText;
-			cd.xslt(data, xslt);
+			loadIntoDom("#tbl_container", data, "exchange_cfg_table.xsl");
 			$('#exchange_cfg_tbl').dataTable();
 		}
 		
 		loadData();
-
-		function loadServerCfgOpts() {
-			var xhr1 = RS.ctx.ServerCfgRes.getAll.call().done(
-					function(data, textStatus, jqXHR) {
-						$("#serverCfg_select_div").xslt(
-								jqXHR.responseText,
-								"server_cfg_opts.xsl"
-								);
-					});
-		}
 		
 		loadServerCfgOpts();
 	</script>

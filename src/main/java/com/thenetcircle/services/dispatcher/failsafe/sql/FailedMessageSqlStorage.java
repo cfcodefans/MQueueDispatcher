@@ -12,12 +12,14 @@ import javax.persistence.Query;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
+import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 import com.thenetcircle.services.persistence.jpa.JpaModule;
 
 public class FailedMessageSqlStorage implements Runnable, IFailsafe {
@@ -44,15 +46,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 				return mc;
 			}
 			
-//			MessageContext _mc = em.find(MessageContext.class, Long.valueOf(mc.getId()));
-//			if (_mc == null) {
-//				_mc = mc;
-//			}
-//			_mc.fail();
-//			MQueues.instance().reject(mc, !_mc.isExceedFailTimes());
-			
 			mc.fail();
-			log.info(String.format("\nMessage: %s failed %d times\n", mc.getQueueCfg().getQueueName(), mc.getFailTimes()));
 			final MessageContext merge = em.merge(mc);
 			mc.setFailTimes(merge.getFailTimes());
 			return MQueues.instance().getNextActor(this).handover(mc);
@@ -92,7 +86,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 		executor.submit(this);
 	}
 
-	public void stop() {
+	public synchronized void stop() {
 		executor.shutdownNow();
 		if (!em.isOpen()) {
 			em.close();
@@ -111,7 +105,9 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 		
 		em.getTransaction().begin();
 		for (final MessageContext mc : mcs) {
-			log.info("handle Message: \n" + mc);
+			if (mc != null) {
+				log.info("handle Message: \n" + mc);
+			}
 			handle(mc);
 		}
 		em.getTransaction().commit();

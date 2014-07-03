@@ -162,6 +162,7 @@
 	
 	<script type="text/javascript" src="/dispatcher-0.0.1/rest/v1/ajax" id="ajax_metadata"></script>
 	<script type="text/javascript" src="../res/rest.js"></script>
+	<script type="text/javascript" src="mng.js"></script>
 	
 	<script type="text/javascript">
 	function newQueueCfg(original) {
@@ -295,47 +296,16 @@
 		}
 
 		function loadData() {
-
-			var tx = $("#template_xslt")[0];
-			var cd = $("#tbl_container");
-			
-			var xslt_xhr = $.ajax({url:"queue_cfg_table.xsl", async:false});
-			var xslt = xslt_xhr.responseText;
 			var xhr = RS.ctx.MQueueCfgRes.getAll.call({async:false});
 			var data = xhr.responseText;
-			cd.xslt(data, xslt);
+			loadIntoDom("#tbl_container", data, "queue_cfg_table.xsl");
 			$('#mqueue_cfg_tbl').dataTable();
 		}
 		
 		loadData();
 		
-		function loadServerCfgOpts() {
-			var xhr = RS.ctx.ServerCfgRes.getAll.call({async:false});
-			var xslt_xhr = $.ajax({url:"server_cfg_opts.xsl", async:false});
-			var xslt = xslt_xhr.responseText;
-			$("#serverCfg_select_div").xslt(xhr.responseText, xslt);
-			$("#serverCfg").change(
-				function() {
-					loadExchangeCfgOpts($(this).val());
-				});
-		}
-		
 		loadServerCfgOpts();
 
-		function loadExchangeCfgOpts(serverCfgId) {
-			var ecs = null;
-			var xhr = null;
-			if (serverCfgId && serverCfgId > 0) {
-				xhr = RS.ctx.ExchangeCfgRes.getExchangesByServer.with_server_id(serverCfgId).call({async:false});
-			} else {
-				xhr = RS.ctx.ExchangeCfgRes.getAll.call({async:false});
-			}
-
-			ecs = xhr.responseText;
-
-			$("#exchangeCfg_select_div").xslt(ecs, "exchange_cfg_opts.xsl");
-		}
-		
 		loadExchangeCfgOpts();
 	</script>
 </body>
