@@ -36,13 +36,20 @@
 					<td><xsl:value-of select="destCfg/timeout" /></td>
 					<td style="word-break:break-all"><xsl:value-of select="destCfg/hostHead" /></td>
 					<td><xsl:value-of select="retryLimit" /></td>
-					<td><xsl:value-of select="status/processed" /></td>
-					<td><xsl:value-of select="status/failed" /></td>
+					<td><span class="badge"><xsl:value-of select="status/processed" /></span></td>
+					<td><span class="badge"><xsl:value-of select="status/failed" /></span></td>
 					<td>
 						<div class="btn-group">
 						  <button type="button" id="editBtn" class="btn btn-default btn-sm" onclick="editQueueCfg({id})">edit</button>
 						  <button type="button" id="copyBtn" class="btn btn-default btn-sm" onclick="copyQueueCfg({id})">copy</button>
-						  <button type="button" id="deleteBtn" class="btn btn-default btn-sm">delete</button>
+						  <button type="button" id="deleteBtn" class="btn btn-default btn-sm">
+						  <xsl:if test="enabled = 'true'">
+						  stop
+						  </xsl:if>
+						  <xsl:if test="enabled = 'false'">
+						  start
+						  </xsl:if>
+						  </button>
 						</div>
 					</td>
 				

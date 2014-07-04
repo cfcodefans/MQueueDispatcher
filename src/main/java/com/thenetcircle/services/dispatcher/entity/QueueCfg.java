@@ -73,7 +73,7 @@ public class QueueCfg extends Configuration {
 	private int retryLimit;
 
 	@Basic
-	private String routeKey = DEFAULT_ROUTE_KEY;
+	private String routeKey = null;
 
 	@ManyToOne(fetch=FetchType.EAGER, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "server_id")
@@ -137,7 +137,7 @@ public class QueueCfg extends Configuration {
 	}
 
 	public String getRouteKey() {
-		return routeKey;
+		return routeKey != null ? routeKey : queueName + "_router";
 	}
 
 	public ServerCfg getServerCfg() {
@@ -239,7 +239,7 @@ public class QueueCfg extends Configuration {
 	}
 	
 	public static ExchangeCfg defaultExchange(QueueCfg qc) {
-		return new ExchangeCfg(qc.getQueueName()+"_router", qc.getServerCfg());
+		return new ExchangeCfg(qc.getQueueName()+"_exchange", qc.getServerCfg());
 	}
 	
 	@Embeddable

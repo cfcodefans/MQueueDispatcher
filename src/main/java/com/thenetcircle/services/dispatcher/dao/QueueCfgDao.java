@@ -41,5 +41,12 @@ public class QueueCfgDao extends BaseDao<QueueCfg> {
 				" LEFT JOIN FETCH qc.serverCfg " +
 				" LEFT JOIN FETCH qc.destCfg");
 	}
+	
+	public QueueCfg find(Integer id) {
+		return findOne("select qc from QueueCfg qc " +
+				" LEFT JOIN FETCH qc.exchanges " +
+				" LEFT JOIN FETCH qc.serverCfg " +
+				" LEFT JOIN FETCH qc.destCfg where qc.id=?1 ", id);
+	}
 				
 }

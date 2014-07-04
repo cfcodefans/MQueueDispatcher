@@ -237,23 +237,15 @@
   <job name="misc_latest_events_cache" server="g" queue="misc_latest_events_cache" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch" />
   <job name="newsletter_linked" server="g" queue="newsletter_linked" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch" />
   <job name="newsletter_opened" server="g" queue="newsletter_opened" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch" />
-  <job name="misc_latest_guestbook_cache" server="g" queue="misc_latest_guestbook_cache" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch" />
-  <job name="misc_latest_homepage_events_cache" server="g" queue="misc_latest_homepage_events_cache" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch"/>
-  <job name="misc_latest_homepage_guestbook_cache" server="g" queue="misc_latest_homepage_guestbook_cache" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch" />
-  <job name="misc_latest_homepage_tour_cache" server="g" queue="misc_latest_homepage_tour_cache" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch" />
-  <job name="misc_latest_interview_cache" server="g" queue="misc_latest_interview_cache" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch" />
-  <job name="misc_latest_tour_cache" server="g" queue="misc_latest_tour_cache" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch" />
-  <job name="misc_latest_user_cache" server="g" queue="misc_latest_user_cache" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch" />
-  <job name="blog_entries_top_box_cache" server="g" queue="blog_entries_top_box_cache" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch" />
-  <job name="blog_entries_listed_box_cache" server="g" queue="blog_entries_listed_box_cache" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch" />
+  <job name="cachemanager_getfunctionresult_right" server="g" queue="cachemanager_getfunctionresult_right" timeout="20000"  type="direct" url="http://31548.jose.kaufmich.lab/consumerDispatch/dispatch" />
   <job name="profile_visits" server="g" queue="profile_visits" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch"/>
-  <job name="new_users_cache" server="g" queue="new_users_cache" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch" />
   <job name="sms_send" server="g" queue="sms_send" timeout="20000"  type="direct" url="http://20621.git.kaufmich.lab/consumerDispatch/dispatch" />
-  <job name="latest_events_cache" server="g" queue="latest_events_cache" timeout="20000"  type="direct" url="http://dev.10840.git.kaufmich.lab/consumerDispatch/dispatch" />
-  <job name="latest_tours_cache" server="g" queue="latest_tours_cache" timeout="20000"  type="direct" url="http://dev.10840.git.kaufmich.lab/consumerDispatch/dispatch" />
-  <job name="latest_interviews_cache" server="g" queue="latest_interviews_cache" timeout="20000"  type="direct" url="http://dev.10840.git.kaufmich.lab/consumerDispatch/dispatch"/>
-  <job name="latest_users_cache" server="g" queue="latest_users_cache" timeout="20000"  type="direct" url="http://dev.10840.git.kaufmich.lab/consumerDispatch/dispatch"/>
-  <job name="paying_members_tab_cache" server="g" queue="paying_members_tab_cache" timeout="20000"  type="direct" url="http://dev.master.git.kaufmich.lab/consumerDispatch/dispatch" />
+  <job name="latest_events_cache" server="g" queue="latest_events_cache" timeout="20000"  type="direct" url="http://31548.jose.kaufmich.lab/consumerDispatch/dispatch" />
+  <job name="latest_tours_cache" server="g" queue="latest_tours_cache" timeout="20000"  type="direct" url="http://31548.jose.kaufmich.lab/consumerDispatch/dispatch" />
+  <job name="latest_interviews_cache" server="g" queue="latest_interviews_cache" timeout="20000"  type="direct" url="http://31548.jose.kaufmich.lab/consumerDispatch/dispatch"/>
+  <job name="process_dispatch" server="g" queue="process_dispatch" timeout="20000"  type="direct" url="http://31548.jose.kaufmich.lab/consumerDispatch/dispatch"/>
+  <job name="latest_users_cache" server="g" queue="latest_users_cache" timeout="20000"  type="direct" url="http://31548.jose.kaufmich.lab/consumerDispatch/dispatch"/>
+  <job name="cachemanager_getfunctionresult" server="g" queue="cachemanager_getfunctionresult" timeout="20000"  type="direct" url="http://31548.jose.kaufmich.lab/consumerDispatch/dispatch" />
   <job name="wio_presence_kaufmich_host1" server="g" queue="wio_presence_kaufmich_host1" routeKey="wio.host1.xmpp.kaufmich.lab" exchange="wio_presence_exchange_host1" timeout="20000"  type="direct" url="http://dev.feature.tomas.kaufmich.lab/consumerDispatch/dispatch" />
   <job name="wio_presence_kaufmich_host2" server="g" queue="wio_presence_kaufmich_host2" routeKey="wio.host2.xmpp.kaufmich.lab" exchange="wio_presence_exchange_host2" timeout="20000"  type="direct" url="http://dev.18968.silvia.kaufmich.lab/consumerDispatch/dispatch" />
   <job name="wio_presence_kaufmich_host5" server="g" queue="wio_presence_kaufmich_host5" routeKey="wio.host5.xmpp.kaufmich.lab" exchange="wio_presence_exchange_host5" timeout="20000"  type="direct" url="http://develop.sylvain.kaufmich.lab/consumerDispatch/dispatch" />
@@ -261,7 +253,7 @@
   <job name="create_image_size" server="g" queue="create_image_size" timeout="20000" type="direct" url="http://dev.master.tomas.kaufmich.lab/consumerDispatch/dispatch" />
   <job name="delete_image" server="g" queue="delete_image" timeout="20000" type="direct" url="http://dev.10840.sylvain.kaufmich.lab/consumerDispatch/dispatch" />
   <job name="copy_image" server="g" queue="copy_image" timeout="20000" type="direct" url="http://dev.10840.sylvain.kaufmich.lab/consumerDispatch/dispatch"/>
-  <job name="dollar_renewal" server="g" queue="dollar_renewal" timeout="20000"  type="direct" url="http://dev.17766.eric.kaufmich.lab/consumerDispatch/dispatch" />
+  <job name="dollar_renewal" server="g" queue="dollar_renewal" timeout="20000"  type="direct" url="http://dev.deploy.git.kaufmich.lab/consumerDispatch/dispatch" />
 <!-- Flirten -->
   <job name="system_notification" server="h" queue="system_notification_queue" exchange="system_notification_exchange" url="http://develop.flirten.lab/queue_dev.php/system_notification/dispatch/" retryLimit="10" />
   <job name="newsletter" server="h" queue="newsletter_queue" exchange="newsletter_exchange" url="http://develop.flirten.lab/queue_dev.php/newsletter/dispatch/" retryLimit="10" />

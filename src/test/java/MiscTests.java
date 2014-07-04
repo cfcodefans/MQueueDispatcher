@@ -7,11 +7,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.ws.rs.core.MediaType;
+
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.junit.Test;
 
-import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
@@ -76,5 +77,10 @@ public class MiscTests {
 	@Test
 	public void testDateFormat() {
 		System.out.println(DateFormatUtils.format(System.currentTimeMillis(), "yy-MM-dd HH:mm:ss"));
+	}
+	
+	@Test
+	public void testMediaType() {
+		System.out.println(MediaType.APPLICATION_XML_TYPE);
 	}
 }

@@ -30,7 +30,6 @@ import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
-import com.thenetcircle.services.dispatcher.dao.MessageContextDao;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
@@ -100,7 +99,7 @@ public class MQueueCfgRes {
 
 	@PUT
 	@Produces({ MediaType.APPLICATION_JSON })
-	@Consumes({ MediaType.APPLICATION_JSON })
+	@Consumes({ MediaType.APPLICATION_FORM_URLENCODED })
 	public QueueCfg create(@FormParam("entity") final String reqStr) {
 		if (StringUtils.isEmpty(reqStr)) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid MQueueCfg: " + reqStr).build());
@@ -122,8 +121,9 @@ public class MQueueCfgRes {
 		}
 
 		try {
-			qc = qcDao.edit(qc);
-			MQueues.instance().initWithQueueCfg(qc);
+			qc = qcDao.create(qc);
+			qc = qcDao.find(qc.getId());
+			MQueues.instance().updateQueueCfg(qc);
 			return qc;
 		} catch (Exception e) {
 			log.error("failed to save QueueCfg with: \n" + reqStr, e);
@@ -133,15 +133,22 @@ public class MQueueCfgRes {
 
 	@DELETE
 	@Path("/{qc_id}")
-	public QueueCfg delete(@PathParam("qc_id") int id) {
+	public QueueCfg switchConsumer(@PathParam("qc_id") int id, @QueryParam("on") boolean on) {
 		QueueCfg qc = qcDao.find(new Integer(id));
 		if (qc == null) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid QueueCfg: " + id).build());
 		}
 
-		MQueues.instance().removeQueueCfg(qc);
-		qc.setEnabled(false);
-		return qcDao.edit(qc);
+		qc.setEnabled(on);
+		qc = qcDao.edit(qc);
+		
+		if (on) {
+			MQueues.instance().updateQueueCfg(qc);
+		} else {
+			MQueues.instance().removeQueueCfg(qc);
+		}
+		
+		return qc;
 	}
 
 	@GET
@@ -209,7 +216,8 @@ public class MQueueCfgRes {
 
 		try {
 			qc = qcDao.edit(qc);
-			MQueues.instance().initWithQueueCfg(qc);
+			qc = qcDao.find(qc.getId());
+			MQueues.instance().updateQueueCfg(qc);
 			return qc;
 		} catch (Exception e) {
 			log.error("failed to save QueueCfg with: \n" + reqStr, e);

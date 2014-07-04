@@ -26,8 +26,8 @@ public interface IMessageActor {
 	
 	void stop();
 	
-	static final int WAIT_FACTOR = 2;
-	static final TimeUnit WAIT_FACTOR_UNIT = TimeUnit.SECONDS;
+	static final int WAIT_FACTOR = 200;
+	static final TimeUnit WAIT_FACTOR_UNIT = TimeUnit.MILLISECONDS;
 	
 	public static class Utils {
 		public static final Collection<MessageContext> pull(final BlockingQueue<MessageContext> buf, final int size, final int wait, final TimeUnit waitTimeUnit) throws InterruptedException {

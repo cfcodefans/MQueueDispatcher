@@ -44,17 +44,11 @@ public class MonitorRes {
 		@Override
 		public MessageContext handle(final MessageContext mc) {
 			final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
-			OutboundEvent oe = eventBuilder.mediaType(MediaType.APPLICATION_ATOM_XML_TYPE).data(mc).build();
+			OutboundEvent oe = eventBuilder.mediaType(MediaType.APPLICATION_XML_TYPE).data(mc).build();
 			try {
 				eventOutput.write(oe);
 			} catch (IOException e) {
 				throw new RuntimeException("Error when writing the event.", e);
-			} finally {
-				try {
-					eventOutput.close();
-				} catch (IOException ioClose) {
-					throw new RuntimeException("Error when closing the event output.", ioClose);
-				}
 			}
 			return mc;
 		}
@@ -67,6 +61,12 @@ public class MonitorRes {
 				}
 			} catch (Exception e) {
 				log.error("Responder is interrupted", e);
+			} finally {
+				try {
+					eventOutput.close();
+				} catch (IOException ioClose) {
+					throw new RuntimeException("Error when closing the event output.", ioClose);
+				}
 			}
 			log.info("Responder quits");
 		}

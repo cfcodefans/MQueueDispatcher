@@ -29,8 +29,8 @@ public class AjaxResMethodMetaData implements Serializable {
 	public List<ParamMetaData> params = new ArrayList<ParamMetaData>();
 	public String baseUrl;
 	
-	public List<MediaType> produceMediaTypes = new ArrayList<MediaType>();
-	public List<MediaType> consumedMediaTypes = new ArrayList<MediaType>();
+	public List<String> produceMediaTypes = new ArrayList<String>();
+	public List<String> consumedMediaTypes = new ArrayList<String>();
 	
 	@JsonIgnore
 	@XmlTransient
@@ -54,8 +54,12 @@ public class AjaxResMethodMetaData implements Serializable {
 		aResMd.returnType = resMd.getInvocable().getRawResponseType();
 		aResMd.jaxrsType = resMd.getType();
 		
-		aResMd.produceMediaTypes.addAll(resMd.getProducedTypes());
-		aResMd.consumedMediaTypes.addAll(resMd.getConsumedTypes());
+		for (final MediaType mt : resMd.getProducedTypes()) {
+			aResMd.produceMediaTypes.add(mt.toString());
+		}
+		for (final MediaType mt : resMd.getConsumedTypes()) {
+			aResMd.consumedMediaTypes.add(mt.toString());
+		}
 		
 		for (Parameter param : resMd.getInvocable().getParameters()) {
 			ParamMetaData pMD = ParamMetaData.build(param);

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -34,15 +36,24 @@ import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 // maintain configurations, maintain messages, maintain living queues and IMessageActor instances;
 public class MQueues {
 
+	public static final Thread cleaner = new Thread() {
+		public void run() {
+			MQueues.instance.shutdown();
+		}
+	};
 	private static final int CONN_NUM = MiscUtils.AVAILABLE_PROCESSORS * 3;
 	private static final MQueues instance = new MQueues();
+
 	protected static final Log log = LogFactory.getLog(MQueues.class.getName());
 
 	public static MQueues instance() {
 		return instance;
 	}
+	//this is pointless for now, unless some additional process we need in between
+	private final LinkedMap<IMessageActor, IMessageActor> actors = new LinkedMap<IMessageActor, IMessageActor>();
 
 	private final ExecutorService connExecutors = Executors.newFixedThreadPool(MiscUtils.AVAILABLE_PROCESSORS);
+
 	private Map<ServerCfg, ConnectionFactory> connFactories = new HashMap<ServerCfg, ConnectionFactory>();
 
 	private Map<ExchangeCfg, Channel> exchangeAndChannels = new HashMap<ExchangeCfg, Channel>();
@@ -51,11 +62,48 @@ public class MQueues {
 
 	private Map<QueueCfg, ConsumerActor> queueAndConsumers = new HashMap<QueueCfg, ConsumerActor>();
 
-	private Collection<QueueCfg> queueCfgs = new HashSet<QueueCfg>();
+	private Collection<QueueCfg> queueCfgs = new LinkedHashSet<QueueCfg>();
 
 	private Map<ServerCfg, LoopingArrayIterator<Connection>> serverAndConns = new HashMap<ServerCfg, LoopingArrayIterator<Connection>>();
 
-//	private Map<ServerCfg, Channel> serverAndRejectChannels = new HashMap<ServerCfg, Channel>();
+	private MQueues() {
+		initActors();
+	}
+
+	public MessageContext acknowledge(final MessageContext mc) {
+		if (mc == null) {
+			return mc;
+		}
+		
+		final long deliveryTag = mc.getDelivery().getEnvelope().getDeliveryTag();
+		
+		try {
+			final Channel ch = getChannel(mc.getQueueCfg());
+			if (!ch.isOpen()) {
+				log.error("can't acknowledge the message as channel is closed!");
+				return mc;
+			}
+			ch.basicAck(deliveryTag, false);
+//			log.info(queueCfg.getQueueName() + " acknowledged message: " + deliveryTag);
+		} catch (final IOException e) {
+			log.error("failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse(), e);
+		}
+		return mc;
+	}
+
+	public synchronized void addQueueCfg(final QueueCfg qc) {
+		if (qc == null) {
+			return;
+		}
+		
+		getQueueCfgs().add(qc);
+		creatQueue(qc);
+	}
+
+	public IMessageActor firstActor() {
+		final IMessageActor actor = actors.firstKey();
+		return actor == null ? IMessageActor.DefaultMessageActor.instance : actor;
+	}
 
 	public synchronized Channel getChannel(final QueueCfg qc) {
 		if (qc == null) {
@@ -86,7 +134,7 @@ public class MQueues {
 
 		return connFactory;
 	}
-
+	
 	public ConsumerActor getConsumer(final QueueCfg qc) {
 		ConsumerActor c = queueAndConsumers.get(qc);
 		if (c != null) {
@@ -114,6 +162,11 @@ public class MQueues {
 		return c;
 	}
 
+	public IMessageActor getNextActor(final IMessageActor actor) {
+		final IMessageActor nextActor = actors.get(actor);
+		return nextActor == null ? IMessageActor.DefaultMessageActor.instance : nextActor;
+	}
+
 	public Collection<QueueCfg> getQueueCfgs() {
 		if (queueCfgs == null) {
 			queueCfgs = new HashSet<QueueCfg>();
@@ -121,37 +174,41 @@ public class MQueues {
 		return queueCfgs;
 	}
 
-	public void setQueueCfgs(Collection<QueueCfg> queueCfgs) {
-		this.queueCfgs.clear();
-		this.queueCfgs.addAll(queueCfgs);
+	public void updateQueueCfg(final QueueCfg qc) {
+		if (queueCfgs.contains(qc)) {
+			removeQueueCfg(qc);
+		}
+		queueCfgs.add(qc);
+		creatQueue(qc);
 	}
 
-	public synchronized void shutdown() {
+	public void initWithQueueCfgs(final List<QueueCfg> queueCfgs2) {
+		setQueueCfgs(queueCfgs2);
+		
+		for (final QueueCfg qc : queueCfgs2) {
+			creatQueue(qc);
+			
+			log.info(String.format("%d: %s is created", qc.getId(), qc.getQueueName()));
+		}
+		
 		log.info(MiscUtils.invocationInfo());
-		
-		final Set<Connection> conns = new HashSet<Connection>();
-		for (final Channel ch : queueAndChannels.values()) {
-			conns.add(ch.getConnection());
-			try {
-				ch.close();
-			} catch (IOException e) {
-				log.error("failed to close channel: " + ch.getChannelNumber(), e);
-			}
-		}
+	}
 
-		for (final Connection conn : conns) {
-			try {
-				conn.close();
-			} catch (Exception e) {
-				log.error("failed to close connection: " + conn, e);
+	public MessageContext reject(final MessageContext mc, final boolean requeue) {
+		if (mc == null) {
+			return mc;
+		}
+		try {
+			final Channel ch = getChannel(mc.getQueueCfg());
+			if (!ch.isOpen()) {
+				log.error("can't reject the message as channel is closed!");
+				return mc;
 			}
+			ch.basicReject(mc.getDelivery().getEnvelope().getDeliveryTag(), requeue);
+		} catch (final IOException e) {
+			log.error("failed to reject message: \n" + new String(mc.getMessageBody()) + "\nresponse: " + mc.getResponse(), e);
 		}
-		
-		clearInstances();
-		
-		for (IMessageActor actor : actors.keySet()) {
-			actor.stop();
-		}
+		return mc;
 	}
 
 	public synchronized void removeQueueCfg(final QueueCfg qc) {
@@ -187,16 +244,44 @@ public class MQueues {
 			queueAndConsumers.remove(qc);
 		}
 	}
+	
+	public void setQueueCfgs(Collection<QueueCfg> queueCfgs) {
+		this.queueCfgs.clear();
+		this.queueCfgs.addAll(queueCfgs);
+	}
 
-	public synchronized void addQueueCfg(final QueueCfg qc) {
-		if (qc == null) {
-			return;
+	public synchronized void shutdown() {
+		log.info(MiscUtils.invocationInfo());
+		
+		final Set<Connection> conns = new HashSet<Connection>();
+		for (final Channel ch : queueAndChannels.values()) {
+			conns.add(ch.getConnection());
+			try {
+				if (ch.isOpen()) {
+					ch.close();
+				}
+			} catch (IOException e) {
+				log.error("failed to close channel: " + ch.getChannelNumber(), e);
+			}
+		}
+
+		for (final Connection conn : conns) {
+			try {
+				if (conn.isOpen()) {
+					conn.close();
+				}
+			} catch (Exception e) {
+				log.error("failed to close connection: " + conn, e);
+			}
 		}
 		
-		getQueueCfgs().add(qc);
-		initWithQueue(qc);
+		clearInstances();
+		
+		for (IMessageActor actor : actors.keySet()) {
+			actor.stop();
+		}
 	}
-	
+
 	private synchronized void clearInstances() {
 		connExecutors.shutdownNow();
 		
@@ -208,6 +293,27 @@ public class MQueues {
 		queueCfgs.clear();
 	}
 
+	private void creatQueue(final QueueCfg qc) {
+		final Logger logForSrv = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());
+		if (getConnFactory(qc.getServerCfg()) == null) {
+			final String errMsgStr = "failed to create ConnectionFactory for ServerCfg: \n" + qc.getServerCfg();
+			log.error(errMsgStr);
+			logForSrv.error(errMsgStr);
+		}
+		
+		if (getChannel(qc) == null) {
+			final String errMsgStr = "failed to create Channel for QueueCfg: \n" + qc;
+			log.error(errMsgStr);
+			logForSrv.error(errMsgStr);
+		}
+		
+		if (getConsumer(qc) == null) {
+			final String errMsgStr = "failed to create ConsumerActor for QueueCfg: \n" + qc;
+			log.error(errMsgStr);
+			logForSrv.error(errMsgStr);
+		}
+	}
+	
 	private Connection getConn(final ServerCfg sc) throws IOException {
 		final ConnectionFactory connFactory = getConnFactory(sc);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByQueueConf(sc);
@@ -243,11 +349,16 @@ public class MQueues {
 		}
 		return li.loop();
 	}
-
 	private ExecutorService getExecutorsForConn() {
 		return connExecutors;
 	}
-
+	
+	private void initActors() {
+		actors.put(HttpDispatcherActor.instance(), Responder.instance());
+		actors.put(Responder.instance(), HttpDispatcherActor.instance());
+		actors.put(FailedMessageSqlStorage.instance(), HttpDispatcherActor.instance());
+	}
+	
 	private Channel initChannel(final QueueCfg qc) {
 		if (qc == null) {
 			return null;
@@ -300,7 +411,7 @@ public class MQueues {
 
 		return ch;
 	}
-
+	
 	private synchronized ConnectionFactory initConnFactory(final ServerCfg sc) {
 		if (sc == null)
 			return null;
@@ -323,106 +434,6 @@ public class MQueues {
 		logForSrv.info(infoStr);
 
 		return cf;
-	}
-
-	
-	public static final Thread cleaner = new Thread() {
-		public void run() {
-			MQueues.instance.shutdown();
-		}
-	};
-
-	public void initWithQueueCfgs(final Collection<QueueCfg> queueCfgs2) {
-		setQueueCfgs(queueCfgs2);
-		for (final QueueCfg qc : queueCfgs) {
-			initWithQueue(qc);
-		}
-	}
-	
-	public void initWithQueueCfg(final QueueCfg qc) {
-		queueCfgs.add(qc);
-		initWithQueue(qc);
-	}
-
-	private void initWithQueue(final QueueCfg qc) {
-		final Logger logForSrv = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());
-		if (getConnFactory(qc.getServerCfg()) == null) {
-			final String errMsgStr = "failed to create ConnectionFactory for ServerCfg: \n" + qc.getServerCfg();
-			log.error(errMsgStr);
-			logForSrv.error(errMsgStr);
-		}
-		
-		if (getChannel(qc) == null) {
-			final String errMsgStr = "failed to create Channel for QueueCfg: \n" + qc;
-			log.error(errMsgStr);
-			logForSrv.error(errMsgStr);
-		}
-		
-		if (getConsumer(qc) == null) {
-			final String errMsgStr = "failed to create ConsumerActor for QueueCfg: \n" + qc;
-			log.error(errMsgStr);
-			logForSrv.error(errMsgStr);
-		}
-	}
-
-	public MessageContext acknowledge(final MessageContext mc) {
-		if (mc == null) {
-			return mc;
-		}
-		
-		final long deliveryTag = mc.getDelivery().getEnvelope().getDeliveryTag();
-		
-		try {
-			final Channel ch = getChannel(mc.getQueueCfg());
-			if (!ch.isOpen()) {
-				log.error("can't acknowledge the message as channel is closed!");
-				return mc;
-			}
-			ch.basicAck(deliveryTag, false);
-//			log.info(queueCfg.getQueueName() + " acknowledged message: " + deliveryTag);
-		} catch (final IOException e) {
-			log.error("failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse(), e);
-		}
-		return mc;
-	}
-
-	public MessageContext reject(final MessageContext mc, final boolean requeue) {
-		if (mc == null) {
-			return mc;
-		}
-		try {
-			final Channel ch = getChannel(mc.getQueueCfg());
-			if (!ch.isOpen()) {
-				log.error("can't reject the message as channel is closed!");
-				return mc;
-			}
-			ch.basicReject(mc.getDelivery().getEnvelope().getDeliveryTag(), requeue);
-		} catch (final IOException e) {
-			log.error("failed to reject message: \n" + new String(mc.getMessageBody()) + "\nresponse: " + mc.getResponse(), e);
-		}
-		return mc;
-	}
-	
-	//this is pointless for now, unless some additional process we need in between
-	private final LinkedMap<IMessageActor, IMessageActor> actors = new LinkedMap<IMessageActor, IMessageActor>();
-	private void initActors() {
-		actors.put(HttpDispatcherActor.instance(), Responder.instance());
-		actors.put(Responder.instance(), HttpDispatcherActor.instance());
-		actors.put(FailedMessageSqlStorage.instance(), HttpDispatcherActor.instance());
-	}
-	
-	private MQueues() {
-		initActors();
-	}
-	
-	public IMessageActor firstActor() {
-		final IMessageActor actor = actors.firstKey();
-		return actor == null ? IMessageActor.DefaultMessageActor.instance : actor;
-	}
-	
-	public IMessageActor getNextActor(final IMessageActor actor) {
-		final IMessageActor nextActor = actors.get(actor);
-		return nextActor == null ? IMessageActor.DefaultMessageActor.instance : nextActor;
 	}
 	
 //	public static class MessageActorMgr {
