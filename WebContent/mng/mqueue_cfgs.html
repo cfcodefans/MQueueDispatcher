@@ -49,11 +49,6 @@
 		<div class="panel-body" id="tbl_container"></div>
 	</div>
 	</article>
-
-	<textarea id="template_xslt" style="display: none"> 
-
-	</textarea>
-	
 		<div class="modal fade" id="edit_modal_div">
 		<div class="modal-dialog">
 			<form class="form-horizontal" role="form" id="edit_form">
@@ -161,36 +156,6 @@
 	<script type="text/javascript" src="mng.js"></script>
 	
 	<script type="text/javascript">
-	function newQueueCfg(original) {
-		var QueueCfg = null;
-		if (original) {
-			QueueCfg = $.extend({}, original);
-			QueueCfg.id = -1;
-		} else {
-			QueueCfg = {"version":0,"autoDelete":false,
-						"destCfg":{"version":0,"hostHead":null,"httpMethod":"post","id":-1,"timeout":30000,"url":null},
-						"durable":true,"enabled":true,
-						"exchanges":[],
-						"exclusive":false,"id":-1,"priority":0,"queueName":null,"retryLimit":0,"routeKey":"default_route_key",
-						"serverCfg":null}
-		}
-		return QueueCfg;
-	}
-
-	function getQueueCfg(idx) {
-		if (!idx || idx < 0) {
-			return newQueueCfg();
-		}
-
-		var QueueCfg = null;
-		var xhr = RS.ctx.MQueueCfgRes.getJson.with_qc_id(idx).call();
-		if (xhr.statusCode().status != 200) {
-			console.log(xhr);
-			return;
-		}
-		QueueCfg = xhr.responseJSON;
-		return QueueCfg;
-	}
 
 	function createQueueCfg() {
 		window.QueueCfg = null;

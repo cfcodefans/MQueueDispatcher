@@ -6,6 +6,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -24,6 +25,7 @@ import com.thenetcircle.services.dispatcher.dao.MessageContextDao;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 
 @Path("mqueue_cfgs/queue_{qc_id}/failed_jobs")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
@@ -32,7 +34,7 @@ public class FailedJobRes {
 	protected static final Log log = LogFactory.getLog(FailedJobRes.class.getName());
 
 	@PathParam("qc_id")
-	private int qcId;
+	private Integer qcId;
 	
 	@Inject
 	private MessageContextDao mcDao;
@@ -53,12 +55,36 @@ public class FailedJobRes {
 
 		return mc;
 	}
+	
+	@GET
+	@Path("/{mc_id}/json")
+	@Produces(MediaType.APPLICATION_JSON)
+	public MessageContext getJson(@PathParam("mc_id") int id) {
+		MessageContext mc = mcDao.find(new Long(id));
+		if (mc == null) {
+			throw new WebApplicationException(Response.status(Status.NOT_FOUND).entity("invalid QueueCfg: " + id).build());
+		}
 
+		return mc;
+	}
+	
+	@POST
+	@Path("/{mc_id}/resend")
+	public MessageContext resendFailedMsg(@PathParam("mc_id") int id) {
+		MessageContext mc = mcDao.find(new Long(id));
+		if (mc == null) {
+			throw new WebApplicationException(Response.status(Status.NOT_FOUND).entity("invalid QueueCfg: " + id).build());
+		}
+
+		HttpDispatcherActor.instance().handover(mc);
+		return mc;
+	}
+	
 	@GET
 	public List<MessageContext> getFailedJobs() {
 		final QueueCfg qc = qcDao.find(qcId);
 		final Date now = new Date();
-		final Date start = DateUtils.addDays(now, -1);
+		final Date start = DateUtils.addDays(now, -100);
 		return mcDao.queryFailedJobs(qc, start, now);
 	}
 
@@ -71,5 +97,20 @@ public class FailedJobRes {
 	@OPTIONS
 	public String options() {
 		return "this endpoint is for MQueueCfg management";
+	}
+	
+	@GET
+	@Path("resend")
+	@Produces(MediaType.TEXT_PLAIN)
+	public void resendFailedMsgs() {
+		if (qcId == null) {
+			throw new WebApplicationException(
+					Response.status(Status.BAD_REQUEST).entity("invalid request: " + qcId).build());
+		}
+		
+		List<MessageContext> failedMsgs = getFailedJobs();
+		for (final MessageContext mc : failedMsgs) {
+			HttpDispatcherActor.instance().handover(mc);
+		}
 	}
 }

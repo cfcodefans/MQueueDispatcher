@@ -42,8 +42,12 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 	@PreDestroy
 	public void clean() {
 		log.info(MiscUtils.invocationInfo());
-		if (em.isOpen()) {
-			em.close();
+		try {
+			if (em.isOpen()) {
+				em.close();
+			}
+		} catch (Exception e) {
+			log.error("failed to close em: " + e.getMessage());
 		}
 	}
 	

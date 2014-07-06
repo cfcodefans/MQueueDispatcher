@@ -12,6 +12,7 @@ import com.rabbitmq.client.AMQP.Queue.PurgeOk;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.GetResponse;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
+import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
 public class QueueOperator {
@@ -64,6 +65,21 @@ public class QueueOperator {
 			log.error("failed to check queue: \n\t" + queueCfg.getQueueName(), e);
 		}
 		return -1;
+	}
+	
+	public void sendMessage(final String msgStr) {
+		final Channel ch = MQueues.instance().getChannel(queueCfg);
+		if (ch == null) {
+			log.warn("not channel generated for queue: " + queueCfg.getQueueName());
+			return;
+		}
+		
+		try {
+			ExchangeCfg ec = queueCfg.getExchanges().iterator().next();
+			ch.basicPublish(ec.getExchangeName(), queueCfg.getRouteKey(), null, msgStr.getBytes());
+		} catch (IOException e) {
+			log.error("failed to send message: \n\t" + msgStr + "\n\tto queue: " + queueCfg.getQueueName(), e);
+		}
 	}
 
 }

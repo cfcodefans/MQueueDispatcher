@@ -436,7 +436,4 @@ public class MQueues {
 		return cf;
 	}
 	
-//	public static class MessageActorMgr {
-//		
-//	}
 }

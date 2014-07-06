@@ -26,3 +26,51 @@ function loadExchangeCfgOpts(serverCfgId) {
 	ecs = xhr.responseText;
 	loadIntoDom("#exchangeCfg_select_div", ecs, "exchange_cfg_opts.xsl");
 }
+
+function newQueueCfg(original) {
+	var QueueCfg = null;
+	if (original) {
+		QueueCfg = $.extend({}, original);
+		QueueCfg.id = -1;
+	} else {
+		QueueCfg = {"version":0,"autoDelete":false,
+					"destCfg":{"version":0,"hostHead":null,"httpMethod":"post","id":-1,"timeout":30000,"url":null},
+					"durable":true,"enabled":true,
+					"exchanges":[],
+					"exclusive":false,"id":-1,"priority":0,"queueName":null,"retryLimit":0,"routeKey":"default_route_key",
+					"serverCfg":null};
+	}
+	return QueueCfg;
+}
+
+function getQueueCfg(idx) {
+	if (!idx || idx < 0) {
+		return newQueueCfg();
+	}
+
+	var QueueCfg = null;
+	var xhr = RS.ctx.MQueueCfgRes.getJson.with_qc_id(idx).call();
+	if (xhr.statusCode().status != 200) {
+		console.log(xhr);
+		return;
+	}
+	QueueCfg = xhr.responseJSON;
+	return QueueCfg;
+}
+
+function switchQueue(qc_id) {
+	var qc = getQueueCfg(qc_id);
+	if (!qc) {
+		return;
+	}
+	
+	var xhr = RS.ctx.MQueueCfgRes.with_qc_id(qc_id).with_on(!qc.enabled).call({async:false});
+	qc = xhr.responseJSON;
+	this.value = qc.enabled;
+}
+
+function sendMsgToQueue(qc_id, msgStr) {
+	if (!(qc_id && msgStr)){return;}
+	
+	var xhr = RS.ctx.MQueueCfgRes.sendMessage.with_message(msgStr).with_qc_id(qc_id).call({async:false});
+}

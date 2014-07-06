@@ -42,7 +42,7 @@
 						<div class="btn-group">
 						  <button type="button" id="editBtn" class="btn btn-default btn-sm" onclick="editQueueCfg({id})">edit</button>
 						  <button type="button" id="copyBtn" class="btn btn-default btn-sm" onclick="copyQueueCfg({id})">copy</button>
-						  <button type="button" id="deleteBtn" class="btn btn-default btn-sm">
+						  <button type="button" id="deleteBtn" class="btn btn-default btn-sm" onclick="switchQueue({id})">
 						  <xsl:if test="enabled = 'true'">
 						  stop
 						  </xsl:if>

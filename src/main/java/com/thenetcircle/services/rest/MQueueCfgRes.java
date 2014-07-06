@@ -26,22 +26,18 @@ import org.apache.commons.logging.LogFactory;
 import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
-import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
-import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import com.thenetcircle.services.dispatcher.mgr.QueueOperator;
 
 @Path("mqueue_cfgs")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MQueueCfgRes {
 
 	protected static final Log log = LogFactory.getLog(MQueueCfgRes.class.getName());
-
-	@Inject
-	private ExchangeCfgDao ecDao;
 
 	@Inject
 	private ServerCfgDao scDao;
@@ -109,7 +105,8 @@ public class MQueueCfgRes {
 
 	@DELETE
 	@Path("/{qc_id}")
-	public QueueCfg switchConsumer(@PathParam("qc_id") int id, @QueryParam("on") boolean on) {
+	@Produces(MediaType.APPLICATION_JSON)
+	public QueueCfg switchQueue(@PathParam("qc_id") int id, @QueryParam("on") boolean on) {
 		QueueCfg qc = qcDao.find(new Integer(id));
 		if (qc == null) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid QueueCfg: " + id).build());
@@ -206,6 +203,24 @@ public class MQueueCfgRes {
 			qc.setDestCfg(destCfg);
 		}
 		return qc;
+	}
+	
+	@POST
+	@Path("/{qc_id}/send")
+	@Consumes({ MediaType.APPLICATION_FORM_URLENCODED })
+	public void sendMessage(@FormParam("message") final String msgStr, @PathParam("qc_id") Integer qcId) {
+		if (StringUtils.isEmpty(msgStr) || qcId == null) {
+			throw new WebApplicationException(
+					Response.status(Status.BAD_REQUEST).entity("invalid request: " + qcId + " message: " + msgStr).build());
+		}
+		
+		final QueueCfg qc = qcDao.find(qcId);
+		if (qc == null || !MQueues.instance().getQueueCfgs().contains(qc)) {
+			throw new WebApplicationException(
+					Response.status(Status.BAD_REQUEST).entity("Queue: " + qcId + " isn't running now").build());
+		}
+		
+		new QueueOperator(qc).sendMessage(msgStr);
 	}
 	
 }

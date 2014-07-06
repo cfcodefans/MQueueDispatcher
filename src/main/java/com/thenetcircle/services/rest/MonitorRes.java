@@ -21,10 +21,12 @@ import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.glassfish.jersey.media.sse.SseFeature;
 
 import com.thenetcircle.services.dispatcher.IMessageActor;
+import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.mgr.Monitor;
+import com.thenetcircle.services.dispatcher.mgr.QueueOperator;
 
 @Path("monitor")
 public class MonitorRes {
@@ -53,7 +55,7 @@ public class MonitorRes {
 				log.info("Monitor for Queue: " + qc.getQueueName());
 				
 				if (mc != null) {
-					oe = eventBuilder.mediaType(MediaType.APPLICATION_XML_TYPE).data(mc).build();
+					oe = eventBuilder.mediaType(MediaType.APPLICATION_JSON_TYPE).data(mc).build();
 				} else {
 					oe = eventBuilder.mediaType(MediaType.TEXT_PLAIN_TYPE).data("nothing").build();
 				}
@@ -108,4 +110,23 @@ public class MonitorRes {
 	public static void shutdown() {
 		es.shutdownNow();
 	}
+	
+	@GET
+	@Path("/queue/{id}/message_count")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Long getMessageCountOnQueue(@PathParam("id") Integer qcId) {
+		if (qcId == null) {
+			throw new WebApplicationException(
+					Response.status(Status.BAD_REQUEST).entity("invalid request: " + qcId).build());
+		}
+		
+		final QueueCfg qc = qcDao.find(qcId);
+		if (qc == null || !MQueues.instance().getQueueCfgs().contains(qc)) {
+			throw new WebApplicationException(
+					Response.status(Status.BAD_REQUEST).entity("Queue: " + qcId + " isn't running now").build());
+		}
+		
+		return new QueueOperator(qc).getTotalMessageCount();
+	}
+	
 }
