@@ -1,7 +1,5 @@
 package com.thenetcircle.services.rest;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -21,7 +19,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,27 +70,11 @@ public class MQueueCfgRes {
 		}
 
 		qc.setServerCfg(sc);
-
-		if (CollectionUtils.isEmpty(qc.getExchanges())) {
-			ExchangeCfg _ec = QueueCfg.defaultExchange(qc);
-			qc.getExchanges().add(_ec);
-			_ec.getQueues().add(qc);
-		} else {
-			Collection<ExchangeCfg> ecs = new HashSet<ExchangeCfg>(qc.getExchanges());
-			qc.getExchanges().clear();
-			for (ExchangeCfg ec : ecs) {
-				if (ec == null) {
-					continue;
-				}
-				if (ec.getId() < 0) {
-					ec = ecDao.create(ec);
-				}
-				ec = ecDao.find(ec.getId());
-				ec.getQueues().add(qc);
-				qc.getExchanges().add(ec);
-			}
+		
+		if (qc.getId() < 0) {
+			qc.getDestCfg().setId(-1);
 		}
-
+		
 		return qc;
 	}
 
@@ -114,16 +95,11 @@ public class MQueueCfgRes {
 		}
 
 		qc = prepare(qc);
-		
-		for (ExchangeCfg ec : qc.getExchanges()) {
-			ec = ecDao.edit(ec);
-			ec.getQueues().add(qc);
-		}
 
 		try {
 			qc = qcDao.create(qc);
-			qc = qcDao.find(qc.getId());
-			MQueues.instance().updateQueueCfg(qc);
+//			qc = qcDao.find(qc.getId());
+//			MQueues.instance().updateQueueCfg(qc);
 			return qc;
 		} catch (Exception e) {
 			log.error("failed to save QueueCfg with: \n" + reqStr, e);
@@ -209,15 +185,10 @@ public class MQueueCfgRes {
 
 		qc = prepare(qc);
 		
-		for (ExchangeCfg ec : qc.getExchanges()) {
-			ec = ecDao.edit(ec);
-			ec.getQueues().add(qc);
-		}
 
 		try {
 			qc = qcDao.edit(qc);
-			qc = qcDao.find(qc.getId());
-			MQueues.instance().updateQueueCfg(qc);
+//			MQueues.instance().updateQueueCfg(qc);
 			return qc;
 		} catch (Exception e) {
 			log.error("failed to save QueueCfg with: \n" + reqStr, e);

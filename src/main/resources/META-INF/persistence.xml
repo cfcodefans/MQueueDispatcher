@@ -20,8 +20,7 @@
 		<properties>
 			<!-- jdbc connection properties -->
 			<property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver" />
-<!-- 			<property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:file:D:/test/data/mqueue-dispatcher" /> -->
-<!-- 			<property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:hsql://atkins/dispatcher" /> -->
+<!-- 			<property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:hsql://localhost/dispatcher" /> -->
 			<property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:hsql://bart:9002/dispatcher" />
 			<property name="javax.persistence.jdbc.user" value="sa" />
 			<property name="javax.persistence.jdbc.password" value="" />
@@ -31,7 +30,7 @@
 			<property name="hibernate.max_fetch_depth" value="4" />
 			<property name="hibernate.jdbc.batch_size" value="50" />
 			<!-- hibernate debug properties -->
-			<property name="hibernate.generate_statistics" value="true" />
+			<property name="hibernate.generate_statistics" value="false" />
 			<property name="hibernate.format_sql" value="true" />
 			<property name="hibernate.show_sql" value="true" />
 			<property name="hibernate.archive.autodetection" value="class" />

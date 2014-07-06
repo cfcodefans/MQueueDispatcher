@@ -27,7 +27,6 @@ import com.thenetcircle.services.weld.Transactional;
  * @param <T>
  */
 @SuppressWarnings("unchecked")
-@Transactional
 public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<T> {
 	private static final long serialVersionUID = 1L;
 	private static final Log log = LogFactory.getLog(BaseDao.class.getSimpleName());
@@ -54,13 +53,13 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 
 	protected abstract Class<T> getEntityClass();
 
-//	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@Transactional
 	public T create(final T entity) {
 		em.persist(entity);
 		return entity;
 	}
 
-//	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@Transactional
 	public T edit(final T entity) {
 		return em.merge(entity);
 	}
@@ -70,7 +69,7 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		return entity;
 	}
 
-//	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	@Transactional
 	public T destroy(final T entity) {
 		em.remove(em.merge(entity));
 		return entity;
@@ -246,7 +245,7 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 	}
 
 	public T findOne(String hql, Object... params) {
-		final List result  = queryEntityPage(hql, 0, 1, params);
+		final List<T> result  = queryEntityPage(hql, 0, 1, params);
 		return getEntityClass().cast(CollectionUtils.isEmpty(result) ? null : result.get(0));
 	}
 

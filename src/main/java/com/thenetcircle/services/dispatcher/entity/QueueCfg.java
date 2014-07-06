@@ -40,7 +40,7 @@ public class QueueCfg extends Configuration {
 	@Basic
 	private boolean autoDelete = false;
 
-	@OneToOne(fetch=FetchType.EAGER, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
+	@OneToOne(fetch=FetchType.EAGER, cascade= {CascadeType.ALL})
 	@JoinColumn(name = "dest_cfg_id")
 	private HttpDestinationCfg destCfg;
 
@@ -187,6 +187,8 @@ public class QueueCfg extends Configuration {
 	}
 
 	public void setEnabled(boolean enabled) {
+		this.status.failed = 0;
+		this.status.processed = 0;
 		this.enabled = enabled;
 	}
 

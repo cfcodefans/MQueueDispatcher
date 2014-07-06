@@ -2,7 +2,7 @@ package com.thenetcircle.services.dispatcher.dao;
 
 import java.util.List;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Default;
 import javax.persistence.EntityManager;
 
@@ -11,7 +11,7 @@ import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Default
-@ApplicationScoped //for java se, only applicatoin scope available
+@RequestScoped //for java se, only applicatoin scope available
 public class ExchangeCfgDao extends BaseDao<ExchangeCfg> {
 	private static final long serialVersionUID = 1L;
 	
@@ -30,8 +30,7 @@ public class ExchangeCfgDao extends BaseDao<ExchangeCfg> {
 	
 	public List<ExchangeCfg> findAll() {
 		return query("select ec from ExchangeCfg ec " +
-//				" LEFT JOIN FETCH ec.queues " +
-				" LEFT JOIN FETCH ec.serverCfg ");
+				" LEFT JOIN FETCH ec.serverCfg order by ec.id desc");
 	}
 
 	public List<ExchangeCfg> findExchangesByServer(ServerCfg find) {

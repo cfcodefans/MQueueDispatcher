@@ -44,7 +44,7 @@ public class TransactionalInterceptor {
 		Object returnValue = null;
 		try {
 			returnValue = ctx.proceed();
-			em.flush();
+//			em.flush();
 			transaction.commit();
 			log.info("transaction committed");
 		} catch (Throwable t) {

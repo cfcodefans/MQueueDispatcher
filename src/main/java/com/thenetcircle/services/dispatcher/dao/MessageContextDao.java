@@ -3,7 +3,7 @@ package com.thenetcircle.services.dispatcher.dao;
 import java.util.Date;
 import java.util.List;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Default;
 import javax.persistence.EntityManager;
 
@@ -12,7 +12,7 @@ import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
 @Default
-@ApplicationScoped //for java se, only applicatoin scope available
+@RequestScoped //for java se, only applicatoin scope available
 public class MessageContextDao extends BaseDao<MessageContext> {
 	private static final long serialVersionUID = 1L;
 	

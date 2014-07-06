@@ -35,10 +35,12 @@
 			<param-value>com.thenetcircle.services.rest.utils.ResLoader</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
+		<async-supported>true</async-supported>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ResLoader</servlet-name>
 		<url-pattern>/rest/v1/*</url-pattern>
 	</servlet-mapping>
 
+	
 </web-app>

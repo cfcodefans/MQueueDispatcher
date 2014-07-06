@@ -36,16 +36,28 @@ public class MonitorRes {
 	private static class Watcher extends IMessageActor.AsyncMessageActor {
 		private EventOutput eventOutput = null;
 		
-		public Watcher(EventOutput eventOutput) {
+		private QueueCfg qc = null;
+		
+		public Watcher(EventOutput eventOutput, QueueCfg _qc) {
 			super();
 			this.eventOutput = eventOutput;
+			this.qc = _qc;
 		}
 
 		@Override
 		public MessageContext handle(final MessageContext mc) {
 			final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
-			OutboundEvent oe = eventBuilder.mediaType(MediaType.APPLICATION_XML_TYPE).data(mc).build();
 			try {
+				OutboundEvent oe = null;
+				
+				log.info("Monitor for Queue: " + qc.getQueueName());
+				
+				if (mc != null) {
+					oe = eventBuilder.mediaType(MediaType.APPLICATION_XML_TYPE).data(mc).build();
+				} else {
+					oe = eventBuilder.mediaType(MediaType.TEXT_PLAIN_TYPE).data("nothing").build();
+				}
+				
 				eventOutput.write(oe);
 			} catch (IOException e) {
 				throw new RuntimeException("Error when writing the event.", e);
@@ -86,11 +98,14 @@ public class MonitorRes {
 		
 		final EventOutput eventOutput = new EventOutput();
 		
-		Watcher watcher = new Watcher(eventOutput);
+		Watcher watcher = new Watcher(eventOutput, qc);
 		Monitor.instance().register(qc, watcher);
 		es.submit(watcher);
 		
 		return eventOutput;
 	}
 	
+	public static void shutdown() {
+		es.shutdownNow();
+	}
 }

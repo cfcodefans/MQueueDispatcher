@@ -28,12 +28,7 @@ function MethodBuilder(_method, _metadata) {
 		invocable["with_" + param.sourceName] = addSetter(param.sourceName);
 	}
 
-	invocable.call = function(settings) {
-		if (!settings) {
-			settings = {async:false};
-		}
-
-		settings["type"] = invocable.method.httpMethod;
+	invocable.url = function() {
 		var url = this.metadata.url;
 		for (var i = 0, j = this.method.params.length; i < j; i++)	{
 			var p = this.method.params[i];
@@ -49,7 +44,15 @@ function MethodBuilder(_method, _metadata) {
 				console.log("unsupported parameter source: " + JSON.stringify(p));
 			}
 		}
+		return url;
+	}
+	
+	invocable.call = function(settings) {
+		if (!settings) {
+			settings = {async:false};
+		}
 
+		settings["type"] = invocable.method.httpMethod;
 		var headerParams = [];
 		
 		for (var i = 0, j = this.method.params.length; i < j; i++)	{
@@ -83,7 +86,7 @@ function MethodBuilder(_method, _metadata) {
 		
 		settings.data = data;
 		
-		return $.ajax(url, settings);
+		return $.ajax(this.url(), settings);
 	};
 
 	return invocable;

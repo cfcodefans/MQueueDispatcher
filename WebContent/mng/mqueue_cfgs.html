@@ -83,13 +83,11 @@
 						</div>
 						<div class="form-group">
 							<label for="routeKey" class="col-sm-2 control-label">route key</label>
-							<div class="col-sm-10">
+							<div class="col-sm-4">
 								<input type="text" class="form-control" id="routeKey">
 							</div>
-						</div>
-						<div class="form-group">
 							<label for="retryLimit" class="col-sm-2 control-label">retry limit</label>
-							<div class="col-sm-10">
+							<div class="col-sm-4">
 								<input type="number" class="form-control" id="retryLimit" min="0">
 							</div>
 						</div>
@@ -124,7 +122,7 @@
 						</div>	
 						<div class="form-group">
 							<label for="httpMethod" class="col-sm-2 control-label">http method</label>
-							<div class="col-sm-10">
+							<div class="col-sm-4">
 								<label class="radio-inline">
 								  <input type="radio" name="httpMethod" id="httpMethod_post" value="post"> post
 								</label>
@@ -132,10 +130,8 @@
 								  <input type="radio" name="httpMethod" id="httpMethod_get" value="get"> get
 								</label>
 							</div>
-						</div>	
-						<div class="form-group">
 							<label for="timeout" class="col-sm-2 control-label">timeout</label>
-							<div class="col-sm-10">
+							<div class="col-sm-4">
 								<input type="number" class="form-control" id="timeout" min="0">
 							</div>
 						</div>				
@@ -221,6 +217,8 @@
 		if (!qc)
 			return;
 		var ef = $("#edit_form");
+		
+		loadExchangeCfgOpts();
 
 		ef.find("#queueName").val(qc.queueName);
 		ef.find("#routeKey").val(qc.routeKey);

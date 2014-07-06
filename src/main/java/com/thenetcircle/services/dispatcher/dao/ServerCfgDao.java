@@ -2,17 +2,16 @@ package com.thenetcircle.services.dispatcher.dao;
 
 import java.util.List;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Default;
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
 
 import com.thenetcircle.services.common.BaseDao;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Default
-@ApplicationScoped
-@Transactional
+@RequestScoped
+//@Transactional
 public class ServerCfgDao extends BaseDao<ServerCfg> {
 	private static final long serialVersionUID = 1L;
 	
