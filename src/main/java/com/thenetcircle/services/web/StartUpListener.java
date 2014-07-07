@@ -56,11 +56,7 @@ public class StartUpListener implements ServletContextListener {
 			Executors.newSingleThreadExecutor().submit(new Runnable() {
 				@Override
 				public void run() {
-					try {
-						MQueues.instance().initWithQueueCfgs(qcList);
-					} catch (Exception e) {
-						log.error("failed to load queues", e);
-					}
+					MQueues.instance().initWithQueueCfgs(qcList);
 				}
 			});
 			Runtime.getRuntime().addShutdownHook(MQueues.cleaner);

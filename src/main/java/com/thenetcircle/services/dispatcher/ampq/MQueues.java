@@ -184,13 +184,16 @@ public class MQueues {
 
 	public void initWithQueueCfgs(final List<QueueCfg> queueCfgs2) {
 		setQueueCfgs(queueCfgs2);
-		
-		for (final QueueCfg qc : queueCfgs2) {
-			creatQueue(qc);
-			
-			log.info(String.format("%d: %s is created", qc.getId(), qc.getQueueName()));
+
+		try {
+			for (final QueueCfg qc : queueCfgs2) {
+				creatQueue(qc);
+				log.info(String.format("%d: %s is created", qc.getId(), qc.getQueueName()));
+			}
+		} catch (Exception e) {
+			log.error("failed to load queues", e);
 		}
-		
+
 		log.info(MiscUtils.invocationInfo());
 	}
 
