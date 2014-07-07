@@ -18,15 +18,15 @@ import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 public class Monitor implements IMessageActor, Runnable {
 
 	private static Monitor instance = new Monitor();
-	
+
 	public Monitor() {
 		executor.submit(this);
 	}
-	
+
 	public static Monitor instance() {
 		return instance;
 	}
-	
+
 	protected static final Log log = LogFactory.getLog(Monitor.class.getName());
 	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -45,7 +45,7 @@ public class Monitor implements IMessageActor, Runnable {
 
 	@Override
 	public MessageContext handover(final MessageContext mc) {
-		buf.offer(mc); 
+		buf.offer(mc);
 		return mc;
 	}
 
@@ -66,32 +66,40 @@ public class Monitor implements IMessageActor, Runnable {
 		if (mc == null) {
 			return mc;
 		}
-		
+
 		final IMessageActor monitor = queueAndMonitors.get(mc.getQueueCfg());
 		if (monitor != null) {
 			monitor.handover(mc);
 		}
-		
+
 		return mc;
 	}
 
 	@Override
 	public void stop() {
-		executor.shutdownNow();		
+		executor.shutdownNow();
 	}
-	
+
 	private Map<QueueCfg, IMessageActor> queueAndMonitors = new ConcurrentHashMap<QueueCfg, IMessageActor>();
-	
+
 	public IMessageActor register(final QueueCfg qc, final IMessageActor monitor) {
 		if (qc == null || monitor == null) {
 			return null;
 		}
-		
+
 		return queueAndMonitors.put(qc, monitor);
 	}
-	
-	public IMessageActor unregister(final QueueCfg qc) {
-		return queueAndMonitors.remove(qc);
+
+	public IMessageActor getQueueMonitor(final QueueCfg qc) {
+		return queueAndMonitors.get(qc);
 	}
-	
+
+	public IMessageActor unregister(final QueueCfg qc) {
+		IMessageActor removed = queueAndMonitors.remove(qc);
+		if (removed != null) {
+			removed.stop();
+		}
+		return removed;
+	}
+
 }
