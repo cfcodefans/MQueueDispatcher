@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import com.rabbitmq.client.QueueingConsumer.Delivery;
@@ -191,7 +192,7 @@ public class MessageContext implements Serializable {
 
 	@Transient
 	public boolean isSucceeded() {
-		return "ok".equalsIgnoreCase(response);
+		return StringUtils.containsIgnoreCase(response, "ok");
 	}
 
 	public void setDelivery(Delivery delivery) {

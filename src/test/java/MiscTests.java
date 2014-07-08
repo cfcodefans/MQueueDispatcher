@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,9 +14,9 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.junit.Test;
 
+import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
-import com.thenetcircle.services.dispatcher.entity.MessageContext;
 
 
 public class MiscTests {
@@ -71,8 +72,13 @@ public class MiscTests {
 	public void testEntityToJson() {
 //		System.out.println(Jsons.toString(new ServerCfg()));
 //		System.out.println(Jsons.toString(new MessageContext()));
-		System.out.println(MiscUtils.toXML(new MessageContext()));
+//		System.out.println(MiscUtils.toXML(new MessageContext()));
+//		{status: %d, resp: '%s'}
+		System.out.println(Jsons.toString(MiscUtils.map("status", 200, "resp", "ok")));
+		System.out.println(Jsons.read(Jsons.toString(MiscUtils.map("status", 200, "resp", "ok")), Map.class));
 	}
+	
+	
 	
 	@Test
 	public void testDateFormat() {

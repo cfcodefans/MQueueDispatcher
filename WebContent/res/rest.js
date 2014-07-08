@@ -131,7 +131,7 @@ RS = {
 	}
 };
 
-var xhr = $.ajax("/dispatcher-0.0.1/rest/v1/ajax", {
+var xhr = $.ajax("../rest/v1/ajax", {
 	async : false,
 	dataType : "json",
 	complete : function(xhr) {

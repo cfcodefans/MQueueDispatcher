@@ -64,7 +64,7 @@ function switchQueue(qc_id) {
 		return;
 	}
 	
-	var xhr = RS.ctx.MQueueCfgRes.with_qc_id(qc_id).with_on(!qc.enabled).call({async:false});
+	var xhr = RS.ctx.MQueueCfgRes.switchQueue.with_qc_id(qc_id).with_on(!qc.enabled).call({async:false});
 	qc = xhr.responseJSON;
 	this.value = qc.enabled;
 }

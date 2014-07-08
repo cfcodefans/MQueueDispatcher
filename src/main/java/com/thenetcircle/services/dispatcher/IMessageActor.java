@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
-import com.thenetcircle.services.dispatcher.mgr.Monitor;
 
 public interface IMessageActor {
 	MessageContext handover(final MessageContext mc);
@@ -26,7 +25,7 @@ public interface IMessageActor {
 	
 	void stop();
 	
-	static final int WAIT_FACTOR = 200;
+	static final int WAIT_FACTOR = 5;
 	static final TimeUnit WAIT_FACTOR_UNIT = TimeUnit.MILLISECONDS;
 	
 	public static class Utils {
@@ -36,7 +35,11 @@ public interface IMessageActor {
 			final long micros = waitTimeUnit.toMillis(wait);
 			
 			for (int i = 0; i < size && (System.currentTimeMillis() - start < micros); i++) {
-				tempList.add(buf.poll(wait, waitTimeUnit));
+				final MessageContext polled = buf.poll(wait, waitTimeUnit);
+				if (polled == null) {
+					return tempList;
+				}
+				tempList.add(polled);
 			}
 			
 			return tempList;

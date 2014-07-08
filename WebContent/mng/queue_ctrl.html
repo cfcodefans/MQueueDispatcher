@@ -117,7 +117,7 @@
 			<div class="col-lg-6">
 				<div class="panel panel-default">
 					<div class="panel-heading">
-						<button type="button" class="btn btn-default" onclick="sendMsgToQueue(getQueueCfgId(), $(''#msgTxt').val())">
+						<button type="button" class="btn btn-default" onclick="sendMsgToQueue(getQueueCfgId(), $('#msgTxt').val())">
 						Send Message
 						</button>
 					</div>
@@ -142,10 +142,7 @@
 					<!-- /.panel-heading -->
 					<div class="panel-body">
 						<div class="list-group" id="failedMsgDiv" style="max-height: 200px; overflow-y: scroll;">
-							<a href="#" class="list-group-item"> <i class="fa fa-envelope fa-fw"></i> Message Sent <span class="pull-right text-muted small"><em>27 minutes ago</em> </span>
-							</a> <a href="#" class="list-group-item"> <i class="fa fa-bolt fa-fw"></i> Server Crashed! <span class="pull-right text-muted small"><em>11:13 AM</em> </span>
-							</a> <a href="#" class="list-group-item"> <i class="fa fa-warning fa-fw"></i> Server Not Responding <span class="pull-right text-muted small"><em>10:57 AM</em> </span>
-							</a>
+							
 						</div>
 						<!-- /.list-group -->
 					</div>
@@ -216,10 +213,10 @@
 	<script type="text/javascript" src="../res/jquery.xslt.js"></script>
 	
 	<script src="../res/bootstrap/js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="http://cdn.datatables.net/1.10.0/js/jquery.dataTables.js"></script>
-	<script type="text/javascript" src="http://cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+	<script type="text/javascript" src="../res/datatable/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" src="../res/datatable/js/dataTables.bootstrap.js"></script>
 	
-	<script type="text/javascript" src="/dispatcher-0.0.1/rest/v1/ajax" id="ajax_metadata"></script>
+	<script type="text/javascript" src="../rest/v1/ajax" id="ajax_metadata"></script>
 	<script type="text/javascript" src="../res/rest.js"></script>
 	<script type="text/javascript" src="mng.js"></script>
 	

@@ -57,6 +57,8 @@ public class ResLoader extends ResourceConfig {
 			if (Type.INITIALIZATION_APP_FINISHED == ev.getType()) {
 				AjaxRes.build(ev.getResourceModel(), ev.getResourceConfig());
 			}
+			
+			log.info(MiscUtils.invocationInfo() + " finished loading restful apis.....");
 		}
 
 		@Override

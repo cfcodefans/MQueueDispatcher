@@ -1,6 +1,8 @@
 package com.thenetcircle.services.dispatcher.failsafe.sql;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,14 +14,12 @@ import javax.persistence.Query;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
 
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
-import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 import com.thenetcircle.services.persistence.jpa.JpaModule;
 
 public class FailedMessageSqlStorage implements Runnable, IFailsafe {
@@ -68,7 +68,19 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 		log.info("FailedMessageSqlStorage starts");
 		try {
 			while (!Thread.interrupted()) {
-				handle(Utils.pull(buf, 100));
+				final List<MessageContext> mcList = new ArrayList<MessageContext>(100);
+				
+				MessageContext mc = null;
+				for (int i = 0; i < 100; i++) {
+					mc = buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT);
+					if (mc == null) {
+						break;
+					}
+					mcList.add(mc);
+				}
+				
+//				handle(Utils.pull(buf, 100));
+				handle(mcList);
 			}
 		} catch (InterruptedException e) {
 			log.error("Interrupted during waiting for new failed job", e);
@@ -88,7 +100,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 
 	public synchronized void stop() {
 		executor.shutdownNow();
-		if (!em.isOpen()) {
+		if (em.isOpen()) {
 			em.close();
 		}
 	}
