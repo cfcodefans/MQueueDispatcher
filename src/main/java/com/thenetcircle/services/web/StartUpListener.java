@@ -39,7 +39,7 @@ public class StartUpListener implements ServletContextListener {
 	}
 
 	private void startup() {
-		QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
+		final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
 		try {
 			log.info(MiscUtils.invocationInfo());
 			log.info("\n\tloading QueueCfg from database\n");
