@@ -26,7 +26,7 @@ public class ResLoader extends ResourceConfig {
 		
 		register(JacksonFeature.class);
 		
-		this.packages("com.thenetcircle.services.rest");
+//		this.packages("com.thenetcircle.services.rest");
 		register(new ResLoaderListener());
 		
 		register(new WeldBinder());

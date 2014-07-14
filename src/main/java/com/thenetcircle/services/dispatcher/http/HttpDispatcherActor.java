@@ -106,7 +106,7 @@ public class HttpDispatcherActor implements IMessageActor {
 			if (!"get".equalsIgnoreCase(StringUtils.trim(destCfg.getHttpMethod()))) {
 				final HttpPost post = new HttpPost(destUrlStr);
 
-				List<NameValuePair> paramList = getParamsList(MiscUtils.map("queueName", qc.getQueueName(), "bodyData", bodyStr));
+				List<NameValuePair> paramList = getParamsList(MiscUtils.map("queueName", qc.getName(), "bodyData", bodyStr));
 				UrlEncodedFormEntity fe = new UrlEncodedFormEntity(paramList, HTTP.UTF_8);
 
 				// post.setEntity(new ByteArrayEntity(mc.getMessageBody()));

@@ -64,6 +64,17 @@ public class QueueCfg extends Configuration {
 	private Integer id = -1;
 
 	@Basic
+	private String name;
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Basic
 	private int priority;
 
 	@Basic

@@ -185,13 +185,8 @@ public class MQueues {
 	public void initWithQueueCfgs(final List<QueueCfg> queueCfgs2) {
 		setQueueCfgs(queueCfgs2);
 
-		try {
-			for (final QueueCfg qc : queueCfgs2) {
-				creatQueue(qc);
-				log.info(String.format("%d: %s is created", qc.getId(), qc.getQueueName()));
-			}
-		} catch (Exception e) {
-			log.error("failed to load queues", e);
+		for (final QueueCfg qc : queueCfgs2) {
+			creatQueue(qc);
 		}
 
 		log.info(MiscUtils.invocationInfo());
@@ -298,23 +293,30 @@ public class MQueues {
 
 	private void creatQueue(final QueueCfg qc) {
 		final Logger logForSrv = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());
-		if (getConnFactory(qc.getServerCfg()) == null) {
-			final String errMsgStr = "failed to create ConnectionFactory for ServerCfg: \n" + qc.getServerCfg();
-			log.error(errMsgStr);
-			logForSrv.error(errMsgStr);
+		try {
+			if (getConnFactory(qc.getServerCfg()) == null) {
+				final String errMsgStr = "failed to create ConnectionFactory for ServerCfg: \n" + qc.getServerCfg();
+				log.error(errMsgStr);
+				logForSrv.error(errMsgStr);
+			}
+
+			if (getChannel(qc) == null) {
+				final String errMsgStr = "failed to create Channel for QueueCfg: \n" + qc;
+				log.error(errMsgStr);
+				logForSrv.error(errMsgStr);
+			}
+
+			if (getConsumer(qc) == null) {
+				final String errMsgStr = "failed to create ConsumerActor for QueueCfg: \n" + qc;
+				log.error(errMsgStr);
+				logForSrv.error(errMsgStr);
+			}
+
+			log.info(String.format("%d: %s is created", qc.getId(), qc.getQueueName()));
+		} catch (Exception e) {
+			log.error("failed to load queues", e);
 		}
-		
-		if (getChannel(qc) == null) {
-			final String errMsgStr = "failed to create Channel for QueueCfg: \n" + qc;
-			log.error(errMsgStr);
-			logForSrv.error(errMsgStr);
-		}
-		
-		if (getConsumer(qc) == null) {
-			final String errMsgStr = "failed to create ConsumerActor for QueueCfg: \n" + qc;
-			log.error(errMsgStr);
-			logForSrv.error(errMsgStr);
-		}
+
 	}
 	
 	private Connection getConn(final ServerCfg sc) throws IOException {

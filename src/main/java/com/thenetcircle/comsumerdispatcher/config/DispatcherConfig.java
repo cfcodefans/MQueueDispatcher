@@ -111,6 +111,7 @@ public class DispatcherConfig {
 			}
 			
 			qc.setServerCfg(sc);
+			qc.setName(dj.getName());
 			qc.setQueueName(dj.getQueue());
 			qc.setRouteKey(dj.getRouteKey());
 			qc.setDurable(dj.isQueueDurable());
