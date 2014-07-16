@@ -63,7 +63,7 @@ public class MessageContext implements Serializable {
 	private String response = "ok";
 
 	@Basic
-	private long timestamp;
+	private long timestamp = System.currentTimeMillis();
 
 	public MessageContext() {
 		super();

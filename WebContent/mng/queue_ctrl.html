@@ -46,7 +46,8 @@
 			<div class="col-lg-6">
 				<div class="panel panel-default">
 					<div class="panel-heading">
-						<button type="button" class="btn btn-default" onclick="save(QueueCfg)">Save</button>
+						<button type="button" class="btn btn-default btn-sm" onclick="save(QueueCfg)">Save</button>
+						<button type="button" id="toggleBtn" class="btn btn-default btn-sm" onclick="switchQueue(getQueueCfgId())">Start</button>
 					</div>
 					<div class="panel-body" id="main_div">
 						<form class="form-horizontal" role="form" id="queue_form">
@@ -121,7 +122,7 @@
 			<div class="col-lg-6">
 				<div class="panel panel-default">
 					<div class="panel-heading">
-						<button type="button" class="btn btn-default" onclick="sendMsgToQueue(getQueueCfgId(), $('#msgTxt').val())">
+						<button type="button" class="btn btn-default btn-sm" onclick="sendMsgToQueue(getQueueCfgId(), $('#msgTxt').val())">
 						Send Message
 						</button>
 					</div>
@@ -139,9 +140,7 @@
 				<div class="panel panel-default">
 					<div class="panel-heading">
 						<i class="fa fa-bell fa-fw">Running Messages</i> 
-						<button type="button" class="btn btn-default" onclick="sseToggle(event)" id="sseToggleBtn">
-						Start
-						</button>
+						<button type="button" class="btn btn-default btn-sm" onclick="sseToggle(event)" id="sseToggleBtn">Start</button>
 					</div>
 					<!-- /.panel-heading -->
 					<div class="panel-body">
@@ -300,12 +299,12 @@
 			var xhr = null;
 
 			if (QueueCfg.id < 0) {
-				xhr = RS.ctx.QueueCfgRes.create.with_entity(
+				xhr = RS.ctx.MQueueCfgRes.create.with_entity(
 						JSON.stringify(QueueCfg)).call({
 					async : false
 				});
 			} else {
-				xhr = RS.ctx.QueueCfgRes.update.with_entity(
+				xhr = RS.ctx.MQueueCfgRes.update.with_entity(
 						JSON.stringify(QueueCfg)).call({
 					async : false
 				});
@@ -317,9 +316,8 @@
 			}
 
 			var newQueueCfg = xhr.responseJSON;
-			loadData();
-
-			$('#edit_modal_div').modal('hide');
+			
+			loadQueueCfg();
 		}
 
 		function loadFailedMsgs() {
@@ -364,6 +362,7 @@
 			loadFailedJobs(idx);
 		}
 		
+
 		loadQueueCfg();
 		loadServerCfgOpts();
 		loadExchangeCfgOpts();

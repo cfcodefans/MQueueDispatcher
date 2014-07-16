@@ -95,7 +95,7 @@ public class MQueueCfgRes {
 		try {
 			qc = qcDao.create(qc);
 //			qc = qcDao.find(qc.getId());
-//			MQueues.instance().updateQueueCfg(qc);
+			MQueues.instance().updateQueueCfg(qc);
 			return qc;
 		} catch (Exception e) {
 			log.error("failed to save QueueCfg with: \n" + reqStr, e);
@@ -182,10 +182,9 @@ public class MQueueCfgRes {
 
 		qc = prepare(qc);
 		
-
 		try {
 			qc = qcDao.edit(qc);
-//			MQueues.instance().updateQueueCfg(qc);
+			MQueues.instance().updateQueueCfg(qc);
 			return qc;
 		} catch (Exception e) {
 			log.error("failed to save QueueCfg with: \n" + reqStr, e);

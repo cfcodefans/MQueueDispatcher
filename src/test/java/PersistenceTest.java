@@ -1,5 +1,9 @@
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.persistence.EntityManager;
@@ -32,9 +36,32 @@ public class PersistenceTest {
 	static EntityManagerFactory emf = null;
 	static EntityManager em = null;
 	
+	@Test
+	public void testPropertiesFile() throws Exception {
+		Properties p = new Properties();
+		p.putAll(MiscUtils.map(
+					"hibernate.ejb.persistenceUnitName", "test",
+					"javax.persistence.transactionType", "RESOURCE_LOCAL",
+					"javax.persistence.provider", "org.hibernate.jpa.HibernatePersistenceProvider",
+					"javax.persistence.jdbc.driver", "org.hsqldb.jdbcDriver",
+					"javax.persistence.jdbc.url", "jdbc:hsqldb:hsql://bart:9002/dispatcher",
+					"javax.persistence.jdbc.user", "sa",
+					"hibernate.dialect", "org.hibernate.dialect.HSQLDialect",
+					"hibernate.hbm2ddl.auto", "update",
+					"hibernate.show_sql", "true",
+					"hibernate.archive.autodetection", "class",
+					"hibernate.current_session_context_class", "thread"
+				));
+		p.store(new FileWriter("load_job_xml.properties"), null);
+	}
+	
 	@BeforeClass
-	public static void init() {
-		emf = Persistence.createEntityManagerFactory(UN);
+	public static void init() throws Exception {
+		Properties p = new Properties();
+		p.load(new FileInputStream("load_job_xml.properties"));
+		
+		emf = Persistence.createEntityManagerFactory("config_loader", 
+				new HashMap(p));
 		em = emf.createEntityManager();
 	}
 	

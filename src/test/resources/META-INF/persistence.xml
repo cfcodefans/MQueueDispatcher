@@ -37,7 +37,14 @@
 		</properties>
 	</persistence-unit>
     
- 
+ 	<persistence-unit name="config_loader">
+ 			<class>com.thenetcircle.services.dispatcher.entity.ExchangeCfg</class>
+		<class>com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg</class>
+		<class>com.thenetcircle.services.dispatcher.entity.MessageContext</class>
+		<class>com.thenetcircle.services.dispatcher.entity.QueueCfg</class>
+		<class>com.thenetcircle.services.dispatcher.entity.ServerCfg</class>
+ 	
+ 	</persistence-unit>
 </persistence>
       <!-- query & object cache properties 
       <property name="hibernate.bytecode.use_reflection_optimizer" value="true"/>

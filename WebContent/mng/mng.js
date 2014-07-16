@@ -66,7 +66,7 @@ function switchQueue(qc_id) {
 	
 	var xhr = RS.ctx.MQueueCfgRes.switchQueue.with_qc_id(qc_id).with_on(!qc.enabled).call({async:false});
 	qc = xhr.responseJSON;
-	this.value = qc.enabled;
+	event.target.innerText = qc.enabled ? "Stop" : "Start";
 }
 
 function sendMsgToQueue(qc_id, msgStr) {

@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,7 +31,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
 	final ExecutorService executor = Executors.newSingleThreadExecutor();
 	
-	private EntityManager em = JpaModule.getEntityManager();
+	private EntityManager em = null;
 	
 	public void delete(final Long id) {
 		final Query q = em.createQuery("delete from MessageContext mc where mc.id=:id");
@@ -57,7 +58,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 	}
 	
 	private FailedMessageSqlStorage() {
-		executor.submit(this);
+		start();
 	}
 
 	public static FailedMessageSqlStorage instance() {
@@ -68,10 +69,12 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 		log.info("FailedMessageSqlStorage starts");
 		try {
 			while (!Thread.interrupted()) {
+//				log.info("waiting for failed messages......");
+				
 				final List<MessageContext> mcList = new ArrayList<MessageContext>(100);
 				
 				MessageContext mc = null;
-				for (int i = 0; i < 100; i++) {
+				for (int i = 0; i < 50; i++) {
 					mc = buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT);
 					if (mc == null) {
 						break;
@@ -80,10 +83,13 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 				}
 				
 //				handle(Utils.pull(buf, 100));
+//				log.info(String.format("polled %d failed messages......", mcList.size()));
 				handle(mcList);
 			}
 		} catch (InterruptedException e) {
 			log.error("Interrupted during waiting for new failed job", e);
+		} catch (final Exception e) {
+			log.error("Interrupted by exception", e);
 		}
 		log.info("FailedMessageSqlStorage ends");
 	}
@@ -100,7 +106,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 
 	public synchronized void stop() {
 		executor.shutdownNow();
-		if (em.isOpen()) {
+		if (em != null && em.isOpen()) {
 			em.close();
 		}
 	}
@@ -115,14 +121,28 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 	public void handle(final Collection<MessageContext> mcs) {
 		if (CollectionUtils.isEmpty(mcs)) return;
 		
-		em.getTransaction().begin();
-		for (final MessageContext mc : mcs) {
-			if (mc != null) {
-				log.info("handle Message: \n" + mc);
+		em = JpaModule.instance().getEntityManager();
+		
+		final EntityTransaction transaction = em.getTransaction();
+		try {
+			if (!transaction.isActive()) {
+				transaction.begin();
+			} else {
+				em.joinTransaction();
 			}
-			handle(mc);
+			
+			for (final MessageContext mc : mcs) {
+				if (mc != null) {
+					log.info("handle Message: \n" + mc);
+				}
+				handle(mc);
+			}
+			em.flush();
+			transaction.commit();
+		} catch (Exception e) {
+			log.error("failed by exception", e);
+			transaction.rollback();
 		}
-		em.getTransaction().commit();
 	}
 
 	public void handover(final Collection<MessageContext> mcs) {

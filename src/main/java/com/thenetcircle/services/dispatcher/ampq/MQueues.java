@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.collections4.map.LinkedMap;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
@@ -84,10 +85,20 @@ public class MQueues {
 				return mc;
 			}
 			ch.basicAck(deliveryTag, false);
-//			log.info(queueCfg.getQueueName() + " acknowledged message: " + deliveryTag);
+			
 		} catch (final IOException e) {
 			log.error("failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse(), e);
 		}
+		
+		final QueueCfg qc = mc.getQueueCfg();
+		final Logger logForSrv = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());
+		String logStr = "cfg_name: \n\t" + qc.getName() 
+				        + "\n posted message: \n\t" + new String(ArrayUtils.subarray(mc.getMessageBody(), 0, 50))
+		                + "\n to url: " + qc.getDestCfg().getUrl();
+		
+		logForSrv.info(logStr);
+//		log.info(logStr);
+		
 		return mc;
 	}
 

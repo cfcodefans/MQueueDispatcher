@@ -87,9 +87,9 @@ public class Responder implements IMessageActor, Runnable {
 			
 			queueCfg.getStatus().failed();
 			
-			QueueCfg qc = mc.getQueueCfg();
-			Logger srvLog = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());
-			String logStr = String.format("\nMessage failed %d times\n\tfrom queue: %s\n\tto url: %s\n\tcontent: %s\n\tresponse: %s\n", 
+			final QueueCfg qc = mc.getQueueCfg();
+			final Logger srvLog = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());
+			final String logStr = String.format("\nMessage failed %d times\n\tfrom queue: %s\n\tto url: %s\n\tcontent: %s\n\tresponse: %s\n", 
 					mc.getFailTimes(), 
 					qc.getQueueName(), 
 					qc.getDestCfg().getUrl(),

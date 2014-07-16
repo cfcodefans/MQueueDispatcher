@@ -1,6 +1,10 @@
 package com.thenetcircle.services.persistence.jpa;
 
-import java.util.logging.Logger;
+import java.io.FileInputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -10,15 +14,21 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.thenetcircle.services.common.MiscUtils;
 
 
 @ApplicationScoped
 public class JpaModule {
 	
+	private static final String EXTERNAL_JPA_PROPERTIES = "external_jpa_properties";
+	
 	static EntityManagerFactory emf = null;
 	final static String UN = "mqueue-dispatcher";
-	static Logger log = Logger.getLogger(JpaModule.class.getSimpleName());
+	protected static final Log log = LogFactory.getLog(JpaModule.class.getName());
 	private static JpaModule instance; 
 	
 	private static ThreadLocal<EntityManager> ems = new ThreadLocal<EntityManager>();
@@ -27,15 +37,34 @@ public class JpaModule {
 	public void init() {
 		log.info(MiscUtils.invocationInfo());
 		log.info("loading EntityManagerFactory......\n");
-		emf = Persistence.createEntityManagerFactory(UN);
+		
+		emf = Persistence.createEntityManagerFactory(UN, getExternalPersistenceCfgs());
+		
 		log.info("\nEntityManagerFactory is loaded......\n");
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private static Map getExternalPersistenceCfgs() {
+		final String pathStr = System.getProperty(EXTERNAL_JPA_PROPERTIES);
+		if (StringUtils.isBlank(pathStr)) {
+			return Collections.EMPTY_MAP;
+		}
+		
+		try {
+			final Properties p = new Properties();
+			p.load(new FileInputStream(pathStr));
+			return new HashMap(p);
+		} catch (Exception e) {
+			log.error("failed to load EXTERNAL_JPA_PROPERTIES: " + pathStr, e);
+		}
+		
+		return Collections.EMPTY_MAP;
 	}
 	
 	@Produces 
 //	@PersistenceContext
 	public static EntityManager getEntityManager() {
-		
-		EntityManager em = ems.get();
+		final EntityManager em = ems.get();
 		if (em != null && em.isOpen()) {
 			return em;
 		}
@@ -44,7 +73,7 @@ public class JpaModule {
 		
 		log.info(MiscUtils.invocationInfo());
 		if (emf == null || !emf.isOpen()) {
-			emf = Persistence.createEntityManagerFactory(UN);
+			emf = Persistence.createEntityManagerFactory(UN, getExternalPersistenceCfgs());
 		}
 		
 		final EntityManager newEM = emf.createEntityManager();
@@ -63,6 +92,7 @@ public class JpaModule {
 		log.info("\n\nEntityManagerFactory is closed......\n");
 	}
 	
+	@Produces
 	public static JpaModule instance() {
 		if (instance == null) {
 			instance = new JpaModule();

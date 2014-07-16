@@ -4,6 +4,7 @@
               xsi:schemaLocation="http://java.sun.com/xml/ns/persistence 
               http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
 <!-- <persistence-unit name="mqueue-dispatcher" transaction-type="RESOURCE_LOCAL"> -->
+	
 	<persistence-unit name="mqueue-dispatcher" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 <!-- 		<exclude-unlisted-classes>false</exclude-unlisted-classes> -->
@@ -21,7 +22,7 @@
 			<!-- jdbc connection properties -->
 			<property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver" />
 <!-- 			<property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:hsql://localhost/dispatcher" /> -->
-			<property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:hsql://bart:9002/dispatcher" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:hsql://localhost:9002/dispatcher" />
 			<property name="javax.persistence.jdbc.user" value="sa" />
 			<property name="javax.persistence.jdbc.password" value="" />
 			<!-- hibernate connection properties -->
@@ -38,8 +39,15 @@
 			
 		</properties>
 	</persistence-unit>
-    
- 
+
+
+	<persistence-unit name="job_xml_loader">
+		<class>com.thenetcircle.services.dispatcher.entity.ExchangeCfg</class>
+		<class>com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg</class>
+		<class>com.thenetcircle.services.dispatcher.entity.MessageContext</class>
+		<class>com.thenetcircle.services.dispatcher.entity.QueueCfg</class>
+		<class>com.thenetcircle.services.dispatcher.entity.ServerCfg</class>
+	</persistence-unit>
 </persistence>
       <!-- query & object cache properties 
       <property name="hibernate.bytecode.use_reflection_optimizer" value="true"/>
