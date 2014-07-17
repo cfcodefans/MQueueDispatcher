@@ -12,6 +12,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -25,7 +26,7 @@ import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Path("server_cfgs")
-@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class ServerCfgRes {
 
 	protected static final Log log = LogFactory.getLog(ServerCfgRes.class.getSimpleName());
@@ -66,7 +67,7 @@ public class ServerCfgRes {
 
 		return sc;
 	}
-	
+
 	@GET
 	@Path("{id}/json")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -76,8 +77,11 @@ public class ServerCfgRes {
 
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
-	public List<ServerCfg> getAll() {
-		return scDao.findAll();
+	// public List<ServerCfg> getAll() {
+	public Response getAll() {
+		final List<ServerCfg> scList = scDao.findAll();
+		// return scList;
+		return Response.ok(scList.toArray(new ServerCfg[0]), MediaType.APPLICATION_XML_TYPE).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
 	}
 
 	@OPTIONS
@@ -86,7 +90,7 @@ public class ServerCfgRes {
 	}
 
 	@POST
-	@Produces({MediaType.APPLICATION_JSON})
+	@Produces({ MediaType.APPLICATION_JSON })
 	public ServerCfg update(@FormParam("entity") final String reqStr) {
 		if (StringUtils.isEmpty(reqStr)) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ServerCfg: " + reqStr).build());

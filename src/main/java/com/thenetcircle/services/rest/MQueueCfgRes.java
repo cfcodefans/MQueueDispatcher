@@ -15,6 +15,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -145,9 +146,10 @@ public class MQueueCfgRes {
 
 	@GET
 	@Produces({ MediaType.APPLICATION_XML })
-	public List<QueueCfg> getAll() {
-		List<QueueCfg> qcList = qcDao.findAll();
-		return qcList;
+//	public List<QueueCfg> getAll() {
+	public Response getAll() {
+		final List<QueueCfg> qcList = qcDao.findAll();
+		return Response.ok(qcList.toArray(new QueueCfg[0]), MediaType.APPLICATION_XML_TYPE).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
 	}
 
 	@GET

@@ -64,7 +64,9 @@ function MethodBuilder(_method, _metadata) {
 		settings.beforeSend = function(xhr) {			
 			for (var hp in headerParams) {
 				xhr.setRequestHeader(hp, headerParams[hp]);	
-			}			
+			}	
+			
+//			xhr.setRequestHeader("Content-Encoding", "gzip");
 		};
 
 		var data = [];

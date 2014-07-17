@@ -13,6 +13,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -99,8 +100,10 @@ public class ExchangeCfgRes {
 
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
-	public List<ExchangeCfg> getAll() {
-		return ecDao.findAll();
+//	public List<ExchangeCfg> getAll() {
+	public Response getAll() {
+		final List<ExchangeCfg> ecList = ecDao.findAll();
+		return Response.ok(ecList.toArray(new ExchangeCfg[0]), MediaType.APPLICATION_XML_TYPE).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
 	}
 
 	@OPTIONS
