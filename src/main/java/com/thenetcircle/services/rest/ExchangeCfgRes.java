@@ -1,6 +1,7 @@
 package com.thenetcircle.services.rest;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.ws.rs.FormParam;
@@ -23,9 +24,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.common.Jsons;
+import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
+import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Path("exchange_cfgs")
@@ -38,6 +42,9 @@ public class ExchangeCfgRes {
 
 	@Inject
 	private ServerCfgDao scDao;
+	
+	@Inject
+	private QueueCfgDao qcDao;
 	
 	private ExchangeCfg prepare(final ExchangeCfg ec) {
 		ServerCfg sc = ec.getServerCfg();
@@ -52,7 +59,6 @@ public class ExchangeCfgRes {
 		}
 		
 		ec.setServerCfg(sc);
-		
 		return ec;
 	}
 	
@@ -124,7 +130,13 @@ public class ExchangeCfgRes {
 				throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ExchangeCfg: " + reqStr).build());
 			}
 
-			return ecDao.edit(prepare(ec));
+			final ExchangeCfg edited = ecDao.edit(prepare(ec));
+			
+			for (final QueueCfg qc : edited.getQueues()) {
+				MQueues.instance().updateQueueCfg(qc);
+			}
+			
+			return edited;
 		} catch (Exception e) {
 			log.error("failed to save ExchangeCfg: \n\t" + reqStr, e);
 			throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("can't save ExchangeCfg: " + e.getMessage()).build());

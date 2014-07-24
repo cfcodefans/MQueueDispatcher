@@ -22,7 +22,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.common.Jsons;
+import com.thenetcircle.services.dispatcher.ampq.MQueues;
+import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Path("server_cfgs")
@@ -32,6 +35,9 @@ public class ServerCfgRes {
 	protected static final Log log = LogFactory.getLog(ServerCfgRes.class.getSimpleName());
 	@Inject
 	private ServerCfgDao scDao;
+	
+	@Inject
+	private QueueCfgDao qcDao;
 
 	@PUT
 	public ServerCfg create(@FormParam("entity") final String reqStr) {
@@ -60,7 +66,7 @@ public class ServerCfgRes {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ServerCfg.id: " + id).build());
 		}
 
-		ServerCfg sc = scDao.find(id);
+		final ServerCfg sc = scDao.find(id);
 		if (sc == null) {
 			throw new WebApplicationException(Response.status(Status.NOT_FOUND).entity("ServerCfg.id: " + id).build());
 		}
@@ -102,7 +108,13 @@ public class ServerCfgRes {
 				throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ServerCfg: " + reqStr).build());
 			}
 
-			return scDao.edit(sc);
+			final ServerCfg edited = scDao.edit(sc);
+			
+			for (final QueueCfg qc : qcDao.findQueuesByServer(edited)) {
+				MQueues.instance().updateQueueCfg(qc);
+			}
+			
+			return edited;
 		} catch (Exception e) {
 			log.error("failed to save ServerCfg: \n\t" + reqStr, e);
 			throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity("can't save ServerCfg: " + e.getMessage()).build());

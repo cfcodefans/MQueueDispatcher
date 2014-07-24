@@ -71,7 +71,7 @@ public interface IMessageActor {
 
 		@Override
 		public MessageContext handle(final MessageContext mc) {
-			final Logger log = ConsumerLoggers.getLoggerByQueueConf(mc.getQueueCfg().getServerCfg());
+			final Logger log = ConsumerLoggers.getLoggerByServerCfg(mc.getQueueCfg().getServerCfg());
 			log.info(mc);
 			return mc;
 		}

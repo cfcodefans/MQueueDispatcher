@@ -16,8 +16,12 @@ import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 public class ConsumerLoggers {
 	static final Map<String, Logger> serverKeyAndLoggers = new HashMap<String, Logger>();
 
-	public static Logger getLoggerByQueueConf(final ServerCfg sc) {
-		final String serverKey = sc.getHost() + "_" + sc.getUserName();
+	public static synchronized void updateLoggerByServerCfg(final ServerCfg sc) {
+		//TODO
+	}
+	
+	public static synchronized Logger getLoggerByServerCfg(final ServerCfg sc) {
+		final String serverKey = sc.getLogFilePath();
 		final Logger logger = serverKeyAndLoggers.get(serverKey);
 		if (logger != null) {
 			return logger;

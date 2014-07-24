@@ -23,6 +23,8 @@ import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.thenetcircle.services.dispatcher.cfg.Configuration;
 import com.thenetcircle.services.dispatcher.failsafe.FailsafeCfg;
 
@@ -84,7 +86,7 @@ public class QueueCfg extends Configuration {
 	private int retryLimit;
 
 	@Basic
-	private String routeKey = null;
+	private String routeKey = StringUtils.EMPTY;
 
 	@ManyToOne(fetch=FetchType.EAGER, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "server_id")
@@ -252,7 +254,7 @@ public class QueueCfg extends Configuration {
 	}
 	
 	public static ExchangeCfg defaultExchange(QueueCfg qc) {
-		return new ExchangeCfg(qc.getQueueName()+"_exchange", qc.getServerCfg());
+		return new ExchangeCfg(qc.getName()+"_exchange", qc.getServerCfg());
 	}
 	
 	@Embeddable

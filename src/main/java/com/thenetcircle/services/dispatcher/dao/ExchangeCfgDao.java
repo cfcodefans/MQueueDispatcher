@@ -1,6 +1,7 @@
 package com.thenetcircle.services.dispatcher.dao;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Default;
@@ -8,7 +9,9 @@ import javax.persistence.EntityManager;
 
 import com.thenetcircle.services.common.BaseDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import com.thenetcircle.services.weld.Transactional;
 
 @Default
 @RequestScoped //for java se, only applicatoin scope available
@@ -39,5 +42,18 @@ public class ExchangeCfgDao extends BaseDao<ExchangeCfg> {
 	
 	public List<ExchangeCfg> findExchangesByServer(int serverCfgId) {
 		return query("select ec from ExchangeCfg ec left join fetch ec.serverCfg where ec.serverCfg.id=?1", serverCfgId);
+	}
+	
+	@Transactional
+	public ExchangeCfg edit(final ExchangeCfg ec) {
+		final ExchangeCfg _ec = find(ec.getId());
+		final Set<QueueCfg> qcs = _ec.getQueues();
+		for (final QueueCfg qc : qcs) {
+			qc.getExchanges().remove(_ec);
+			qc.getExchanges().add(ec);
+		}
+		ec.setQueues(qcs);
+		final ExchangeCfg edited = em.merge(ec);
+		return edited;
 	}
 }

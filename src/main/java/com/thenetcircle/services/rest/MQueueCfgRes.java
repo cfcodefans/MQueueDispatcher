@@ -126,10 +126,10 @@ public class MQueueCfgRes {
 	}
 
 	@GET
-	@Path("/{qc_id}")
+	@Path("/{qc_id}.xml")
 	@Produces({ MediaType.APPLICATION_XML })
 	public QueueCfg get(@PathParam("qc_id") int id) {
-		QueueCfg qc = qcDao.find(new Integer(id));
+		final QueueCfg qc = qcDao.find(new Integer(id));
 		if (qc == null) {
 			throw new WebApplicationException(Response.status(Status.NOT_FOUND).entity("invalid QueueCfg: " + id).build());
 		}
@@ -138,7 +138,7 @@ public class MQueueCfgRes {
 	}
 
 	@GET
-	@Path("/{qc_id}/json")
+	@Path("/{qc_id}.json")
 	@Produces({ MediaType.APPLICATION_JSON })
 	public QueueCfg getJson(@PathParam("qc_id") int id) {
 		return get(id);
@@ -146,17 +146,17 @@ public class MQueueCfgRes {
 
 	@GET
 	@Produces({ MediaType.APPLICATION_XML })
-//	public List<QueueCfg> getAll() {
 	public Response getAll() {
-		final List<QueueCfg> qcList = qcDao.findAll();
-		return Response.ok(qcList.toArray(new QueueCfg[0]), MediaType.APPLICATION_XML_TYPE).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
+//		final List<QueueCfg> qcList = qcDao.findAll();
+		final QueueCfg[] qcs = MQueues.instance().getQueueCfgs().toArray(new QueueCfg[0]);
+		return Response.ok(qcs, MediaType.APPLICATION_XML_TYPE).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
 	}
 
 	@GET
 	@Path("/page_{page_idx}")
 	public List<QueueCfg> getQueueCfgs(@PathParam("page_idx") int pageIdx, @QueryParam("size") int pageSize) {
 		// qcDao.page(pageIdx,  pageSize);
-		List<QueueCfg> qcPage = qcDao.findAll();
+		final List<QueueCfg> qcPage = qcDao.findAll();
 		return qcPage;
 	}
 

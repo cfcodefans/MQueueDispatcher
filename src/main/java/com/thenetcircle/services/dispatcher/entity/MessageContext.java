@@ -70,7 +70,8 @@ public class MessageContext implements Serializable {
 	}
 
 	public MessageContext(final QueueCfg queueCfg, final Delivery delivery) {
-		super();
+		this();
+		this.id = System.nanoTime();
 		this.queueCfg = queueCfg;
 		this.setDelivery(delivery);
 	}
@@ -232,7 +233,7 @@ public class MessageContext implements Serializable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("{class:\"MessageContext\",id:").append(id)
 				.append(", queueCfg:").append(queueCfg)
-				.append(", delivery:").append(delivery)
+//				.append(", delivery:").append(delivery)
 				.append(", messageBody:'").append(new String(messageBody))
 				.append("', response:'").append(response)
 				.append(", failTimes:").append(failTimes)

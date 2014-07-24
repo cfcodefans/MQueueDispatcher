@@ -13,6 +13,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import com.thenetcircle.services.common.BaseDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 import com.thenetcircle.services.weld.Transactional;
 
 @Default
@@ -96,5 +97,9 @@ public class QueueCfgDao extends BaseDao<QueueCfg> {
 		for (ExchangeCfg ec : qc.getExchanges()) {
 			ec.getQueues().add(qc);
 		}
+	}
+
+	public List<QueueCfg> findQueuesByServer(final ServerCfg sc) {
+		return super.query("select qc from QueueCfg qc where qc.serverCfg=?1", sc);
 	}
 }

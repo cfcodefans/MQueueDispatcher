@@ -9,6 +9,7 @@
 			<thead>
 				<tr>
 					<th>id</th>
+					<th>server</th>
 					<th>server user name</th>
 					<th>queue name</th>
 					<th>url</th>
@@ -25,6 +26,7 @@
 			<xsl:for-each select="queueCfgs/queueCfg">
 				<tr data_id="{id}">
 					<td><xsl:value-of select="id" /></td>
+					<td><xsl:value-of select="serverCfg/host" /></td>
 					<td><xsl:value-of select="serverCfg/userName" /></td>
 					<td style="word-break:break-all"> 
 						<a href="queue_ctrl.html?qc_id={id}">

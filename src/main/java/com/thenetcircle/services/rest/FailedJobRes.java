@@ -46,7 +46,8 @@ public class FailedJobRes {
 	}
 
 	@GET
-	@Path("/{mc_id}")
+	@Path("/{mc_id}.xml")
+	@Produces(MediaType.APPLICATION_XML)
 	public MessageContext get(@PathParam("mc_id") int id) {
 		MessageContext mc = mcDao.find(new Long(id));
 		if (mc == null) {
@@ -57,7 +58,7 @@ public class FailedJobRes {
 	}
 	
 	@GET
-	@Path("/{mc_id}/json")
+	@Path("/{mc_id}.json")
 	@Produces(MediaType.APPLICATION_JSON)
 	public MessageContext getJson(@PathParam("mc_id") int id) {
 		MessageContext mc = mcDao.find(new Long(id));
@@ -71,7 +72,7 @@ public class FailedJobRes {
 	@POST
 	@Path("/{mc_id}/resend")
 	public MessageContext resendFailedMsg(@PathParam("mc_id") int id) {
-		MessageContext mc = mcDao.find(new Long(id));
+		final MessageContext mc = mcDao.find(new Long(id));
 		if (mc == null) {
 			throw new WebApplicationException(Response.status(Status.NOT_FOUND).entity("invalid QueueCfg: " + id).build());
 		}
@@ -108,7 +109,7 @@ public class FailedJobRes {
 					Response.status(Status.BAD_REQUEST).entity("invalid request: " + qcId).build());
 		}
 		
-		List<MessageContext> failedMsgs = getFailedJobs();
+		final List<MessageContext> failedMsgs = getFailedJobs();
 		for (final MessageContext mc : failedMsgs) {
 			HttpDispatcherActor.instance().handover(mc);
 		}

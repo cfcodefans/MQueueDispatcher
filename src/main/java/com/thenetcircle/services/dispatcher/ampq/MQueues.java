@@ -39,6 +39,7 @@ public class MQueues {
 
 	public static final Thread cleaner = new Thread() {
 		public void run() {
+			log.info("system shutdown!");
 			MQueues.instance.shutdown();
 		}
 	};
@@ -91,7 +92,7 @@ public class MQueues {
 		}
 		
 		final QueueCfg qc = mc.getQueueCfg();
-		final Logger logForSrv = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());
+		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
 		String logStr = "cfg_name: \n\t" + qc.getName() 
 				        + "\n posted message: \n\t" + new String(ArrayUtils.subarray(mc.getMessageBody(), 0, 50))
 		                + "\n to url: " + qc.getDestCfg().getUrl();
@@ -152,7 +153,7 @@ public class MQueues {
 			return c;
 		}
 		
-		final Logger logForSrv = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());
+		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
 		String logStr = null;
 		
 		final Channel ch = getChannel(qc);
@@ -230,7 +231,7 @@ public class MQueues {
 			return;
 		}
 		
-		final Logger logForSrv = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());
+		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
 		String logStr = "going to remove queue:\n\t" + qc;
 		log.info(logStr);
 		logForSrv.info(logStr);
@@ -240,7 +241,7 @@ public class MQueues {
 			logStr = "removed queue:\n\t" + qc.getQueueName();
 			log.info(logStr);
 			logForSrv.info(logStr);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logStr = "failed to shut down Queue: \n" + qc.getQueueName();
 			log.error(logStr, e);
 			logForSrv.error(logStr, e);
@@ -269,7 +270,7 @@ public class MQueues {
 				if (ch.isOpen()) {
 					ch.close();
 				}
-			} catch (IOException e) {
+			} catch (Exception e) {
 				log.error("failed to close channel: " + ch.getChannelNumber(), e);
 			}
 		}
@@ -303,7 +304,7 @@ public class MQueues {
 	}
 
 	private void creatQueue(final QueueCfg qc) {
-		final Logger logForSrv = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());
+		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
 		try {
 			if (getConnFactory(qc.getServerCfg()) == null) {
 				final String errMsgStr = "failed to create ConnectionFactory for ServerCfg: \n" + qc.getServerCfg();
@@ -332,7 +333,7 @@ public class MQueues {
 	
 	private Connection getConn(final ServerCfg sc) throws IOException {
 		final ConnectionFactory connFactory = getConnFactory(sc);
-		final Logger logForSrv = ConsumerLoggers.getLoggerByQueueConf(sc);
+		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		
 		
 		if (connFactory == null) {
@@ -380,7 +381,7 @@ public class MQueues {
 			return null;
 		}
 		
-		final Logger logForSrv = ConsumerLoggers.getLoggerByQueueConf(qc.getServerCfg());
+		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
 
 		String logStr = String.format("initiating Channel with QueueCfg %d: \n%s\n", qc.hashCode(), qc.toString());
 		log.info(logStr);
@@ -432,7 +433,7 @@ public class MQueues {
 		if (sc == null)
 			return null;
 
-		final Logger logForSrv = ConsumerLoggers.getLoggerByQueueConf(sc);
+		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		
 		String infoStr = String.format("initiating ConnectionFactory with ServerCfg: \n%s", sc.toString());
 		log.info(infoStr);

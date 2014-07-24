@@ -32,12 +32,13 @@ function newQueueCfg(original) {
 	if (original) {
 		QueueCfg = $.extend({}, original);
 		QueueCfg.id = -1;
+		QueueCfg.exchanges = [];
 	} else {
 		QueueCfg = {"version":0,"autoDelete":false,
 					"destCfg":{"version":0,"hostHead":null,"httpMethod":"post","id":-1,"timeout":30000,"url":null},
 					"durable":true,"enabled":true,
 					"exchanges":[],
-					"exclusive":false,"id":-1,"priority":0,"queueName":null,"retryLimit":0,"routeKey":"default_route_key",
+					"exclusive":false,"id":-1,"priority":0,"queueName":null,"retryLimit":10,"routeKey":"",
 					"serverCfg":null};
 	}
 	return QueueCfg;
