@@ -1,7 +1,6 @@
 package com.thenetcircle.services.rest;
 
 import java.util.List;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.ws.rs.FormParam;
@@ -130,7 +129,7 @@ public class ExchangeCfgRes {
 				throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ExchangeCfg: " + reqStr).build());
 			}
 
-			final ExchangeCfg edited = ecDao.edit(prepare(ec));
+			final ExchangeCfg edited = ecDao.update(prepare(ec));
 			
 			for (final QueueCfg qc : edited.getQueues()) {
 				MQueues.instance().updateQueueCfg(qc);

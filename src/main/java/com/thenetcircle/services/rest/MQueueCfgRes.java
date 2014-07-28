@@ -114,7 +114,7 @@ public class MQueueCfgRes {
 		}
 
 		qc.setEnabled(on);
-		qc = qcDao.edit(qc);
+		qc = qcDao.update(qc);
 		
 		if (on) {
 			MQueues.instance().updateQueueCfg(qc);
@@ -185,7 +185,7 @@ public class MQueueCfgRes {
 		qc = prepare(qc);
 		
 		try {
-			qc = qcDao.edit(qc);
+			qc = qcDao.update(qc);
 			MQueues.instance().updateQueueCfg(qc);
 			return qc;
 		} catch (Exception e) {

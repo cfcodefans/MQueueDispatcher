@@ -64,7 +64,7 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 	}
 
 	@Transactional
-	public T edit(final T entity) {
+	public T update(final T entity) {
 		return em.merge(entity);
 	}
 

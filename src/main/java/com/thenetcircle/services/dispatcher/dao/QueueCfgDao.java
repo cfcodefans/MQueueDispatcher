@@ -63,9 +63,9 @@ public class QueueCfgDao extends BaseDao<QueueCfg> {
 	}
 	
 	@Transactional
-	public QueueCfg edit(final QueueCfg qc) {
+	public QueueCfg update(final QueueCfg qc) {
 		prepare(qc);
-		return super.edit(qc);
+		return super.update(qc);
 	}
 
 	private void prepare(final QueueCfg qc) {
@@ -90,13 +90,15 @@ public class QueueCfgDao extends BaseDao<QueueCfg> {
 					ec = ecDao.create(ec);
 				}
 				ec.getQueues().add(qc);
+				em.merge(ec);
 				qc.getExchanges().add(ec);
 			}
 		}
 		
-		for (ExchangeCfg ec : qc.getExchanges()) {
-			ec.getQueues().add(qc);
-		}
+//		for (ExchangeCfg ec : qc.getExchanges()) {
+//			ec.getQueues().add(qc);
+//			em.merge(ec);
+//		}
 	}
 
 	public List<QueueCfg> findQueuesByServer(final ServerCfg sc) {

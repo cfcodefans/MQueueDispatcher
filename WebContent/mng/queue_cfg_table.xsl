@@ -33,7 +33,7 @@
 						<xsl:value-of select="queueName" />	
 						</a>
 					</td>
-					<td style="word-break:break-all"><xsl:value-of select="destCfg/url" /></td>
+					<td style="word-break:break-all" width="200px"><xsl:value-of select="destCfg/url" /></td>
 					<td><xsl:value-of select="destCfg/httpMethod" /></td>
 					<td><xsl:value-of select="destCfg/timeout" /></td>
 					<td style="word-break:break-all"><xsl:value-of select="destCfg/hostHead" /></td>
@@ -63,6 +63,13 @@
 				</tr>
 			</tfoot>
 		</table>
+		<script type="text/javascript">
+		//<![CDATA[
+			function udpate(queueCfg) {
+				var dt = $("#mqueue_cfg_tbl").DataTable();
+			}
+		//]]>
+		</script>
 </body>
 </html>
 	</xsl:template>

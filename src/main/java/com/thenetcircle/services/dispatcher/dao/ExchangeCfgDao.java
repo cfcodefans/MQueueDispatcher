@@ -45,15 +45,24 @@ public class ExchangeCfgDao extends BaseDao<ExchangeCfg> {
 	}
 	
 	@Transactional
-	public ExchangeCfg edit(final ExchangeCfg ec) {
+	public ExchangeCfg update(final ExchangeCfg ec) {
 		final ExchangeCfg _ec = find(ec.getId());
 		final Set<QueueCfg> qcs = _ec.getQueues();
 		for (final QueueCfg qc : qcs) {
 			qc.getExchanges().remove(_ec);
 			qc.getExchanges().add(ec);
+			em.merge(qc);
 		}
-		ec.setQueues(qcs);
-		final ExchangeCfg edited = em.merge(ec);
+		ec.getQueues().addAll(qcs);
+		
+//		_ec.setAutoDelete(ec.isAutoDelete());
+//		_ec.setDurable(ec.isDurable());
+//		_ec.setEnabled(ec.isEnabled());
+//		_ec.setExchangeName(ec.getExchangeName());
+//		_ec.setType(ec.getType());
+//		_ec.setVersion(ec.getVersion());
+//		
+		final ExchangeCfg edited = super.update(ec);
 		return edited;
 	}
 }

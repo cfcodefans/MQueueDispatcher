@@ -108,7 +108,7 @@ public class ServerCfgRes {
 				throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ServerCfg: " + reqStr).build());
 			}
 
-			final ServerCfg edited = scDao.edit(sc);
+			final ServerCfg edited = scDao.update(sc);
 			
 			for (final QueueCfg qc : qcDao.findQueuesByServer(edited)) {
 				MQueues.instance().updateQueueCfg(qc);
