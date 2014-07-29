@@ -35,10 +35,9 @@
 			<version>4.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.zookeeper</groupId>
-			<artifactId>zookeeper</artifactId>
-			<version>3.4.6</version>
-			<scope>test</scope>
+		    <groupId>org.jgroups</groupId>
+		    <artifactId>jgroups</artifactId>
+		    <version>3.5.0.CR2</version>
 		</dependency>
 
 		<dependency>

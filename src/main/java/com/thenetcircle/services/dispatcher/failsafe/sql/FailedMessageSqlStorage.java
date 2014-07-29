@@ -121,7 +121,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 	public void handle(final Collection<MessageContext> mcs) {
 		if (CollectionUtils.isEmpty(mcs)) return;
 		
-		em = JpaModule.instance().getEntityManager();
+		em = JpaModule.getEntityManager();
 		
 		final EntityTransaction transaction = em.getTransaction();
 		try {

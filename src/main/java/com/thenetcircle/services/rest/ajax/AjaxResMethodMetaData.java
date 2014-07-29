@@ -36,7 +36,6 @@ public class AjaxResMethodMetaData implements Serializable {
 	@XmlTransient
 	public AjaxResMetaData parent;
 
-	@SuppressWarnings("rawtypes")
 	public static AjaxResMethodMetaData build(ResourceMethod resMd) {
 		if (resMd == null) {
 			return null;

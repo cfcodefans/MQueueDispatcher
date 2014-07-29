@@ -43,6 +43,7 @@ public class JobXmlLoader {
 	static EntityManagerFactory emf = null;
 	static EntityManager em = null;
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void init(final String propertiesPath) throws Exception {
 		Properties p = new Properties();
 		p.load(new FileInputStream(propertiesPath));

@@ -93,6 +93,7 @@ public class HttpDispatcherActor implements IMessageActor {
 		}
 	}
 
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public MessageContext handle(final MessageContext mc) {
 		QueueCfg qc = mc.getQueueCfg();
 		final HttpDestinationCfg destCfg = qc.getDestCfg();

@@ -26,6 +26,12 @@ public class MiscUtils {
 		int i = 2;
 		return String.format("%s\t%s.%s", ste[i].getFileName(), ste[i].getClassName(), ste[i].getMethodName());
 	}
+	
+	public static String invocInfo() {
+		StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+		int i = 2;
+		return String.format("%s\t%s.%s", ste[i].getFileName(), StringUtils.substringAfterLast(ste[i].getClassName(), ".") , ste[i].getMethodName());
+	}
 
 	public static String invocationInfo(final int i) {
 		StackTraceElement[] ste = Thread.currentThread().getStackTrace();

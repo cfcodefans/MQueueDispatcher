@@ -11,10 +11,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 
+import com.thenetcircle.services.common.IActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 
-public interface IMessageActor {
+public interface IMessageActor extends IActor<MessageContext> {
 	MessageContext handover(final MessageContext mc);
 
 	void handover(final Collection<MessageContext> mcs);
@@ -25,8 +26,7 @@ public interface IMessageActor {
 	
 	void stop();
 	
-	static final int WAIT_FACTOR = 5;
-	static final TimeUnit WAIT_FACTOR_UNIT = TimeUnit.MILLISECONDS;
+
 	
 	public static class Utils {
 		public static final Collection<MessageContext> pull(final BlockingQueue<MessageContext> buf, final int size, final int wait, final TimeUnit waitTimeUnit) throws InterruptedException {

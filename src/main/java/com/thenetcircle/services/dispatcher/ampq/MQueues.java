@@ -43,7 +43,7 @@ public class MQueues {
 			MQueues.instance.shutdown();
 		}
 	};
-	private static final int CONN_NUM = MiscUtils.AVAILABLE_PROCESSORS * 3;
+//	private static final int CONN_NUM = MiscUtils.AVAILABLE_PROCESSORS * 3;
 	private static final MQueues instance = new MQueues();
 
 	protected static final Log log = LogFactory.getLog(MQueues.class.getName());
@@ -51,7 +51,9 @@ public class MQueues {
 	public static MQueues instance() {
 		return instance;
 	}
-	//this is pointless for now, unless some additional process we need in between
+
+	// this is pointless for now, unless some additional process we need in
+	// between
 	private final LinkedMap<IMessageActor, IMessageActor> actors = new LinkedMap<IMessageActor, IMessageActor>();
 
 	private final ExecutorService connExecutors = Executors.newFixedThreadPool(MiscUtils.AVAILABLE_PROCESSORS);
@@ -76,9 +78,9 @@ public class MQueues {
 		if (mc == null) {
 			return mc;
 		}
-		
+
 		final long deliveryTag = mc.getDelivery().getEnvelope().getDeliveryTag();
-		
+
 		try {
 			final Channel ch = getChannel(mc.getQueueCfg());
 			if (!ch.isOpen()) {
@@ -86,20 +88,18 @@ public class MQueues {
 				return mc;
 			}
 			ch.basicAck(deliveryTag, false);
-			
+
 		} catch (final IOException e) {
 			log.error("failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse(), e);
 		}
-		
+
 		final QueueCfg qc = mc.getQueueCfg();
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
-		String logStr = "cfg_name: \n\t" + qc.getName() 
-				        + "\n posted message: \n\t" + new String(ArrayUtils.subarray(mc.getMessageBody(), 0, 50))
-		                + "\n to url: " + qc.getDestCfg().getUrl();
-		
+		String logStr = "cfg_name: \n\t" + qc.getName() + "\n posted message: \n\t" + new String(ArrayUtils.subarray(mc.getMessageBody(), 0, 50)) + "\n to url: " + qc.getDestCfg().getUrl();
+
 		logForSrv.info(logStr);
-//		log.info(logStr);
-		
+		// log.info(logStr);
+
 		return mc;
 	}
 
@@ -107,7 +107,7 @@ public class MQueues {
 		if (qc == null) {
 			return;
 		}
-		
+
 		getQueueCfgs().add(qc);
 		creatQueue(qc);
 	}
@@ -137,8 +137,8 @@ public class MQueues {
 		if (sc == null) {
 			return null;
 		}
-		
-		ConnectionFactory connFactory = connFactories.get(sc);	
+
+		ConnectionFactory connFactory = connFactories.get(sc);
 		if (connFactory == null) {
 			connFactory = initConnFactory(sc);
 			connFactories.put(sc, connFactory);
@@ -146,22 +146,22 @@ public class MQueues {
 
 		return connFactory;
 	}
-	
+
 	public ConsumerActor getConsumer(final QueueCfg qc) {
 		ConsumerActor c = queueAndConsumers.get(qc);
 		if (c != null) {
 			return c;
 		}
-		
+
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
 		String logStr = null;
-		
+
 		final Channel ch = getChannel(qc);
 		c = new ConsumerActor(qc);
 		try {
 			ch.basicConsume(qc.getQueueName(), false, c);
 			queueAndConsumers.put(qc, c);
-			
+
 			logStr = "created consumer for queue: \n\t" + qc;
 			logForSrv.info(logStr);
 			log.info(logStr);
@@ -230,14 +230,14 @@ public class MQueues {
 		if (ch == null || !ch.isOpen()) {
 			return;
 		}
-		
+
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
 		String logStr = "going to remove queue:\n\t" + qc;
 		log.info(logStr);
 		logForSrv.info(logStr);
 		try {
 			ch.close();
-			
+
 			logStr = "removed queue:\n\t" + qc.getQueueName();
 			log.info(logStr);
 			logForSrv.info(logStr);
@@ -254,7 +254,7 @@ public class MQueues {
 			queueAndConsumers.remove(qc);
 		}
 	}
-	
+
 	public void setQueueCfgs(Collection<QueueCfg> queueCfgs) {
 		this.queueCfgs.clear();
 		this.queueCfgs.addAll(queueCfgs);
@@ -262,7 +262,7 @@ public class MQueues {
 
 	public synchronized void shutdown() {
 		log.info(MiscUtils.invocationInfo());
-		
+
 		final Set<Connection> conns = new HashSet<Connection>();
 		for (final Channel ch : queueAndChannels.values()) {
 			conns.add(ch.getConnection());
@@ -284,9 +284,9 @@ public class MQueues {
 				log.error("failed to close connection: " + conn, e);
 			}
 		}
-		
+
 		clearInstances();
-		
+
 		for (IMessageActor actor : actors.keySet()) {
 			actor.stop();
 		}
@@ -294,7 +294,7 @@ public class MQueues {
 
 	private synchronized void clearInstances() {
 		connExecutors.shutdownNow();
-		
+
 		connFactories.clear();
 		exchangeAndChannels.clear();
 		queueAndChannels.clear();
@@ -330,12 +330,11 @@ public class MQueues {
 		}
 
 	}
-	
+
 	private Connection getConn(final ServerCfg sc) throws IOException {
 		final ConnectionFactory connFactory = getConnFactory(sc);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
-		
-		
+
 		if (connFactory == null) {
 			String logStr = String.format("%s has not been associated with any ServerCfg", sc.toString());
 			log.error(logStr);
@@ -346,7 +345,7 @@ public class MQueues {
 		LoopingArrayIterator<Connection> li = serverAndConns.get(sc);
 		if (li == null) {
 			final Connection[] conns = new Connection[MiscUtils.AVAILABLE_PROCESSORS];
-			
+
 			for (int i = 0; i < conns.length; i++) {
 				try {
 					conns[i] = connFactory.newConnection(getExecutorsForConn());
@@ -356,37 +355,38 @@ public class MQueues {
 					logForSrv.error(logStr, e);
 				}
 			}
-			
+
 			li = new LoopingArrayIterator<Connection>(conns);
 			serverAndConns.put(sc, li);
-			
+
 			String logStr = String.format("connection created for server: \n\t%s\n", sc.toString());
 			log.info(logStr);
 			logForSrv.info(logStr);
 		}
 		return li.loop();
 	}
+
 	private ExecutorService getExecutorsForConn() {
 		return connExecutors;
 	}
-	
+
 	private void initActors() {
 		actors.put(HttpDispatcherActor.instance(), Responder.instance());
 		actors.put(Responder.instance(), HttpDispatcherActor.instance());
 		actors.put(FailedMessageSqlStorage.instance(), HttpDispatcherActor.instance());
 	}
-	
+
 	private Channel initChannel(final QueueCfg qc) {
 		if (qc == null) {
 			return null;
 		}
-		
+
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
 
 		String logStr = String.format("initiating Channel with QueueCfg %d: \n%s\n", qc.hashCode(), qc.toString());
 		log.info(logStr);
 		logForSrv.info(logStr);
-		
+
 		Channel ch = null;
 		try {
 			final Connection conn = getConn(qc.getServerCfg());
@@ -394,7 +394,7 @@ public class MQueues {
 				logStr = "failed to get connection with QueueCfg: " + qc;
 				log.error(logStr);
 				logForSrv.info(logStr);
-				
+
 				return ch;
 			}
 			ch = conn.createChannel();
@@ -428,13 +428,13 @@ public class MQueues {
 
 		return ch;
 	}
-	
+
 	private synchronized ConnectionFactory initConnFactory(final ServerCfg sc) {
 		if (sc == null)
 			return null;
 
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
-		
+
 		String infoStr = String.format("initiating ConnectionFactory with ServerCfg: \n%s", sc.toString());
 		log.info(infoStr);
 		logForSrv.info(infoStr);
@@ -452,5 +452,5 @@ public class MQueues {
 
 		return cf;
 	}
-	
+
 }
