@@ -9,6 +9,7 @@
 				<select class="form-control" id="exchangeCfgs" multiple="multiple" size="7">
 					<xsl:for-each select="exchangeCfgs/exchangeCfg">
 						<option value="{id}">
+							<xsl:value-of select="id" /> &#160;
 							<xsl:value-of select="exchangeName" /> &#160;
 							<xsl:value-of select="serverCfg/userName" /> &#160;
 							<xsl:value-of select="type" /> &#160;

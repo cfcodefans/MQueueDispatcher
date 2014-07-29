@@ -25,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
-import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -42,8 +41,8 @@ public class ExchangeCfgRes {
 	@Inject
 	private ServerCfgDao scDao;
 	
-	@Inject
-	private QueueCfgDao qcDao;
+//	@Inject
+//	private QueueCfgDao qcDao;
 	
 	private ExchangeCfg prepare(final ExchangeCfg ec) {
 		ServerCfg sc = ec.getServerCfg();
@@ -97,7 +96,7 @@ public class ExchangeCfgRes {
 	}
 	
 	@GET
-	@Path("{id}/json")
+	@Path("{id}.json")
 	@Produces(MediaType.APPLICATION_JSON)
 	public ExchangeCfg getJson(@PathParam("id") Integer id) {
 		return get(id);

@@ -29,7 +29,7 @@
 			<td><xsl:value-of select="virtualHost" /></td>
 			<td><xsl:value-of select="logFilePath" /></td>
 			<td><xsl:value-of select="maxFileSize" /></td>
-			<td>
+			<td class="last_col">
 				<div class="btn-group">
 					<button type="button" id="editBtn" class="btn btn-default btn-sm" onclick="editServerCfg({id})">edit</button>
 					<button type="button" id="copyBtn" class="btn btn-default btn-sm" onclick="copyServerCfg({id})">copy</button>

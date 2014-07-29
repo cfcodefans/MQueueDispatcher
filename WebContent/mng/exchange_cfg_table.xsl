@@ -37,7 +37,7 @@
 							<td>
 								<xsl:value-of select="autoDelete" />
 							</td>
-							<td>
+							<td class="last_col">
 								<div class="btn-group">
 									<button type="button" id="editBtn" class="btn btn-default btn-sm" onclick="editExchangeCfg({id})">edit</button>
 									<button type="button" id="copyBtn" class="btn btn-default btn-sm" onclick="copyExchangeCfg({id})">copy</button>

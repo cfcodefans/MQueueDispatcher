@@ -45,6 +45,9 @@ public class MQueueCfgRes {
 
 	@Inject
 	private QueueCfgDao qcDao;
+	
+//	@Inject
+//	private ExchangeCfgDao ecDao;
 
 	public MQueueCfgRes() {
 		log.info(MiscUtils.invocationInfo());

@@ -8,3 +8,7 @@ article {
 	margin-left: 20px;
 	margin-right: 20px;
 }
+
+.last_col {
+	text-align: right;
+}

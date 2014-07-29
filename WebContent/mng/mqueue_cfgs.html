@@ -42,7 +42,7 @@
 	</header>
 
 	<article>
-	<div class="panel container-fluid">
+	<div class="panel panel-default">
 		<div class="panel-heading">
 			<button type="button" id="createBtn" class="btn btn-default btn-sm" onclick="createQueueCfg()">create</button>
 		</div>
@@ -227,7 +227,8 @@
 		qc.destCfg.timeout = ef["timeout"].value;
 		qc.destCfg.url = ef["url"].value;
 		
-		qc.serverCfg = {id:ef["serverCfg"].value}
+		qc.serverCfg = {id:ef["serverCfg"].value};
+		qc.exchanges = [];
 		for (var ex_ids = ef["exchangeCfgs"].value.split(","), i = 0;
 			 i < ex_ids.length;
 			 i++) {

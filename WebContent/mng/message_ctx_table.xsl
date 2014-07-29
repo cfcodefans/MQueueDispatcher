@@ -17,11 +17,6 @@
 						</tr>
 					</thead>
 
-					<col width="20px"/>
-					<col width="100px"/>
-					<col width="45%"/>
-					<col width="25%"/>
-
 					<xsl:for-each select="messageContexts/messageContext">
 						<tr data_id="{id}">
 							<td>
@@ -30,16 +25,16 @@
 							<td>
 								<xsl:value-of select="timestampStr" />
 							</td>
-							<td style="word-wrap:break-word;">
+							<td style="word-wrap:break-word;" width="600px">
 								<xsl:value-of select="messageContent" />
 							</td>
-							<td style="word-wrap:break-word;">
-								<xsl:value-of select="response" />
+							<td style="word-wrap:break-word;" width="200px">
+								<p><xsl:value-of select="response" /></p>
 							</td>
 							<td>
 								<xsl:value-of select="failTimes" />
 							</td>
-							<td>
+							<td class="last_col">
 								<div class="btn-group">
 									<button type="button" id="editBtn" class="btn btn-default btn-sm" onclick="retryMsg({id})">retry</button>
 									<button type="button" id="copyBtn" class="btn btn-default btn-sm" onclick="delMsg({id})">delete</button>

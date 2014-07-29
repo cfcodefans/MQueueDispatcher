@@ -9,6 +9,7 @@
 				<select class="form-control" id="serverCfg" onchange="loadExchangeCfgOpts(this.value)" size="7">
 					<xsl:for-each select="serverCfgs/serverCfg">
 						<option value="{id}">
+							<xsl:value-of select="id" /> &#160;
 							<xsl:value-of select="host" /> &#160;
 							<xsl:value-of select="port" /> &#160;
 							<xsl:value-of select="userName" /> &#160;

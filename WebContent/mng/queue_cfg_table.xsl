@@ -23,6 +23,7 @@
 					<th></th>
 				</tr>
 			</thead>
+			
 			<xsl:for-each select="queueCfgs/queueCfg">
 				<tr data_id="{id}">
 					<td><xsl:value-of select="id" /></td>
@@ -33,14 +34,14 @@
 						<xsl:value-of select="queueName" />	
 						</a>
 					</td>
-					<td style="word-break:break-all" width="200px"><xsl:value-of select="destCfg/url" /></td>
+					<td style="word-break:break-all" width="600px"><xsl:value-of select="destCfg/url" /></td>
 					<td><xsl:value-of select="destCfg/httpMethod" /></td>
 					<td><xsl:value-of select="destCfg/timeout" /></td>
 					<td style="word-break:break-all"><xsl:value-of select="destCfg/hostHead" /></td>
 					<td><xsl:value-of select="retryLimit" /></td>
 					<td><span class="badge"><xsl:value-of select="status/processed" /></span></td>
 					<td><span class="badge"><xsl:value-of select="status/failed" /></span></td>
-					<td>
+					<td class="last_col">
 						<div class="btn-group">
 						  <button type="button" id="editBtn" class="btn btn-default btn-sm" onclick="editQueueCfg({id})">edit</button>
 						  <button type="button" id="copyBtn" class="btn btn-default btn-sm" onclick="copyQueueCfg({id})">copy</button>

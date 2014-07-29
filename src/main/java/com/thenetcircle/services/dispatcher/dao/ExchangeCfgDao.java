@@ -1,5 +1,6 @@
 package com.thenetcircle.services.dispatcher.dao;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -47,7 +48,10 @@ public class ExchangeCfgDao extends BaseDao<ExchangeCfg> {
 	@Transactional
 	public ExchangeCfg update(final ExchangeCfg ec) {
 		final ExchangeCfg _ec = find(ec.getId());
-		final Set<QueueCfg> qcs = _ec.getQueues();
+		final Set<QueueCfg> qcs = new HashSet<QueueCfg>(_ec.getQueues());
+
+		_ec.getQueues().clear();
+		
 		for (final QueueCfg qc : qcs) {
 			qc.getExchanges().remove(_ec);
 			qc.getExchanges().add(ec);
