@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
@@ -100,6 +101,7 @@ public class MQueueCfgRes {
 			qc = qcDao.create(qc);
 //			qc = qcDao.find(qc.getId());
 			MQueues.instance().updateQueueCfg(qc);
+			JGroupsActor.instance().restartQueues(qc);
 			return qc;
 		} catch (Exception e) {
 			log.error("failed to save QueueCfg with: \n" + reqStr, e);
@@ -121,8 +123,10 @@ public class MQueueCfgRes {
 		
 		if (on) {
 			MQueues.instance().updateQueueCfg(qc);
+			JGroupsActor.instance().restartQueues(qc);
 		} else {
 			MQueues.instance().removeQueueCfg(qc);
+			JGroupsActor.instance().stopQueues(qc);
 		}
 		
 		return qc;
@@ -190,6 +194,7 @@ public class MQueueCfgRes {
 		try {
 			qc = qcDao.update(qc);
 			MQueues.instance().updateQueueCfg(qc);
+			JGroupsActor.instance().restartQueues(qc);
 			return qc;
 		} catch (Exception e) {
 			log.error("failed to save QueueCfg with: \n" + reqStr, e);

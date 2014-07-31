@@ -11,6 +11,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
@@ -27,7 +28,8 @@ public class StartUpListener implements ServletContextListener {
 	@Override
 	public void contextInitialized(final ServletContextEvent paramServletContextEvent) {
 		log.info(MiscUtils.invocationInfo());
-		startup();
+		loadQueues();
+		JGroupsActor.instance().start();
 	}
 
 	@Override
@@ -36,9 +38,10 @@ public class StartUpListener implements ServletContextListener {
 		MQueues.instance().shutdown();
 		JpaModule.instance().destory();
 		MonitorRes.shutdown();
+		JGroupsActor.instance().stop();
 	}
 
-	private void startup() {
+	private void loadQueues() {
 		final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
 		try {
 			log.info(MiscUtils.invocationInfo());

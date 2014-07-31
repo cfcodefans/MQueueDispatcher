@@ -259,7 +259,10 @@
 						</goals>
 						<configuration>
 							<tasks>
-								<copy file="target/dispatcher-0.0.1.war" todir="D:\server\jetty-distribution-9\webapps\" />
+							<!--  dir="target/dispatcher-0.0.1" -->
+								<copy file="target/dispatcher-0.0.1.war" todir="D:\server\jetty-distribution-9\webapps" >
+<!-- 									<fileset dir="target/dispatcher-0.0.1" /> -->
+								</copy>
 							</tasks>
 						</configuration>
 					</execution>

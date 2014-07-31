@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
@@ -130,9 +131,11 @@ public class ExchangeCfgRes {
 
 			final ExchangeCfg edited = ecDao.update(prepare(ec));
 			
-			for (final QueueCfg qc : edited.getQueues()) {
+			final QueueCfg[] qcs = edited.getQueues().toArray(new QueueCfg[0]);
+			for (final QueueCfg qc : qcs) {
 				MQueues.instance().updateQueueCfg(qc);
 			}
+			JGroupsActor.instance().restartQueues(qcs);
 			
 			return edited;
 		} catch (Exception e) {

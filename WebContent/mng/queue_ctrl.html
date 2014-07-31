@@ -17,7 +17,7 @@
 
 	<!-- Fixed navbar navbar-fixed-top -->
 	<header>
-	<div class="navbar navbar-default " role="navigation">
+	<div class="navbar navbar-default navbar-fixed-top" role="navigation">
 		<div class="container">
 			<div class="navbar-header">
 				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -43,172 +43,213 @@
 
 	<article>
 		<div class="row">
-			<div class="col-lg-6">
+			<div class="col-lg-9">
+				<div class="row">
+					<div class="col-sm-5">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<button type="button" class="btn btn-default btn-sm" onclick="sendMsgToQueue(getQueueCfgId(), $('#msgTxt').text())">
+							Send Message
+							</button>
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body" id="msgTxt" contenteditable="true" style="height: 200px; overflow:auto;">
+						</div>
+						<!-- /.panel-body -->
+						<script type="text/javascript">
+
+						</script>
+					</div>
+					</div>
+					<div class="col-sm-7">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<i class="fa fa-bell fa-fw">Running Messages</i> 
+							<button type="button" class="btn btn-default btn-sm" onclick="sseToggle(event)" id="sseToggleBtn">Start</button>
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body" style="height: 200px;">
+							<div class="list-group" id="failedMsgDiv" style="max-height: 200px; overflow-y: scroll;">
+								
+							</div>
+							<!-- /.list-group -->
+						</div>
+						<!-- /.panel-body -->
+						<script type="text/javascript">
+							window._sse = null;
+
+							$(function () {
+								$(window).unload(
+								function() {
+									if (window._sse) {
+										window._sse.close();
+										window._sse = null;
+									}
+								});
+							});
+
+							function sseToggle(ev) {
+								if (ev.target.innerText == "Start") {
+									var url = RS.ctx.MonitorRes.runningStatus.with_id(getQueueCfgId()).url();
+									window._sse = new EventSource(url);
+									window._sse.onopen = function () {
+										$('#failedMsgDiv').empty();						
+									}
+									window._sse.onmessage = function (msg) {
+										if (msg.data != "nothing") {
+											
+										var mc = JSON.parse(msg.data);
+										$('#failedMsgDiv').prepend(
+											"<a href='#' class='list-group-item'> <i class='fa fa-envelope fa-fw'></i> "
+											+ mc.messageContent +
+											"<span class='pull-right text-muted small'><em>"
+											+ mc.timestampStr +
+											"</em> </span></a>"
+										);
+										return;
+										}
+
+										$('#failedMsgDiv').prepend(
+											"<a href='#' class='list-group-item'> <i class='fa fa-envelope fa-fw'></i> "
+											+ msg.data +
+											"<span class='pull-right text-muted small'><em>"
+											+ (new Date()) +
+											"</em> </span></a>"
+										);
+									}
+
+									ev.target.innerText = "Stop";
+								} else {
+									if (window._sse) {
+										window._sse.close();
+										window._sse = null;
+									}
+									ev.target.innerText="Start";
+								}
+							}
+						</script>
+					</div>
+					</div>
+				</div>
+			
+				<div class="row">
+					<div class="col-sm-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<i class="fa fa-bell fa-fw"></i> Failed Messages
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body" id="message_ctx_tbl_div">
+							
+						</div>
+						<!-- /.panel-body -->
+					</div>
+					</div>
+				</div>
+
+			</div>
+
+			<div class="col-lg-3">
 				<div class="panel panel-default">
 					<div class="panel-heading">
 						<button type="button" class="btn btn-default btn-sm" onclick="save(QueueCfg)">Save</button>
 						<button type="button" id="toggleBtn" class="btn btn-default btn-sm" onclick="switchQueue(getQueueCfgId())">Start</button>
 					</div>
-					<div class="panel-body" id="main_div">
+					<div class="list-group" id="main_div">
 						<form class="form-horizontal" role="form" id="queue_form">
-							<div class="form-group">
-								<label for="cfgName" class="col-sm-2 control-label">config name</label>
-								<div class="col-sm-4">
+							<li class="list-group-item"> 
+								<div class="row">
+								<label for="cfgName" class="col-sm-2 control-label">Config Name</label>
+								<div class="col-sm-10">
 									<input type="text" class="form-control input-sm" id="cfgName">
 								</div>
-								<label for="queueName" class="col-sm-2 control-label">queue name</label>
-								<div class="col-sm-4">
+								</div>
+							</li>
+							<li class="list-group-item"> 
+								<div class="row">
+									<label for="queueName" class="col-sm-2 control-label">Queue Name</label>
+								<div class="col-sm-10">
 									<input type="text" class="form-control input-sm" id="queueName">
 								</div>
-							</div>
-							<div class="form-group">
-								<label for="serverCfg" class="col-sm-2 control-label">Server</label>
-								<div class="col-sm-4" id="serverCfg_select_div"></div>
+								</div>
+							</li>
+							<li class="list-group-item"> 
+								<div class="row">
+									<label for="serverCfg" class="col-sm-2 control-label">Server</label>
+									<div class="col-sm-10" id="serverCfg_select_div"></div>
+								</div>
+							</li>
+							<li class="list-group-item"> 
+								<div class="row">
+									<label for="exchanges" class="col-sm-2 control-label">Exchanges</label>
+									<div class="col-sm-10" id="exchangeCfg_select_div"></div>
+								</div>
+							</li>
+							<li class="list-group-item"> 
+								<div class="row">
+									<label for="retryLimit" class="col-sm-2 control-label">Retry Limit</label>
+									<div class="col-sm-10">
+										<input type="number" class="form-control input-sm" id="retryLimit" min="0">
+									</div>
+								</div>
+							</li>							
 							
-								<label for="exchanges" class="col-sm-2 control-label">Exchanges</label>
-								<div class="col-sm-4" id="exchangeCfg_select_div"></div>
-							</div>
-							<div class="form-group">
-								<label for="routeKey" class="col-sm-2 control-label">route key</label>
-								<div class="col-sm-4">
-									<input type="text" class="form-control input-sm" id="routeKey">
-								</div>
-								<label for="retryLimit" class="col-sm-2 control-label">retry limit</label>
-								<div class="col-sm-4">
-									<input type="number" class="form-control input-sm" id="retryLimit" min="0">
-								</div>
-							</div>
+							
 
-							<div class="form-group">
-								<label class="col-sm-2 control-label">options</label>
+							<li class="list-group-item"> 
+								<div class="row">
+								<label class="col-sm-2 control-label">Options</label>
 								<div class="col-sm-10">
 									<label class="checkbox-inline"> <input type="checkbox" id="exclusive"> exclusive
 									</label> <label class="checkbox-inline"> <input type="checkbox" id="durable"> durable
 									</label> <label class="checkbox-inline"> <input type="checkbox" id="autoDelete"> autoDelete
 									</label>
 								</div>
-							</div>
-
-							<div class="form-group">
+								</div>
+							</li>	
+							<li class="list-group-item"> 
+								<div class="row">
 								<label for="url" class="col-sm-2 control-label">url</label>
 								<div class="col-sm-10">
 									<input type="text" class="form-control input-sm" id="url">
 								</div>
-							</div>
-							<div class="form-group">
-								<label for="hostHead" class="col-sm-2 control-label">host header</label>
+								</div>
+							</li>
+							<li class="list-group-item"> 
+								<div class="row">
+								<label for="hostHead" class="col-sm-2 control-label">Header</label>
 								<div class="col-sm-10">
 									<input type="text" class="form-control input-sm" id="hostHead">
 								</div>
-							</div>
-							<div class="form-group">
-								<label for="httpMethod" class="col-sm-2 control-label">http method</label>
-								<div class="col-sm-4">
+								</div>
+							</li>
+							<li class="list-group-item"> 
+								<div class="row">
+								<label for="httpMethod" class="col-sm-2 control-label">Http Method</label>
+								<div class="col-sm-10">
 									<label class="radio-inline"> <input type="radio" name="httpMethod" id="httpMethod_post" value="post"> post
 									</label> <label class="radio-inline"> <input type="radio" name="httpMethod" id="httpMethod_get" value="get"> get
 									</label>
 								</div>
+								</div>
+							</li>
+							<li class="list-group-item"> 
+								<div class="row">
 								<label for="timeout" class="col-sm-2 control-label">timeout</label>
-								<div class="col-sm-4">
+								<div class="col-sm-10">
 									<input type="number" class="form-control input-sm" id="timeout" min="0">
 								</div>
-							</div>
+								</div>
+							</li>
+
 						</form>
-					</div>
-				</div>
-			</div>
-			
-			<div class="col-lg-6">
-				<div class="panel panel-default">
-					<div class="panel-heading">
-						<button type="button" class="btn btn-default btn-sm" onclick="sendMsgToQueue(getQueueCfgId(), $('#msgTxt').val())">
-						Send Message
-						</button>
-					</div>
-					<!-- /.panel-heading -->
-					<div class="panel-body">
-						<textarea rows="7" cols="90" id="msgTxt"></textarea>
-						<!-- /.list-group -->
-					</div>
-					<!-- /.panel-body -->
-					<script type="text/javascript">
-
-					</script>
-				</div>
-			
-				<div class="panel panel-default">
-					<div class="panel-heading">
-						<i class="fa fa-bell fa-fw">Running Messages</i> 
-						<button type="button" class="btn btn-default btn-sm" onclick="sseToggle(event)" id="sseToggleBtn">Start</button>
-					</div>
-					<!-- /.panel-heading -->
-					<div class="panel-body">
-						<div class="list-group" id="failedMsgDiv" style="max-height: 200px; overflow-y: scroll;">
-							
-						</div>
-						<!-- /.list-group -->
-					</div>
-					<!-- /.panel-body -->
-					<script type="text/javascript">
-						window._sse = null;
-						function sseToggle(ev) {
-							if (ev.target.innerText == "Start") {
-								var url = RS.ctx.MonitorRes.runningStatus.with_id(getQueueCfgId()).url();
-								window._sse = new EventSource(url);
-								window._sse.onopen = function () {
-									$('#failedMsgDiv').empty();						
-								}
-								window._sse.onmessage = function (msg) {
-									if (msg.data != "nothing") {
-										
-									var mc = JSON.parse(msg.data);
-									$('#failedMsgDiv').prepend(
-										"<a href='#' class='list-group-item'> <i class='fa fa-envelope fa-fw'></i> "
-										+ mc.messageContent +
-										"<span class='pull-right text-muted small'><em>"
-										+ mc.timestampStr +
-										"</em> </span></a>"
-									);
-									return;
-									}
-
-									$('#failedMsgDiv').prepend(
-										"<a href='#' class='list-group-item'> <i class='fa fa-envelope fa-fw'></i> "
-										+ msg.data +
-										"<span class='pull-right text-muted small'><em>"
-										+ (new Date()) +
-										"</em> </span></a>"
-									);
-								}
-
-								ev.target.innerText = "Stop";
-							} else {
-								if (window._sse) {
-									window._sse.close();
-									window._sse = null;
-								}
-								ev.target.innerText="Start";
-							}
-						}
-					</script>
-				</div>
-			</div>
-		</div>
-
-		<div class="row">
-			<div class="col-lg-12">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<i class="fa fa-bell fa-fw"></i> Failed Messages
-				</div>
-				<!-- /.panel-heading -->
-				<div class="panel-body" id="message_ctx_tbl_div">
 					
+					</div>
 				</div>
-				<!-- /.panel-body -->
-			</div>
 			</div>
 		</div>
+
+		
 	</article>
 
 	<script type="text/javascript" src="../res/jquery-2.1.1.js"></script>

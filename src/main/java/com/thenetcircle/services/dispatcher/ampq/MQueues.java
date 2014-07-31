@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
@@ -43,7 +44,7 @@ public class MQueues {
 			MQueues.instance.shutdown();
 		}
 	};
-//	private static final int CONN_NUM = MiscUtils.AVAILABLE_PROCESSORS * 3;
+	// private static final int CONN_NUM = MiscUtils.AVAILABLE_PROCESSORS * 3;
 	private static final MQueues instance = new MQueues();
 
 	protected static final Log log = LogFactory.getLog(MQueues.class.getName());
@@ -98,8 +99,6 @@ public class MQueues {
 		String logStr = "cfg_name: \n\t" + qc.getName() + "\n posted message: \n\t" + new String(ArrayUtils.subarray(mc.getMessageBody(), 0, 50)) + "\n to url: " + qc.getDestCfg().getUrl();
 
 		logForSrv.info(logStr);
-		// log.info(logStr);
-
 		return mc;
 	}
 
@@ -414,7 +413,7 @@ public class MQueues {
 				}
 
 				ch.queueDeclare(qc.getQueueName(), qc.isDurable(), qc.isExclusive(), qc.isAutoDelete(), null);
-				ch.queueBind(qc.getQueueName(), ec.getExchangeName(), qc.getRouteKey());
+				ch.queueBind(qc.getQueueName(), StringUtils.defaultIfBlank(ec.getExchangeName(), StringUtils.EMPTY), qc.getRouteKey());
 			}
 
 			logStr = String.format("QueueCfg is initiated\n\t%s", qc.getQueueName());

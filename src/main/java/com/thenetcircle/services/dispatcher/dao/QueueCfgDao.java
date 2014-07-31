@@ -76,7 +76,8 @@ public class QueueCfgDao extends BaseDao<QueueCfg> {
 		final ExchangeCfgDao ecDao = new ExchangeCfgDao(em);
 		
 		final QueueCfg _qc = find(qc.getId());
-		{
+		
+		if (_qc != null) {
 			final Collection<ExchangeCfg> ecs = new HashSet<ExchangeCfg>(_qc.getExchanges());
 			_qc.getExchanges().clear();
 			for (ExchangeCfg ec : ecs) {

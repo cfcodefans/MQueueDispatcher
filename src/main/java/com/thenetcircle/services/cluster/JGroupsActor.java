@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
@@ -44,7 +45,7 @@ public class JGroupsActor implements Receiver {
 	}
 	
 	public static class Command {
-		public Set<Integer> qcIds;
+		public Set<Integer> qcIds = new HashSet<Integer>();
 		public CommandType commandType;
 		
 		public void execute(Set<QueueCfg> qcs) {
@@ -63,10 +64,11 @@ public class JGroupsActor implements Receiver {
 			ch = new JChannel();
 			ch.setReceiver(this);
 			ch.connect(CLUSTER_NAME);
+			log.info("join the jgroup cluster...");
 
-			Message msg = new Message();
-			msg.setBuffer(String.format("%s joined the %s", ch.getAddress(), CLUSTER_NAME).getBytes());
-			ch.send(msg);
+//			Message msg = new Message();
+//			msg.setBuffer(String.format("%s joined the %s", ch.getAddress(), CLUSTER_NAME).getBytes());
+//			ch.send(msg);
 		} catch (Exception e) {
 			log.error("can't initiate JGroups!!", e);
 		}
@@ -80,6 +82,32 @@ public class JGroupsActor implements Receiver {
 		} catch (Exception e) {
 			log.error("can't send command: " + msgStr, e);
 		}
+	}
+	
+	public synchronized void stopQueues(final QueueCfg... qcs) {
+		if (ArrayUtils.isEmpty(qcs)) {
+			return;
+		}
+		
+		final Command stopCmd = new Command();
+		for (final QueueCfg qc : qcs) {
+			stopCmd.qcIds.add(qc.getId());
+		}
+		stopCmd.commandType = CommandType.stop;
+		send(stopCmd);
+	}
+	
+	public synchronized void restartQueues(final QueueCfg... qcs) {
+		if (ArrayUtils.isEmpty(qcs)) {
+			return;
+		}
+		
+		final Command stopCmd = new Command();
+		for (final QueueCfg qc : qcs) {
+			stopCmd.qcIds.add(qc.getId());
+		}
+		stopCmd.commandType = CommandType.restart;
+		send(stopCmd);
 	}
 
 	private JGroupsActor() {
@@ -95,10 +123,12 @@ public class JGroupsActor implements Receiver {
 	public synchronized void stop() {
 		try {
 			if (ch != null) {
+				log.info("leave the jgroup cluster...");
 				ch.clearChannelListeners();
 				ch.disconnect();
 				ch.close();
 				ch = null;
+				log.info("left the jgroup cluster...");
 			}
 		} catch (Exception e) {
 			log.error("can't stop JGroups!!", e);
@@ -131,26 +161,27 @@ public class JGroupsActor implements Receiver {
 		}
 		
 		cmd.execute(qcs);
+		qcDao.clean();
 	}
 
 	@Override
-	public void getState(OutputStream output) throws Exception {
+	public void getState(final OutputStream output) throws Exception {
 		log.info(ch.getAddress() + ": " + MiscUtils.invocInfo());
 	}
 
 	@Override
-	public void setState(InputStream input) throws Exception {
+	public void setState(final InputStream input) throws Exception {
 		log.info(ch.getAddress() + ": " + MiscUtils.invocInfo());
 	}
 
 	@Override
-	public void viewAccepted(View new_view) {
+	public void viewAccepted(final View new_view) {
 		log.info(ch.getAddress() + ": " + MiscUtils.invocInfo());
 		log.info(new_view);
 	}
 
 	@Override
-	public void suspect(Address suspected_mbr) {
+	public void suspect(final Address suspected_mbr) {
 		log.info(ch.getAddress() + ": " + MiscUtils.invocInfo());
 	}
 

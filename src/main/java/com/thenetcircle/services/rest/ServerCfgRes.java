@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
@@ -110,9 +111,11 @@ public class ServerCfgRes {
 
 			final ServerCfg edited = scDao.update(sc);
 			
-			for (final QueueCfg qc : qcDao.findQueuesByServer(edited)) {
+			final List<QueueCfg> qcs = qcDao.findQueuesByServer(edited);
+			for (final QueueCfg qc : qcs) {
 				MQueues.instance().updateQueueCfg(qc);
 			}
+			JGroupsActor.instance().restartQueues(qcs.toArray(new QueueCfg[0]));
 			
 			return edited;
 		} catch (Exception e) {

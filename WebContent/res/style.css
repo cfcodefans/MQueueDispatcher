@@ -7,8 +7,23 @@ body {
 article {
 	margin-left: 20px;
 	margin-right: 20px;
+	margin-top: 71px;
 }
 
 .last_col {
 	text-align: right;
+}
+
+.list-group-item .control-label {
+	font-weight: 500;
+	padding-left: 6px;
+	padding-right: 6px;
+	padding-top: 0px;
+	white-space: nowrap;
+	margin-top: auto;
+	margin-bottom: auto;
+}
+
+form .list-group-item {
+	padding: 10px 15px;
 }

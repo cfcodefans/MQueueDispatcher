@@ -10,7 +10,7 @@
 				<tr>
 					<th>id</th>
 					<th>server</th>
-					<th>server user name</th>
+					<th>vhost</th>
 					<th>queue name</th>
 					<th>url</th>
 					<th>http method</th>
@@ -28,9 +28,9 @@
 				<tr data_id="{id}">
 					<td><xsl:value-of select="id" /></td>
 					<td><xsl:value-of select="serverCfg/host" /></td>
-					<td><xsl:value-of select="serverCfg/userName" /></td>
+					<td><xsl:value-of select="serverCfg/virtualHost" /></td>
 					<td style="word-break:break-all"> 
-						<a href="queue_ctrl.html?qc_id={id}">
+						<a href="queue_ctrl.html?qc_id={id}" target="_blank">
 						<xsl:value-of select="queueName" />	
 						</a>
 					</td>
