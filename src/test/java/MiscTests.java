@@ -14,6 +14,8 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.junit.Test;
 
+import com.thenetcircle.services.cluster.JGroupsActor.Command;
+import com.thenetcircle.services.cluster.JGroupsActor.CommandType;
 import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
@@ -74,8 +76,18 @@ public class MiscTests {
 //		System.out.println(Jsons.toString(new MessageContext()));
 //		System.out.println(MiscUtils.toXML(new MessageContext()));
 //		{status: %d, resp: '%s'}
-		System.out.println(Jsons.toString(MiscUtils.map("status", 200, "resp", "ok")));
-		System.out.println(Jsons.read(Jsons.toString(MiscUtils.map("status", 200, "resp", "ok")), Map.class));
+//		System.out.println(Jsons.toString(MiscUtils.map("status", 200, "resp", "ok")));
+//		System.out.println(Jsons.read(Jsons.toString(MiscUtils.map("status", 200, "resp", "ok")), Map.class));
+		
+		Command cmd = new Command();
+		cmd.commandType = CommandType.restart;
+		cmd.qcIds.add(123);
+		
+		String cmdStr = Jsons.toString(cmd);
+		System.out.println(cmdStr);
+		
+		cmd = Jsons.read(cmdStr, Command.class);
+		
 	}
 	
 	

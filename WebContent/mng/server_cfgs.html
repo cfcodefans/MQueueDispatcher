@@ -226,8 +226,6 @@
 			var tx = $("#template_xslt")[0];
 			var cd = $("#tbl_container");
 
-			var xslt = tx.value.trim();
-
 			var xslt_xhr = $.ajax({url:"server_cfg_table.xsl", async:false});
 			var xslt = xslt_xhr.responseText;
 			var xhr = RS.ctx.ServerCfgRes.getAll.call({async:false});

@@ -42,7 +42,7 @@
 					<td><span class="badge"><xsl:value-of select="status/processed" /></span></td>
 					<td><span class="badge"><xsl:value-of select="status/failed" /></span></td>
 					<td class="last_col">
-						<div class="btn-group">
+						<div class="btn-group" style="min-width: 200px">
 						  <button type="button" id="editBtn" class="btn btn-default btn-sm" onclick="editQueueCfg({id})">edit</button>
 						  <button type="button" id="copyBtn" class="btn btn-default btn-sm" onclick="copyQueueCfg({id})">copy</button>
 						  <button type="button" id="deleteBtn" class="btn btn-default btn-sm" onclick="switchQueue({id})">

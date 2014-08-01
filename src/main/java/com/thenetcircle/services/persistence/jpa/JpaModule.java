@@ -53,7 +53,12 @@ public class JpaModule {
 		try {
 			final Properties p = new Properties();
 			p.load(new FileInputStream(pathStr));
-			return new HashMap(p);
+			
+			final HashMap settings = new HashMap(p);
+			
+			log.info("\nhave loaded data source\n" + settings + "\n\n");
+			
+			return settings;
 		} catch (Exception e) {
 			log.error("failed to load EXTERNAL_JPA_PROPERTIES: " + pathStr, e);
 		}

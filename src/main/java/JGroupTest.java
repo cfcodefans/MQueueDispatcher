@@ -1,7 +1,7 @@
 import com.thenetcircle.services.cluster.JGroupsActor;
 
 
-public class ClusterTest {
+public class JGroupTest {
 	public void testCluster() throws Exception {
 		JGroupsActor.instance().start();
 		Thread.currentThread().join();
@@ -9,7 +9,7 @@ public class ClusterTest {
 	
 	public static void main(String[] args) {
 		try {
-			new ClusterTest().testCluster();
+			new JGroupTest().testCluster();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -64,7 +64,9 @@ public class QueueCfgDao extends BaseDao<QueueCfg> {
 	
 	@Transactional
 	public QueueCfg update(final QueueCfg qc) {
-		prepare(qc);
+		if (!em.contains(qc)) {
+			prepare(qc);
+		}
 		return super.update(qc);
 	}
 

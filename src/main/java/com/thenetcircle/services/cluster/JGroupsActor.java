@@ -1,17 +1,19 @@
 package com.thenetcircle.services.cluster;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
-import org.jgroups.Receiver;
+import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 
 import com.thenetcircle.services.common.Jsons;
@@ -21,7 +23,8 @@ import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.persistence.jpa.JpaModule;
 
-public class JGroupsActor implements Receiver {
+public class JGroupsActor extends ReceiverAdapter {
+	private static final String EXTERNAL_JGRP_PROPERTIES = "jgroup_settings";
 	
 	public static enum CommandType {
 		stop {
@@ -61,7 +64,8 @@ public class JGroupsActor implements Receiver {
 		try {
 			stop();
 			
-			ch = new JChannel();
+			ch = createChannel();
+			
 			ch.setReceiver(this);
 			ch.connect(CLUSTER_NAME);
 			log.info("join the jgroup cluster...");
@@ -73,12 +77,29 @@ public class JGroupsActor implements Receiver {
 			log.error("can't initiate JGroups!!", e);
 		}
 	}
+
+	private JChannel createChannel() throws Exception {
+		final String cfgPathStr = System.getProperty(EXTERNAL_JGRP_PROPERTIES);
+		if (StringUtils.isBlank(cfgPathStr)) {
+			log.error("JGroup cluster Configuration file is not set: " + cfgPathStr);
+			return new JChannel();
+		}
+		
+		final File cfgFile = new File(cfgPathStr);
+		if (!(cfgFile.exists() && cfgFile.isFile())) {
+			log.error("JGroup cluster Configuration file is invalide: " + cfgPathStr);
+			return new JChannel();
+		}
+		
+		log.info(String.format("loading JGroup cluster from jgroup_settings file [%s]......", cfgPathStr));
+		return new JChannel(cfgFile);
+	}
 	
-	public synchronized void send(Command cmd) {
-		Message msg = new Message();
-		String msgStr = Jsons.toString(cmd);
+	public synchronized void send(final Command cmd) {
+		final String msgStr = Jsons.toString(cmd);
+		log.info("sending command to JGroup: \n\t" + msgStr);
 		try {
-			ch.send(msg);
+			ch.send(new Message(null, msgStr));
 		} catch (Exception e) {
 			log.error("can't send command: " + msgStr, e);
 		}
@@ -142,7 +163,12 @@ public class JGroupsActor implements Receiver {
 		}
 		
 		log.info(ch.getAddress() + ": " + MiscUtils.invocInfo());
-		final String msgStr = new String(msg.getBuffer());
+		final byte[] buf = msg.getBuffer();
+		if (ArrayUtils.isEmpty(buf)) {
+			return;
+		}
+		
+		final String msgStr = (new String(buf)).trim();
 		log.info(msgStr);
 		
 		Command cmd = Jsons.read(msgStr, Command.class);
@@ -182,16 +208,16 @@ public class JGroupsActor implements Receiver {
 
 	@Override
 	public void suspect(final Address suspected_mbr) {
-		log.info(ch.getAddress() + ": " + MiscUtils.invocInfo());
+//		log.info(ch.getAddress() + ": " + MiscUtils.invocInfo());
 	}
 
 	@Override
 	public void block() {
-		log.info(ch.getAddress() + ": " + MiscUtils.invocInfo());
+//		log.info(ch.getAddress() + ": " + MiscUtils.invocInfo());
 	}
 
 	@Override
 	public void unblock() {
-		log.info(ch.getAddress() + ": " + MiscUtils.invocInfo());
+//		log.info(ch.getAddress() + ": " + MiscUtils.invocInfo());
 	}
 }

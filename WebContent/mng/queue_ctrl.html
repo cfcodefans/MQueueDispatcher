@@ -12,6 +12,8 @@
 <link rel="stylesheet" href="../res/datatable/css/dataTables.bootstrap.css">
 
 <link rel="stylesheet" href="../res/style.css">
+
+	<script type="text/javascript" src="../res/jquery-2.1.1.js"></script>
 </head>
 <body>
 
@@ -185,6 +187,16 @@
 									<div class="col-sm-10" id="exchangeCfg_select_div"></div>
 								</div>
 							</li>
+							
+							<li class="list-group-item"> 
+								<div class="row">
+								<label for="url" class="col-sm-2 control-label">url</label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control input-sm" id="routeKey">
+								</div>
+								</div>
+							</li>
+							
 							<li class="list-group-item"> 
 								<div class="row">
 									<label for="retryLimit" class="col-sm-2 control-label">Retry Limit</label>
@@ -252,7 +264,7 @@
 		
 	</article>
 
-	<script type="text/javascript" src="../res/jquery-2.1.1.js"></script>
+
 	<script type="text/javascript" src="../res/jquery.xslt.js"></script>
 	
 	<script src="../res/bootstrap/js/bootstrap.min.js"></script>
@@ -270,9 +282,16 @@
 			fillForm(window.QueueCfg);
 		}
 
+		function updateToggleBtn(qc) {
+			$("#toggleBtn")[0].innerText = qc.enabled ? "Stop" : "Start";
+		}
+		
 		function fillForm(qc) {
 			if (!qc)
 				return;
+			
+			updateToggleBtn(qc);
+			
 			var ef = $("#queue_form");
 
 			ef.find("#cfgName").val(qc.name);
