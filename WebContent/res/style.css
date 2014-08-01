@@ -31,3 +31,15 @@ article {
 form .list-group-item {
 	padding: 10px 15px;
 }
+
+.right-sidebar {
+    position: fixed;
+    right: 0px;
+    top: 71px;
+    bottom: 0px;
+    padding-right: 0px;
+}
+
+.right-sidebar .panel {
+	height: 100%;
+}

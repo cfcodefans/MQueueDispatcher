@@ -47,31 +47,35 @@
 		<div class="row">
 			<div class="col-lg-9">
 				<div class="row">
-					<div class="col-sm-5">
+					<div class="col-sm-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<i class="fa fa-bell fa-fw"></i> Failed Messages
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body" id="message_ctx_tbl_div">
+							
+						</div>
+						<!-- /.panel-body -->
+					</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-sm-12">
 					<div class="panel panel-default">
 						<div class="panel-heading">
 							<button type="button" class="btn btn-default btn-sm" onclick="sendMsgToQueue(getQueueCfgId(), $('#msgTxt').text())">
 							Send Message
 							</button>
-						</div>
-						<!-- /.panel-heading -->
-						<div class="panel-body" id="msgTxt" contenteditable="true" style="height: 200px; overflow:auto;">
-						</div>
-						<!-- /.panel-body -->
-						<script type="text/javascript">
-
-						</script>
-					</div>
-					</div>
-					<div class="col-sm-7">
-					<div class="panel panel-default">
-						<div class="panel-heading">
-							<i class="fa fa-bell fa-fw">Running Messages</i> 
 							<button type="button" class="btn btn-default btn-sm" onclick="sseToggle(event)" id="sseToggleBtn">Start</button>
 						</div>
 						<!-- /.panel-heading -->
-						<div class="panel-body" style="height: 200px;">
-							<div class="list-group" id="failedMsgDiv" style="max-height: 200px; overflow-y: scroll;">
+						<div class="panel-body">
+						<div id="msgTxt" contenteditable="true" style="height: 200px; overflow:auto; width: 33.33333333%; float: left;">
+						</div>
+
+							<div class="list-group" id="failedMsgDiv" style="max-height: 200px; overflow-y: scroll; width: 66.66666666%; float: left;">
 								
 							</div>
 							<!-- /.list-group -->
@@ -134,24 +138,10 @@
 					</div>
 				</div>
 			
-				<div class="row">
-					<div class="col-sm-12">
-					<div class="panel panel-default">
-						<div class="panel-heading">
-							<i class="fa fa-bell fa-fw"></i> Failed Messages
-						</div>
-						<!-- /.panel-heading -->
-						<div class="panel-body" id="message_ctx_tbl_div">
-							
-						</div>
-						<!-- /.panel-body -->
-					</div>
-					</div>
-				</div>
+			</div>		
+		</div>
 
-			</div>
-
-			<div class="col-lg-3">
+		<div class="col-lg-3 right-sidebar">
 				<div class="panel panel-default">
 					<div class="panel-heading">
 						<button type="button" class="btn btn-default btn-sm" onclick="save(QueueCfg)">Save</button>
@@ -258,10 +248,9 @@
 					
 					</div>
 				</div>
-			</div>
 		</div>
 
-		
+
 	</article>
 
 
