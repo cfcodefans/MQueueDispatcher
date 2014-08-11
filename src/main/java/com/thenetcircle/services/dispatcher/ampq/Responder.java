@@ -1,6 +1,8 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,6 +12,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 
+import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -29,7 +33,8 @@ public class Responder implements IMessageActor, Runnable {
 	public void run() {
 		try {
 			while (!Thread.interrupted()) {
-				handle(buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT));
+//				handle(buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT));
+				handle(buf.take());
 //				log.info(MiscUtils.invocationInfo());
 			}
 		} catch (Exception e) {
@@ -66,6 +71,7 @@ public class Responder implements IMessageActor, Runnable {
 		}
 	}
 
+	
 	@Override
 	public MessageContext handle(final MessageContext mc) {
 		if (mc == null) {
@@ -75,14 +81,16 @@ public class Responder implements IMessageActor, Runnable {
 		final QueueCfg queueCfg = mc.getQueueCfg();
 		queueCfg.getStatus().processed();
 		
-		Monitor.instance().handover(mc);
+		final Monitor monitor = Monitor.instance();
+		final MQueues qs = MQueues.instance();
+		monitor.handover(mc);
 		
 		try {
 			if (mc.isSucceeded()) {
 				if (mc.getFailTimes() > 1) {
 					failsafe.handover(mc);
 				}
-				return MQueues.instance().acknowledge(mc);
+				return qs.acknowledge(mc);
 			}
 			
 			queueCfg.getStatus().failed();
@@ -103,7 +111,7 @@ public class Responder implements IMessageActor, Runnable {
 			}
 			
 			log.info(String.format("MessageContext: %d exceeds the retryLimit: %d", mc.getId(), mc.getQueueCfg().getRetryLimit()));
-			return MQueues.instance().acknowledge(mc);
+			return qs.acknowledge(mc);
 		} catch (Exception e) {
 			log.error("failed to handle: \n\t" + mc, e);
 		}
@@ -115,16 +123,31 @@ public class Responder implements IMessageActor, Runnable {
 	public void stop() {
 		executor.shutdownNow();
 	}
+	
+	public static void stopAll() {
+		for (Responder instance : instances.getArray()) {
+			instance.stop();
+		}
+	}
 
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	
-	private static Responder instance = new Responder();
+//	private static Responder instance = new Responder();
+	
+	private static LoopingArrayIterator<Responder> instances = null;
+	static {
+		final List<Responder> list = new ArrayList<Responder>();
+		for (int i = 0, j = MiscUtils.AVAILABLE_PROCESSORS * 2; i < j; i++) {
+			list.add(new Responder());
+		}
+		instances = new LoopingArrayIterator<Responder>(list.toArray(new Responder[0]));
+	};
 	
 	public Responder() {
 		executor.submit(this);
 	}
 	
 	public static Responder instance() {
-		return instance;
+		return instances.loop();
 	}
 }

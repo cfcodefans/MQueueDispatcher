@@ -1,6 +1,7 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,11 +9,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.collections4.map.LinkedMap;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,7 +25,6 @@ import com.rabbitmq.client.ShutdownListener;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
-import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -37,6 +36,8 @@ import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 //TODO this class becomes rather messy
 // maintain configurations, maintain messages, maintain living queues and IMessageActor instances;
 public class MQueues {
+	
+	private static final int CONN_NUM = MiscUtils.AVAILABLE_PROCESSORS * 2;
 
 	public static final Thread cleaner = new Thread() {
 		public void run() {
@@ -55,15 +56,22 @@ public class MQueues {
 
 	// this is pointless for now, unless some additional process we need in
 	// between
-	private final LinkedMap<IMessageActor, IMessageActor> actors = new LinkedMap<IMessageActor, IMessageActor>();
+//	private final LinkedMap<IMessageActor, IMessageActor> actors = new LinkedMap<IMessageActor, IMessageActor>();
 
-	private final ExecutorService connExecutors = Executors.newFixedThreadPool(MiscUtils.AVAILABLE_PROCESSORS);
+//	private static LoopingArrayIterator<ExecutorService> connExecutors = null;// Executors.newCachedThreadPool(); //.newFixedThreadPool(CONN_NUM);
+//	static {
+//		final List<ExecutorService> list = new ArrayList<ExecutorService>();
+//		for (int i = 0, j = CONN_NUM; i < j; i++) {
+//			list.add(Executors.newSingleThreadExecutor());
+//		}
+//		connExecutors = new LoopingArrayIterator<ExecutorService>(list.toArray(new ExecutorService[0]));
+//	}
 
 	private Map<ServerCfg, ConnectionFactory> connFactories = new HashMap<ServerCfg, ConnectionFactory>();
 
 	private Map<ExchangeCfg, Channel> exchangeAndChannels = new HashMap<ExchangeCfg, Channel>();
 
-	private Map<QueueCfg, Channel> queueAndChannels = new HashMap<QueueCfg, Channel>();
+	private Map<QueueCfg, Channel> queueAndChannels = new ConcurrentHashMap<QueueCfg, Channel>();
 
 	private Map<QueueCfg, ConsumerActor> queueAndConsumers = new HashMap<QueueCfg, ConsumerActor>();
 
@@ -84,10 +92,10 @@ public class MQueues {
 
 		try {
 			final Channel ch = getChannel(mc.getQueueCfg());
-			if (!ch.isOpen()) {
-				log.error("can't acknowledge the message as channel is closed!");
-				return mc;
-			}
+//			if (!ch.isOpen()) {
+//				log.error("can't acknowledge the message as channel is closed!");
+//				return mc;
+//			}
 			ch.basicAck(deliveryTag, false);
 
 		} catch (final IOException e) {
@@ -95,10 +103,12 @@ public class MQueues {
 		}
 
 		final QueueCfg qc = mc.getQueueCfg();
-		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
-		String logStr = "cfg_name: \n\t" + qc.getName() + "\n posted message: \n\t" + new String(ArrayUtils.subarray(mc.getMessageBody(), 0, 50)) + "\n to url: " + qc.getDestCfg().getUrl();
+		final ServerCfg serverCfg = qc.getServerCfg();
+		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(serverCfg);
+//		String logStr = "cfg_name: \n\t" + qc.getName() + "\n posted message: \n\t" + new String(ArrayUtils.subarray(mc.getMessageBody(), 0, 50)) + "\n to url: " + qc.getDestCfg().getUrl();
+		logForSrv.info("the result of job for q " + qc.getName() + " on server " + serverCfg.getVirtualHost() + "\nresponse: " + mc.getResponse());
 
-		logForSrv.info(logStr);
+//		logForSrv.info(logStr);
 		return mc;
 	}
 
@@ -111,12 +121,12 @@ public class MQueues {
 		creatQueue(qc);
 	}
 
-	public IMessageActor firstActor() {
-		final IMessageActor actor = actors.firstKey();
-		return actor == null ? IMessageActor.DefaultMessageActor.instance : actor;
-	}
+//	public IMessageActor firstActor() {
+//		final IMessageActor actor = actors.firstKey();
+//		return actor == null ? IMessageActor.DefaultMessageActor.instance : actor;
+//	}
 
-	public synchronized Channel getChannel(final QueueCfg qc) {
+	public Channel getChannel(final QueueCfg qc) {
 		if (qc == null) {
 			return null;
 		}
@@ -173,10 +183,10 @@ public class MQueues {
 		return c;
 	}
 
-	public IMessageActor getNextActor(final IMessageActor actor) {
-		final IMessageActor nextActor = actors.get(actor);
-		return nextActor == null ? IMessageActor.DefaultMessageActor.instance : nextActor;
-	}
+//	public IMessageActor getNextActor(final IMessageActor actor) {
+//		final IMessageActor nextActor = actors.get(actor);
+//		return nextActor == null ? IMessageActor.DefaultMessageActor.instance : nextActor;
+//	}
 
 	public Collection<QueueCfg> getQueueCfgs() {
 		if (queueCfgs == null) {
@@ -286,13 +296,17 @@ public class MQueues {
 
 		clearInstances();
 
-		for (IMessageActor actor : actors.keySet()) {
-			actor.stop();
-		}
+		shutdownActors();
+		
+//		for (IMessageActor actor : actors.keySet()) {
+//			actor.stop();
+//		}
 	}
 
 	private synchronized void clearInstances() {
-		connExecutors.shutdownNow();
+//		for (ExecutorService es : connExecutors.getArray()) {
+//			es.shutdownNow();
+//		}
 
 		connFactories.clear();
 		exchangeAndChannels.clear();
@@ -343,11 +357,21 @@ public class MQueues {
 
 		LoopingArrayIterator<Connection> li = serverAndConns.get(sc);
 		if (li == null) {
-			final Connection[] conns = new Connection[MiscUtils.AVAILABLE_PROCESSORS];
+			int connSize = 0;
+			for (final QueueCfg qc : this.queueCfgs) {
+				if (sc.equals(qc.getServerCfg())) {
+					connSize ++;
+				}
+			}
+			connSize = (int) Math.ceil(((double)connSize / (double)this.queueCfgs.size()) * 200.0);
+			
+			log.info(String.format("create %d connection to server: %s\t%s", connSize, sc.getHost(), sc.getVirtualHost()));
+			final Connection[] conns = new Connection[connSize];
+			final ExecutorService es = Executors.newFixedThreadPool((int)Math.ceil(connSize * 1.5));
 
 			for (int i = 0; i < conns.length; i++) {
 				try {
-					conns[i] = connFactory.newConnection(getExecutorsForConn());
+					conns[i] = connFactory.newConnection(es);
 				} catch (Exception e) {
 					String logStr = String.format("failed to create connection for server: \n\t%s\n", sc.toString());
 					log.error(logStr, e);
@@ -365,16 +389,22 @@ public class MQueues {
 		return li.loop();
 	}
 
-	private ExecutorService getExecutorsForConn() {
-		return connExecutors;
-	}
+//	private ExecutorService getExecutorsForConn() {
+//		return connExecutors.loop();
+//	}
 
 	private void initActors() {
-		actors.put(HttpDispatcherActor.instance(), Responder.instance());
-		actors.put(Responder.instance(), HttpDispatcherActor.instance());
-		actors.put(FailedMessageSqlStorage.instance(), HttpDispatcherActor.instance());
+		Responder.instance();
+		HttpDispatcherActor.instance();
+		FailedMessageSqlStorage.instance();
 	}
 
+	private void shutdownActors() {
+		Responder.stopAll();
+		HttpDispatcherActor.instance().shutdown();
+		FailedMessageSqlStorage.instance().stop();
+	}
+	
 	private Channel initChannel(final QueueCfg qc) {
 		if (qc == null) {
 			return null;
@@ -396,6 +426,9 @@ public class MQueues {
 
 				return ch;
 			}
+			
+			log.info(String.format("create channel [%s] with connection: %s", qc.getName(), conn.toString()));
+			
 			ch = conn.createChannel();
 			ch.addShutdownListener(new ShutdownListener() {
 				@Override

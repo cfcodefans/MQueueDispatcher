@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
@@ -16,6 +17,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -81,6 +83,17 @@ public class FailedJobRes {
 		return mc;
 	}
 	
+	@DELETE
+	@Path("/{mc_id}/resend") 
+	public MessageContext deleteFailedMsg(@PathParam("mc_id") int id) {
+		final MessageContext mc = mcDao.find(new Long(id));
+		if (mc == null) {
+			throw new WebApplicationException(Response.status(Status.NOT_FOUND).entity("invalid QueueCfg: " + id).build());
+		}
+		mcDao.destroy(mc);
+		return mc;
+	}
+	
 	@GET
 	public List<MessageContext> getFailedJobs() {
 		final QueueCfg qc = qcDao.find(qcId);
@@ -93,6 +106,20 @@ public class FailedJobRes {
 	@Path("/page_{page_idx}")
 	public List<MessageContext> getFailedMessages(@PathParam("page_idx") int pageIdx, @QueryParam("size") int pageSize) {
 		return mcDao.page(pageIdx, pageSize);
+	}
+	
+	@GET
+	@Path("/query")
+	public List<MessageContext> queryFailedMessages(@QueryParam("start") long _start,
+													@QueryParam("end") long _end) {
+		final QueueCfg qc = qcDao.find(qcId);
+		final Date start = new Date(_start);
+		final Date end = new Date(_end);
+		final String pattern = "MM-dd HH:mm:ss";
+		log.info(String.format("query 1000 failed jobs with in \n\t %s - %s", 
+				DateFormatUtils.format(start, pattern),
+				DateFormatUtils.format(end, pattern)));
+		return mcDao.queryFailedJobs(qc, start, end);
 	}
 
 	@OPTIONS

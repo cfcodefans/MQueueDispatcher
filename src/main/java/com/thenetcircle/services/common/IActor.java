@@ -9,7 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public interface IActor<T> {
-	static final int WAIT_FACTOR = 5;
+	static final int WAIT_FACTOR = 1;
 	static final TimeUnit WAIT_FACTOR_UNIT = TimeUnit.MILLISECONDS;
 
 	public static class AsyncActor<M> implements IActor<M>, Runnable {

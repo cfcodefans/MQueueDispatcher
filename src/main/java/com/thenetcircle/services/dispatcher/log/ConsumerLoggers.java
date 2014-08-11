@@ -50,7 +50,7 @@ public class ConsumerLoggers {
 			queueLogAppender.setMaxBackupIndex(originalLogAppender.getMaxBackupIndex());
 			queueLogAppender.setMaxFileSize(maxLogSize);
 
-			queueLogAppender.setName(serverKey);
+			queueLogAppender.setName(sc.getHost() + "/" + sc.getVirtualHost());
 			queueLogAppender.setThreshold(originalLogAppender.getThreshold());
 
 			final Logger _logger = Logger.getLogger(serverKey);

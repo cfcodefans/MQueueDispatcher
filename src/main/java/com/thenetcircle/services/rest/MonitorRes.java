@@ -1,5 +1,7 @@
 package com.thenetcircle.services.rest;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -16,6 +18,7 @@ import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.glassfish.jersey.media.sse.SseBroadcaster;
 import org.glassfish.jersey.media.sse.SseFeature;
+import org.glassfish.jersey.server.ChunkedOutput;
 
 import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.ampq.MQueues;
@@ -35,14 +38,39 @@ public class MonitorRes {
 
 	private static class Watcher extends IMessageActor.AsyncMessageActor {
 		// private EventOutput eventOutput = null;
-		private SseBroadcaster broadcaster = new SseBroadcaster();
+		private SseBroadcaster broadcaster = new SseBroadcaster() {
+			private AtomicInteger cnt = new AtomicInteger(0);
+			
+			public void onException(final ChunkedOutput<OutboundEvent> chunkedOutput, final Exception exception) {
+				log.warn("Monitor ends: " + exception);
+				exception.printStackTrace();
+			}
 
-		// private QueueCfg qc = null;
+			public synchronized void onClose(ChunkedOutput<OutboundEvent> chunkedOutput) {
+				log.info("Monitor ends");
+				super.remove(chunkedOutput);
+				if (cnt.get() <= 0) {
+					Monitor.instance().unregister(qc);
+				}
+			}
+			
+		    public synchronized <OUT extends ChunkedOutput<OutboundEvent>> boolean add(final OUT chunkedOutput) {
+		    	cnt.incrementAndGet();
+		        return super.add(chunkedOutput);
+		    }
+		    
+		    public synchronized <OUT extends ChunkedOutput<OutboundEvent>> boolean remove(final OUT chunkedOutput) {
+		    	cnt.decrementAndGet();
+		        return super.remove(chunkedOutput);
+		    }
+		};
 
-		public Watcher() {
+		 private QueueCfg qc = null;
+
+		public Watcher(QueueCfg _qc) {
 			super();
 			// this.eventOutput = eventOutput;
-			// this.qc = _qc;
+			 this.qc = _qc;
 		}
 
 		public MessageContext handover(final MessageContext mc) {
@@ -93,7 +121,7 @@ public class MonitorRes {
 
 		Watcher watcher = (Watcher) Monitor.instance().getQueueMonitor(qc);
 		if (watcher == null) {
-			watcher = new Watcher();
+			watcher = new Watcher(qc);
 			Monitor.instance().register(qc, watcher);
 		}
 

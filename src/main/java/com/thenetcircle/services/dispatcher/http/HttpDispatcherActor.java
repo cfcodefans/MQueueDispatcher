@@ -31,7 +31,7 @@ import org.apache.http.util.EntityUtils;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.dispatcher.IMessageActor;
-import com.thenetcircle.services.dispatcher.ampq.MQueues;
+import com.thenetcircle.services.dispatcher.ampq.Responder;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -60,13 +60,13 @@ public class HttpDispatcherActor implements IMessageActor {
 			}
 
 			mc.setResponse(String.format("{status: %d, resp: '%s'}", resp.getStatusLine().getStatusCode(), respStr.trim()));
-			MQueues.instance().getNextActor(instance).handover(mc);
+			Responder.instance().handover(mc);
 		}
 
 		public void failed(final Exception e) {
 			log.error("failed to process response from url: \n" + mc.getQueueCfg().getDestCfg().getUrl(), e);
 			mc.setResponse(e.getMessage());
-			MQueues.instance().getNextActor(instance).handover(mc);
+			Responder.instance().handover(mc);
 		}
 	}
 
@@ -129,7 +129,8 @@ public class HttpDispatcherActor implements IMessageActor {
 		
 		final HttpClientContext httpClientCtx = HttpClientContext.create();
 		if (destCfg.getTimeout() != DEFAULT_TIMEOUT) {
-			httpClientCtx.setRequestConfig(RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout(30000).build());
+			final int timeout = (int) destCfg.getTimeout();
+			httpClientCtx.setRequestConfig(RequestConfig.custom().setSocketTimeout(timeout / 2).setConnectTimeout(timeout / 2).build());
 		}
 		
 		httpClientIterator.loop().execute(req, httpClientCtx, new RespHandler(mc));
@@ -176,7 +177,7 @@ public class HttpDispatcherActor implements IMessageActor {
 
 	private void initHttpAsyncClients() {
 		hacs = new ArrayList<CloseableHttpAsyncClient>();
-		for (int i = 0, j = 4; i < j; i++) {
+		for (int i = 0, j = MiscUtils.AVAILABLE_PROCESSORS * 4; i < j; i++) {
 			CloseableHttpAsyncClient hac = null;
 			RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(DEFAULT_TIMEOUT).setConnectTimeout(DEFAULT_TIMEOUT).build();
 			hac = HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig).build();

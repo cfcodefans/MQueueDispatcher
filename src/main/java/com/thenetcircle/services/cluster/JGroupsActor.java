@@ -64,6 +64,12 @@ public class JGroupsActor extends ReceiverAdapter {
 		try {
 			stop();
 			
+			final String cfgPathStr = System.getProperty(EXTERNAL_JGRP_PROPERTIES);
+			if (StringUtils.isBlank(cfgPathStr)) {
+				log.error("JGroup cluster Configuration file is not set: " + cfgPathStr);
+				return;
+			}
+			
 			ch = createChannel();
 			
 			ch.setReceiver(this);
