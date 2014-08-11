@@ -6,10 +6,9 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,6 +23,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
+import org.apache.http.impl.nio.reactor.IOReactorConfig;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
@@ -37,6 +37,8 @@ import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
 public class HttpDispatcherActor implements IMessageActor {
+
+	private static final int CLIENT_NUM = MiscUtils.AVAILABLE_PROCESSORS * 3;
 
 	private static class RespHandler implements FutureCallback<HttpResponse> {
 		private MessageContext mc;
@@ -75,6 +77,7 @@ public class HttpDispatcherActor implements IMessageActor {
 	private static HttpDispatcherActor instance = new HttpDispatcherActor();
 
 	protected static final Log log = LogFactory.getLog(HttpDispatcherActor.class.getSimpleName());
+
 	public static HttpDispatcherActor instance() {
 		return instance;
 	}
@@ -95,19 +98,18 @@ public class HttpDispatcherActor implements IMessageActor {
 
 	@SuppressWarnings({ "unchecked", "deprecation" })
 	public MessageContext handle(final MessageContext mc) {
-		QueueCfg qc = mc.getQueueCfg();
+		final QueueCfg qc = mc.getQueueCfg();
 		final HttpDestinationCfg destCfg = qc.getDestCfg();
 		final String destUrlStr = destCfg.getUrl();
-		
-		
+
 		HttpUriRequest req = null;
-		
-		String bodyStr = new String(mc.getMessageBody());
+
+		final String bodyStr = new String(mc.getMessageBody());
 		try {
 			if (!"get".equalsIgnoreCase(StringUtils.trim(destCfg.getHttpMethod()))) {
 				final HttpPost post = new HttpPost(destUrlStr);
 
-				List<NameValuePair> paramList = getParamsList(MiscUtils.map("queueName", qc.getName(), "bodyData", bodyStr));
+				final List<NameValuePair> paramList = getParamsList("queueName", qc.getName(), "bodyData", bodyStr);
 				UrlEncodedFormEntity fe = new UrlEncodedFormEntity(paramList, HTTP.UTF_8);
 
 				post.setEntity(fe);
@@ -121,18 +123,19 @@ public class HttpDispatcherActor implements IMessageActor {
 			}
 		} catch (UnsupportedEncodingException e) {
 			log.error("fail to encode message: " + bodyStr, e);
+			return mc;
 		}
-		
+
 		if (StringUtils.isNotBlank(destCfg.getHostHead())) {
 			req.addHeader("host", destCfg.getHostHead());
 		}
-		
+
 		final HttpClientContext httpClientCtx = HttpClientContext.create();
-		if (destCfg.getTimeout() != DEFAULT_TIMEOUT) {
-			final int timeout = (int) destCfg.getTimeout();
-			httpClientCtx.setRequestConfig(RequestConfig.custom().setSocketTimeout(timeout / 2).setConnectTimeout(timeout / 2).build());
-		}
-		
+		// if (destCfg.getTimeout() != DEFAULT_TIMEOUT) {
+		final int timeout = (int) Math.max(destCfg.getTimeout(), 1000);
+		httpClientCtx.setRequestConfig(RequestConfig.custom().setSocketTimeout(timeout / 2).setConnectTimeout(timeout / 2).build());
+		// }
+
 		httpClientIterator.loop().execute(req, httpClientCtx, new RespHandler(mc));
 		return mc;
 	}
@@ -163,7 +166,7 @@ public class HttpDispatcherActor implements IMessageActor {
 			close(hac);
 		}
 	}
-	
+
 	private void close(final CloseableHttpAsyncClient hac) {
 		if (!hac.isRunning()) {
 			return;
@@ -177,23 +180,23 @@ public class HttpDispatcherActor implements IMessageActor {
 
 	private void initHttpAsyncClients() {
 		hacs = new ArrayList<CloseableHttpAsyncClient>();
-		for (int i = 0, j = MiscUtils.AVAILABLE_PROCESSORS * 4; i < j; i++) {
-			CloseableHttpAsyncClient hac = null;
-			RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(DEFAULT_TIMEOUT).setConnectTimeout(DEFAULT_TIMEOUT).build();
-			hac = HttpAsyncClients.custom().setDefaultRequestConfig(requestConfig).build();
+		for (int i = 0, j = CLIENT_NUM; i < j; i++) {
+			final RequestConfig reqCfg = RequestConfig.custom().setSocketTimeout(DEFAULT_TIMEOUT).setConnectTimeout(DEFAULT_TIMEOUT).build();
+			final IOReactorConfig ioCfg = IOReactorConfig.custom().setSelectInterval(500).setSoKeepAlive(true).build();
+			final CloseableHttpAsyncClient hac = HttpAsyncClients.custom().setDefaultRequestConfig(reqCfg).setDefaultIOReactorConfig(ioCfg).build();
 			hac.start();
 			hacs.add(hac);
 		}
 		httpClientIterator = new LoopingArrayIterator<CloseableHttpAsyncClient>(hacs.toArray(new CloseableHttpAsyncClient[0]));
 	}
 
-	private static List<NameValuePair> getParamsList(Map<String, String> paramsMap) {
-		if (MapUtils.isEmpty(paramsMap)) {
+	private static List<NameValuePair> getParamsList(final String... nameAndValues) {
+		if (ArrayUtils.isEmpty(nameAndValues)) {
 			return null;
 		}
-		List<NameValuePair> params = new ArrayList<NameValuePair>();
-		for (Map.Entry<String, String> map : paramsMap.entrySet()) {
-			params.add(new BasicNameValuePair(map.getKey(), map.getValue()));
+		final List<NameValuePair> params = new ArrayList<NameValuePair>();
+		for (int i = 0, j = nameAndValues.length; i < j - 1; i += 2) {
+			params.add(new BasicNameValuePair(nameAndValues[i], nameAndValues[i + 1]));
 		}
 		return params;
 	}
