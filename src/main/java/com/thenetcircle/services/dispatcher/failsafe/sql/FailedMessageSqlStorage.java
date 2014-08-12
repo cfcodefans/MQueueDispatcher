@@ -47,8 +47,27 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 			}
 			
 			mc.fail();
-			final MessageContext merge = em.merge(mc);
-			mc.setFailTimes(merge.getFailTimes());
+//			final MessageContext merge = em.
+//			mc.setFailTimes(merge.getFailTimes());
+			
+			final Query q = em.createQuery("update MessageContext mc set "
+					+ " mc.failTimes=:failTimes, "
+					+ " mc.response=:response, "
+					+ " mc.timestamp=:_timestamp "
+					+ " where mc.id=:id");
+			q.setParameter("failTimes", Long.valueOf(mc.getFailTimes()));
+			q.setParameter("response", mc.getResponse());
+			q.setParameter("_timestamp", Long.valueOf(mc.getTimestamp()));
+			q.setParameter("id", Long.valueOf(mc.getId()));
+			
+		    final int updatedFailMsg = q.executeUpdate();
+			log.info("update failed job: " + updatedFailMsg);
+			if (updatedFailMsg <= 0) {
+				final MessageContext merge = em.merge(mc);
+				mc.setFailTimes(merge.getFailTimes());
+				mc.setId(merge.getId());
+			}
+			
 			return HttpDispatcherActor.instance().handover(mc);
 		} catch (Exception e) {
 			log.error("failed to handle: \n\t" + mc, e);

@@ -3,8 +3,11 @@ package com.thenetcircle.services.common;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBContext;
@@ -124,5 +127,20 @@ public class MiscUtils {
 		}
 		
 		return null;
+	}
+	
+	private static long HOST_HASH = System.currentTimeMillis(); 
+	static {
+		try {
+			HOST_HASH = InetAddress.getLocalHost().getHostAddress().hashCode();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static long IDX = 0;
+	
+	public static long uniqueLong() {
+		return Math.abs(UUID.randomUUID().hashCode());
 	}
 }

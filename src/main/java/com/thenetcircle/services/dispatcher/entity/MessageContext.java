@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import com.rabbitmq.client.QueueingConsumer.Delivery;
+import com.thenetcircle.services.common.MiscUtils;
 
 @XmlRootElement
 @Entity
@@ -71,7 +72,7 @@ public class MessageContext implements Serializable {
 
 	public MessageContext(final QueueCfg queueCfg, final Delivery delivery) {
 		this();
-		this.id = System.nanoTime();
+		this.id = MiscUtils.uniqueLong();
 		this.queueCfg = queueCfg;
 		this.setDelivery(delivery);
 	}
@@ -198,7 +199,7 @@ public class MessageContext implements Serializable {
 
 	public void setDelivery(Delivery delivery) {
 		this.delivery = delivery;
-		this.id = delivery.getEnvelope().getDeliveryTag();
+//		this.id = delivery.getEnvelope().getDeliveryTag();
 		setMessageBody(delivery.getBody());
 	}
 

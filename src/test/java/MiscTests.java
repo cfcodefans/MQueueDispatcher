@@ -90,7 +90,12 @@ public class MiscTests {
 		
 	}
 	
-	
+	@Test
+	public void testUniqueLong() {
+		for (int i = 0; i < 10; i++) {
+			System.out.println(MiscUtils.uniqueLong());
+		}
+	}
 	
 	@Test
 	public void testDateFormat() {
