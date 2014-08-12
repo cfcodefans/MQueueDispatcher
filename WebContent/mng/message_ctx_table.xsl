@@ -36,7 +36,7 @@
 							</td>
 							<td class="last_col">
 								<div class="btn-group">
-									<button type="button" id="editBtn" class="btn btn-default btn-sm" onclick="retryMsg({id})">retry</button>
+									<button type="button" id="editBtn" class="btn btn-default btn-sm" onclick="resendFailedMsg({id})">retry</button>
 									<button type="button" id="copyBtn" class="btn btn-default btn-sm" onclick="delMsg({id})">delete</button>
 								</div>
 							</td>

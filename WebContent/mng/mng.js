@@ -75,3 +75,4 @@ function sendMsgToQueue(qc_id, msgStr) {
 	
 	var xhr = RS.ctx.MQueueCfgRes.sendMessage.with_message(msgStr).with_qc_id(qc_id).call({async:false});
 }
+
