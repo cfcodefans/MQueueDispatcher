@@ -1,7 +1,6 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,11 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.functors.EqualPredicate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +30,7 @@ import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
+import com.thenetcircle.services.dispatcher.mgr.Monitor;
 
 //TODO this class becomes rather messy
 // maintain configurations, maintain messages, maintain living queues and IMessageActor instances;
@@ -91,20 +88,20 @@ public class MQueues {
 		}
 
 		final long deliveryTag = mc.getDelivery().getEnvelope().getDeliveryTag();
+		final QueueCfg qc = mc.getQueueCfg();
 
 		try {
-			final Channel ch = getChannel(mc.getQueueCfg());
+			final Channel ch = getChannel(qc);
 //			if (!ch.isOpen()) {
 //				log.error("can't acknowledge the message as channel is closed!");
 //				return mc;
 //			}
 			ch.basicAck(deliveryTag, false);
-
+			Monitor.prefLog(mc, log);
 		} catch (final IOException e) {
 			log.error("failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse(), e);
 		}
 
-		final QueueCfg qc = mc.getQueueCfg();
 		final ServerCfg serverCfg = qc.getServerCfg();
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(serverCfg);
 //		String logStr = "cfg_name: \n\t" + qc.getName() + "\n posted message: \n\t" + new String(ArrayUtils.subarray(mc.getMessageBody(), 0, 50)) + "\n to url: " + qc.getDestCfg().getUrl();
@@ -138,9 +135,9 @@ public class MQueues {
 			channel = initChannel(qc);
 			queueAndChannels.put(qc, channel);
 		}
-		if (!channel.isOpen()) {
-			log.warn("channel is not opened: \n" + qc.getQueueName());
-		}
+//		if (!channel.isOpen()) {
+//			log.warn("channel is not opened: \n" + qc.getQueueName());
+//		}
 		return channel;
 	}
 
@@ -358,36 +355,39 @@ public class MQueues {
 		}
 
 		LoopingArrayIterator<Connection> li = serverAndConns.get(sc);
-		if (li == null) {
-			int connSize = 0;
-			for (final QueueCfg qc : this.queueCfgs) {
-				if (sc.equals(qc.getServerCfg())) {
-					connSize ++;
-				}
-			}
-			connSize = (int) Math.ceil(((double)connSize / (double)this.queueCfgs.size()) * 200.0);
-			
-			log.info(String.format("create %d connection to server: %s\t%s", connSize, sc.getHost(), sc.getVirtualHost()));
-			final Connection[] conns = new Connection[connSize];
-			final ExecutorService es = Executors.newFixedThreadPool((int)Math.ceil(connSize * 1.5));
-
-			for (int i = 0; i < conns.length; i++) {
-				try {
-					conns[i] = connFactory.newConnection(es);
-				} catch (Exception e) {
-					String logStr = String.format("failed to create connection for server: \n\t%s\n", sc.toString());
-					log.error(logStr, e);
-					logForSrv.error(logStr, e);
-				}
-			}
-
-			li = new LoopingArrayIterator<Connection>(conns);
-			serverAndConns.put(sc, li);
-
-			String logStr = String.format("connection created for server: \n\t%s\n", sc.toString());
-			log.info(logStr);
-			logForSrv.info(logStr);
+		if (li != null) {
+			return li.loop();
 		}
+			
+		int connSize = 0;
+		for (final QueueCfg qc : this.queueCfgs) {
+			if (sc.equals(qc.getServerCfg())) {
+				connSize ++;
+			}
+		}
+		connSize = Math.max((int) Math.ceil(((double)connSize / (double)this.queueCfgs.size()) * 200.0) + 1, 4);
+		
+		log.info(String.format("create %d connection to server: %s\t%s", connSize, sc.getHost(), sc.getVirtualHost()));
+		final Connection[] conns = new Connection[connSize];
+//			final ExecutorService es = Executors.newFixedThreadPool((int)Math.ceil(connSize * 1.5));
+
+		for (int i = 0; i < conns.length; i++) {
+			try {
+				conns[i] = connFactory.newConnection(Executors.newSingleThreadExecutor());
+			} catch (Exception e) {
+				String logStr = String.format("failed to create connection for server: \n\t%s\n", sc.toString());
+				log.error(logStr, e);
+				logForSrv.error(logStr, e);
+			}
+		}
+
+		li = new LoopingArrayIterator<Connection>(conns);
+		serverAndConns.put(sc, li);
+
+		String logStr = String.format("connection created for server: \n\t%s\n", sc.toString());
+		log.info(logStr);
+		logForSrv.info(logStr);
+		
 		return li.loop();
 	}
 

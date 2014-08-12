@@ -35,10 +35,9 @@ import com.thenetcircle.services.dispatcher.ampq.Responder;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.mgr.Monitor;
 
 public class HttpDispatcherActor implements IMessageActor {
-
-	private static final int CLIENT_NUM = MiscUtils.AVAILABLE_PROCESSORS * 3;
 
 	private static class RespHandler implements FutureCallback<HttpResponse> {
 		private MessageContext mc;
@@ -62,17 +61,20 @@ public class HttpDispatcherActor implements IMessageActor {
 			}
 
 			mc.setResponse(String.format("{status: %d, resp: '%s'}", resp.getStatusLine().getStatusCode(), respStr.trim()));
+			Monitor.prefLog(mc, log);
 			Responder.instance().handover(mc);
 		}
 
 		public void failed(final Exception e) {
 			log.error("failed to process response from url: \n" + mc.getQueueCfg().getDestCfg().getUrl(), e);
-			mc.setResponse(e.getMessage());
+			mc.setResponse(e.getClass().getSimpleName() + ": " + e.getMessage());
 			Responder.instance().handover(mc);
 		}
 	}
 
 	public static final int DEFAULT_TIMEOUT = 30000;
+
+	private static final int CLIENT_NUM = MiscUtils.AVAILABLE_PROCESSORS;
 
 	private static HttpDispatcherActor instance = new HttpDispatcherActor();
 
@@ -80,6 +82,17 @@ public class HttpDispatcherActor implements IMessageActor {
 
 	public static HttpDispatcherActor instance() {
 		return instance;
+	}
+
+	private final static List<NameValuePair> getParamsList(final String... nameAndValues) {
+		if (ArrayUtils.isEmpty(nameAndValues)) {
+			return null;
+		}
+		final List<NameValuePair> params = new ArrayList<NameValuePair>();
+		for (int i = 0, j = nameAndValues.length; i < j - 1; i += 2) {
+			params.add(new BasicNameValuePair(nameAndValues[i], nameAndValues[i + 1]));
+		}
+		return params;
 	}
 
 	private List<CloseableHttpAsyncClient> hacs;
@@ -96,8 +109,10 @@ public class HttpDispatcherActor implements IMessageActor {
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "deprecation" })
+	@SuppressWarnings({ "deprecation" })
 	public MessageContext handle(final MessageContext mc) {
+		Monitor.prefLog(mc, log);
+
 		final QueueCfg qc = mc.getQueueCfg();
 		final HttpDestinationCfg destCfg = qc.getDestCfg();
 		final String destUrlStr = destCfg.getUrl();
@@ -115,9 +130,8 @@ public class HttpDispatcherActor implements IMessageActor {
 				post.setEntity(fe);
 				req = post;
 			} else {
-				String queryStr = "";
 				final String msgStr = bodyStr;
-				queryStr = URLEncoder.encode(msgStr, "UTF-8");
+				final String queryStr = URLEncoder.encode(msgStr, "UTF-8");
 				final HttpGet get = new HttpGet(destUrlStr + "?" + queryStr);
 				req = get;
 			}
@@ -137,6 +151,7 @@ public class HttpDispatcherActor implements IMessageActor {
 		// }
 
 		httpClientIterator.loop().execute(req, httpClientCtx, new RespHandler(mc));
+		Monitor.prefLog(mc, log);
 		return mc;
 	}
 
@@ -182,22 +197,11 @@ public class HttpDispatcherActor implements IMessageActor {
 		hacs = new ArrayList<CloseableHttpAsyncClient>();
 		for (int i = 0, j = CLIENT_NUM; i < j; i++) {
 			final RequestConfig reqCfg = RequestConfig.custom().setSocketTimeout(DEFAULT_TIMEOUT).setConnectTimeout(DEFAULT_TIMEOUT).build();
-			final IOReactorConfig ioCfg = IOReactorConfig.custom().setSelectInterval(500).setSoKeepAlive(true).build();
+			final IOReactorConfig ioCfg = IOReactorConfig.custom().setInterestOpQueued(true).build();
 			final CloseableHttpAsyncClient hac = HttpAsyncClients.custom().setDefaultRequestConfig(reqCfg).setDefaultIOReactorConfig(ioCfg).build();
 			hac.start();
 			hacs.add(hac);
 		}
 		httpClientIterator = new LoopingArrayIterator<CloseableHttpAsyncClient>(hacs.toArray(new CloseableHttpAsyncClient[0]));
-	}
-
-	private static List<NameValuePair> getParamsList(final String... nameAndValues) {
-		if (ArrayUtils.isEmpty(nameAndValues)) {
-			return null;
-		}
-		final List<NameValuePair> params = new ArrayList<NameValuePair>();
-		for (int i = 0, j = nameAndValues.length; i < j - 1; i += 2) {
-			params.add(new BasicNameValuePair(nameAndValues[i], nameAndValues[i + 1]));
-		}
-		return params;
 	}
 }

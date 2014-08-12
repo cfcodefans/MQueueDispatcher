@@ -90,6 +90,7 @@ public class Responder implements IMessageActor, Runnable {
 				if (mc.getFailTimes() > 1) {
 					failsafe.handover(mc);
 				}
+				Monitor.prefLog(mc, log);
 				return qs.acknowledge(mc);
 			}
 			

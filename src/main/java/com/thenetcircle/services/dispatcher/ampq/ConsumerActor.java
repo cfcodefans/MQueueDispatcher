@@ -12,6 +12,7 @@ import com.rabbitmq.client.QueueingConsumer.Delivery;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
+import com.thenetcircle.services.dispatcher.mgr.Monitor;
 
 public class ConsumerActor extends DefaultConsumer {
 
@@ -28,6 +29,7 @@ public class ConsumerActor extends DefaultConsumer {
 		final MessageContext mc = new MessageContext(queueCfg, d);
 
 		// TODO use injection to decouple dependency
+		Monitor.prefLog(mc, log);
 		HttpDispatcherActor.instance().handover(mc);
 //		MQueues.instance().firstActor().handover(mc);
 	}

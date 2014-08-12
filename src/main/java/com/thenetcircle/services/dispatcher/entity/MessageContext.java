@@ -193,7 +193,7 @@ public class MessageContext implements Serializable {
 
 	@Transient
 	public boolean isSucceeded() {
-		return StringUtils.containsIgnoreCase(response, "ok");
+		return StringUtils.containsIgnoreCase(response, "resp: 'ok'");
 	}
 
 	public void setDelivery(Delivery delivery) {

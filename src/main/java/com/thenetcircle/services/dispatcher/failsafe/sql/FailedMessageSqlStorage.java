@@ -16,7 +16,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.dispatcher.ampq.Responder;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
@@ -50,7 +49,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 			mc.fail();
 			final MessageContext merge = em.merge(mc);
 			mc.setFailTimes(merge.getFailTimes());
-			return Responder.instance().handover(mc);
+			return HttpDispatcherActor.instance().handover(mc);
 		} catch (Exception e) {
 			log.error("failed to handle: \n\t" + mc, e);
 		}
@@ -73,13 +72,13 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 				
 				final List<MessageContext> mcList = new ArrayList<MessageContext>(100);
 				
-//				MessageContext mc = null;
+				MessageContext mc = null;
 				for (int i = 0; i < 50; i++) {
-//					mc = buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT);
-//					if (mc == null) {
-//						break;
-//					}
-					mcList.add(buf.take());
+					mc = buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT);
+					if (mc == null) {
+						break;
+					}
+					mcList.add(mc);
 				}
 				
 //				handle(Utils.pull(buf, 100));
