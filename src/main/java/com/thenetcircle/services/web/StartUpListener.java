@@ -56,7 +56,7 @@ public class StartUpListener implements ServletContextListener {
 			
 			log.info(String.format("loading %d queues...", qcList.size()));
 
-			Executors.newSingleThreadExecutor().submit(new Runnable() {
+			Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory("MQueueLoader")).submit(new Runnable() {
 				@Override
 				public void run() {
 					MQueues.instance().initWithQueueCfgs(qcList);

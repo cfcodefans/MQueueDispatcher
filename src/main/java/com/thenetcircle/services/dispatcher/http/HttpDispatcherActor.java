@@ -147,7 +147,7 @@ public class HttpDispatcherActor implements IMessageActor {
 		final HttpClientContext httpClientCtx = HttpClientContext.create();
 		// if (destCfg.getTimeout() != DEFAULT_TIMEOUT) {
 		final int timeout = (int) Math.max(destCfg.getTimeout(), 1000);
-		httpClientCtx.setRequestConfig(RequestConfig.custom().setSocketTimeout(timeout / 2).setConnectTimeout(timeout / 2).build());
+		httpClientCtx.setRequestConfig(RequestConfig.custom().setSocketTimeout(timeout).setConnectTimeout(timeout).build());
 		// }
 
 		httpClientIterator.loop().execute(req, httpClientCtx, new RespHandler(mc));

@@ -50,10 +50,11 @@ public class ConsumerLoggers {
 			queueLogAppender.setMaxBackupIndex(originalLogAppender.getMaxBackupIndex());
 			queueLogAppender.setMaxFileSize(maxLogSize);
 
-			queueLogAppender.setName(sc.getHost() + "/" + sc.getVirtualHost());
+			final String logName = sc.getHost() + "/" + sc.getVirtualHost();
+			queueLogAppender.setName(logName);
 			queueLogAppender.setThreshold(originalLogAppender.getThreshold());
 
-			final Logger _logger = Logger.getLogger(serverKey);
+			final Logger _logger = Logger.getLogger(logName);
 			_logger.setAdditivity(false);// don't inherit root's appender
 			_logger.removeAllAppenders();// purge other appenders
 			_logger.addAppender(queueLogAppender);// use specified appender

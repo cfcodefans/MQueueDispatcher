@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBContext;
@@ -19,6 +20,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.iterators.ObjectArrayIterator;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.commons.lang3.math.NumberUtils;
 
 public class MiscUtils {
@@ -142,5 +144,9 @@ public class MiscUtils {
 	
 	public static long uniqueLong() {
 		return Math.abs(UUID.randomUUID().hashCode());
+	}
+	
+	public static ThreadFactory namedThreadFactory(final String name) {
+		return new BasicThreadFactory.Builder().namingPattern(name + "_%d").build();
 	}
 }

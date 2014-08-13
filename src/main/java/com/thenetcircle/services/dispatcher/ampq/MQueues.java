@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -279,7 +280,7 @@ public class MQueues {
 					ch.close();
 				}
 			} catch (Exception e) {
-				log.error("failed to close channel: " + ch.getChannelNumber(), e);
+				log.error("failed to close channel: " + ch.getChannelNumber() + "\n\t" + e.getMessage());
 			}
 		}
 
@@ -289,7 +290,7 @@ public class MQueues {
 					conn.close();
 				}
 			} catch (Exception e) {
-				log.error("failed to close connection: " + conn, e);
+				log.error("failed to close connection: " + conn + "\n\t" + e.getMessage());
 			}
 		}
 
@@ -359,21 +360,23 @@ public class MQueues {
 			return li.loop();
 		}
 			
-		int connSize = 0;
+		int queueNum = 0;
 		for (final QueueCfg qc : this.queueCfgs) {
 			if (sc.equals(qc.getServerCfg())) {
-				connSize ++;
+				queueNum ++;
 			}
 		}
-		connSize = Math.max((int) Math.ceil(((double)connSize / (double)this.queueCfgs.size()) * 200.0) + 1, 4);
+		final int connSize = Math.max((int) Math.ceil(((double)queueNum / (double)this.queueCfgs.size()) * 200.0) + 1, 4);
 		
 		log.info(String.format("create %d connection to server: %s\t%s", connSize, sc.getHost(), sc.getVirtualHost()));
 		final Connection[] conns = new Connection[connSize];
-//			final ExecutorService es = Executors.newFixedThreadPool((int)Math.ceil(connSize * 1.5));
 
 		for (int i = 0; i < conns.length; i++) {
 			try {
-				conns[i] = connFactory.newConnection(Executors.newSingleThreadExecutor());
+				final ExecutorService es = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory("Connection.ConsumerWorkService"));
+//						Executors.newFixedThreadPool(Math.max(1, (int)Math.ceil(queueNum / connSize)), 
+//																		MiscUtils.namedThreadFactory("Connection.ConsumerWorkService"));
+				conns[i] = connFactory.newConnection(es);
 			} catch (Exception e) {
 				String logStr = String.format("failed to create connection for server: \n\t%s\n", sc.toString());
 				log.error(logStr, e);
@@ -436,7 +439,7 @@ public class MQueues {
 				@Override
 				public void shutdownCompleted(final ShutdownSignalException cause) {
 					log.info("\n\n");
-					log.error("channel is closed!", cause);
+					log.error("channel is closed! \n\t" + cause.getMessage());
 					log.info("\n\n");
 				}
 			});

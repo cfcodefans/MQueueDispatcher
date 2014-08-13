@@ -16,6 +16,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
@@ -28,7 +29,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 	private static FailedMessageSqlStorage instance = new FailedMessageSqlStorage();
 
 	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
-	final ExecutorService executor = Executors.newSingleThreadExecutor();
+	final ExecutorService executor = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory(FailedMessageSqlStorage.class.getSimpleName()));
 	
 	private EntityManager em = null;
 	

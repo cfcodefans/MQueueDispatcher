@@ -38,7 +38,7 @@ public class Responder implements IMessageActor, Runnable {
 //				log.info(MiscUtils.invocationInfo());
 			}
 		} catch (Exception e) {
-			log.error("Responder is interrupted", e);
+			log.error("Responder is interrupted");
 		}
 		log.info("Responder quits");
 	}
@@ -131,7 +131,7 @@ public class Responder implements IMessageActor, Runnable {
 		}
 	}
 
-	private ExecutorService executor = Executors.newSingleThreadExecutor();
+	private ExecutorService executor = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory(Responder.class.getSimpleName()));
 	
 //	private static Responder instance = new Responder();
 	

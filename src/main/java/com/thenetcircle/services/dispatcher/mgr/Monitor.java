@@ -11,6 +11,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -29,7 +30,7 @@ public class Monitor implements IMessageActor, Runnable {
 
 	protected static final Log log = LogFactory.getLog(Monitor.class.getName());
 	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
-	private ExecutorService executor = Executors.newSingleThreadExecutor();
+	private ExecutorService executor = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory("Monitor"));
 
 	@Override
 	public void run() {
