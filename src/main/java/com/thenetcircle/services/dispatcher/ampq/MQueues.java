@@ -84,7 +84,7 @@ public class MQueues {
 	}
 
 	public MessageContext acknowledge(final MessageContext mc) {
-		if (mc == null) {
+		if (mc == null || mc.getDelivery() == null) {
 			return mc;
 		}
 

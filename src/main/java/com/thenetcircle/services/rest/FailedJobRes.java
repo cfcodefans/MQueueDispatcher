@@ -127,7 +127,7 @@ public class FailedJobRes {
 		return "this endpoint is for MQueueCfg management";
 	}
 	
-	@GET
+	@POST
 	@Path("resend")
 	@Produces(MediaType.TEXT_PLAIN)
 	public void resendFailedMsgs() {
@@ -136,8 +136,11 @@ public class FailedJobRes {
 					Response.status(Status.BAD_REQUEST).entity("invalid request: " + qcId).build());
 		}
 		
+		log.info("retrying messages for queue: " + qcId);
+		
 		final List<MessageContext> failedMsgs = getFailedJobs();
 		for (final MessageContext mc : failedMsgs) {
+			log.info("retrying message: \n\t" + mc);
 			HttpDispatcherActor.instance().handover(mc);
 		}
 	}

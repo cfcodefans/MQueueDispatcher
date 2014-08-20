@@ -35,9 +35,11 @@ form .list-group-item {
 .right-sidebar {
     position: fixed;
     right: 0px;
-    top: 71px;
+    top: 51px;
     bottom: 0px;
+    padding-top: 20px;
     padding-right: 0px;
+    background-color:white;
 }
 
 .right-sidebar .panel {

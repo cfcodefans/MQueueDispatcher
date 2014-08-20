@@ -34,4 +34,18 @@ public class DefaultUrlRes {
 	public String postKo() {
 		return "ko";
 	}
+	
+	@POST
+	@Path("echo")
+	public String postEcho(final String reqStr) {
+		return reqStr;
+	}
+	
+	@GET
+	@Path("echo")
+	public String getEcho(final String reqStr) {
+		return reqStr;
+	}	
+	
+
 }
