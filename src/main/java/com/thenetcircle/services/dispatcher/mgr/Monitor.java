@@ -103,10 +103,12 @@ public class Monitor implements IMessageActor, Runnable {
 		return removed;
 	}
 
-	public static void prefLog(final MessageContext mc, Log _log) {
+	public static void prefLog(final MessageContext mc, final Log _log, String...infos) {
 //		final long dt = mc.getId();
 //		if (dt % 100 == 11) {
 //			_log.info("http performance: \t" + dt + " at \t" + System.currentTimeMillis());
 //		}
+		
+		
 	}
 }

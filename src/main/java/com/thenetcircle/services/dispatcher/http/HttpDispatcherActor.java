@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
@@ -41,10 +42,12 @@ public class HttpDispatcherActor implements IMessageActor {
 
 	private static class RespHandler implements FutureCallback<HttpResponse> {
 		private MessageContext mc;
+		private StopWatch sw = new StopWatch();
 
 		public RespHandler(final MessageContext mc) {
 			super();
 			this.mc = mc;
+			sw.start();
 		}
 
 		public void cancelled() {
@@ -61,13 +64,21 @@ public class HttpDispatcherActor implements IMessageActor {
 			}
 
 			mc.setResponse(String.format("{status: %d, resp: '%s'}", resp.getStatusLine().getStatusCode(), respStr.trim()));
+			sw.stop();
+			
 			Monitor.prefLog(mc, log);
 			Responder.instance().handover(mc);
 		}
 
 		public void failed(final Exception e) {
-			log.error("failed to process response from url: \n" + mc.getQueueCfg().getDestCfg().getUrl(), e);
-			mc.setResponse(e.getClass().getSimpleName() + ": " + e.getMessage());
+			sw.stop();
+			final long time = sw.getTime();
+			log.error(String.format("after %d ms \nfailed to process response from url: \n%s", time, mc.getQueueCfg().getDestCfg().getUrl()), e);
+			mc.setResponse(String.format("{status: %s, resp: '%s', time: %d}", e.getClass().getSimpleName(), e.getMessage(), time));
+//			mc.setResponse(e.getClass().getSimpleName() + ": " + e.getMessage());
+			
+			
+			Monitor.prefLog(mc, log);
 			Responder.instance().handover(mc);
 		}
 	}
@@ -196,9 +207,17 @@ public class HttpDispatcherActor implements IMessageActor {
 	private void initHttpAsyncClients() {
 		hacs = new ArrayList<CloseableHttpAsyncClient>();
 		for (int i = 0, j = CLIENT_NUM; i < j; i++) {
-			final RequestConfig reqCfg = RequestConfig.custom().setSocketTimeout(DEFAULT_TIMEOUT).setConnectTimeout(DEFAULT_TIMEOUT).build();
+			final RequestConfig reqCfg = RequestConfig.custom()
+											.setSocketTimeout(DEFAULT_TIMEOUT)
+											.setConnectTimeout(DEFAULT_TIMEOUT)
+											.build();
+			
 			final IOReactorConfig ioCfg = IOReactorConfig.custom().setInterestOpQueued(true).build();
-			final CloseableHttpAsyncClient hac = HttpAsyncClients.custom().setDefaultRequestConfig(reqCfg).setDefaultIOReactorConfig(ioCfg).build();
+			final CloseableHttpAsyncClient hac = HttpAsyncClients.custom()
+													.setMaxConnPerRoute(50)
+													.setDefaultRequestConfig(reqCfg)
+													.setDefaultIOReactorConfig(ioCfg)
+													.build();
 			hac.start();
 			hacs.add(hac);
 		}

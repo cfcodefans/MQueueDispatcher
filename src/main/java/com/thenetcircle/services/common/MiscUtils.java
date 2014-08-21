@@ -88,12 +88,14 @@ public class MiscUtils {
 
 		public E loop() {		
 			final E[] array = this.getArray();
-			return array[loopIdx.getAndIncrement() % array.length];
+			loopIdx.compareAndSet(array.length, 0);
+			return array[loopIdx.getAndIncrement()];
 		}
 		
 		private AtomicInteger loopIdx = new AtomicInteger();
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Map map(Object...keyAndVals) {
 		return MapUtils.putAll(new HashMap(), keyAndVals);
 	}

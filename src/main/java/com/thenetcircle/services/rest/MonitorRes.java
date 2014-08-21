@@ -33,9 +33,6 @@ public class MonitorRes {
 
 	protected static final Log log = LogFactory.getLog(MonitorRes.class.getName());
 
-	// private static final ExecutorService es =
-	// Executors.newCachedThreadPool();
-
 	private static class Watcher extends IMessageActor.AsyncMessageActor {
 		// private EventOutput eventOutput = null;
 		private SseBroadcaster broadcaster = new SseBroadcaster() {

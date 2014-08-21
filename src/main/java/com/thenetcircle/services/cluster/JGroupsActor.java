@@ -102,6 +102,11 @@ public class JGroupsActor extends ReceiverAdapter {
 	}
 	
 	public synchronized void send(final Command cmd) {
+		if (ch == null) {
+			log.error("JGroup is not configured!");
+			return;
+		}
+		
 		final String msgStr = Jsons.toString(cmd);
 		log.info("sending command to JGroup: \n\t" + msgStr);
 		try {
