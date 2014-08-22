@@ -53,6 +53,8 @@
 							<i class="fa fa-bell fa-fw"></i> Failed Messages
 							
 							<button type="button" class="btn btn-default btn-sm" onclick="resendAllFailedJobs(getQueueCfgId())">
+								Resend All Messages
+							</button>
 						</div>
 						<!-- /.panel-heading -->
 						<div class="panel-body" id="message_ctx_tbl_div">
@@ -70,14 +72,14 @@
 							<button type="button" class="btn btn-default btn-sm" onclick="sendMsgToQueue(getQueueCfgId(), $('#msgTxt').text())">
 							Send Message
 							</button>
-							<button type="button" class="btn btn-default btn-sm" onclick="sseToggle(event)" id="sseToggleBtn">Start</button>
+							<button type="button" class="btn btn-default btn-sm" onclick="sseToggle(event)" id="sseToggleBtn">Stop Monitor</button>
 						</div>
 						<!-- /.panel-heading -->
 						<div class="panel-body">
 						<div id="msgTxt" contenteditable="true" style="height: 200px; overflow:auto; width: 33.33333333%; float: left;" class="form-control">
 						</div>
 
-							<div class="list-group" id="failedMsgDiv" style="max-height: 200px; overflow-y: scroll; width: 66.66666666%; float: left;">
+							<div class="list-group" id="failedMsgDiv" style="height: 200px; max-height: 200px; overflow-y: scroll; width: 66.66666666%; float: left;">
 								
 							</div>
 							<!-- /.list-group -->
@@ -108,11 +110,14 @@
 											
 										var mc = JSON.parse(msg.data);
 										$('#failedMsgDiv').prepend(
-											"<a href='#' class='list-group-item'> <i class='fa fa-envelope fa-fw'></i> "
+											"<a href='#' class='list-group-item'> <i class='fa fa-envelope fa-fw'></i><p> "
 											+ mc.messageContent +
-											"<span class='pull-right text-muted small'><em>"
-											+ mc.timestampStr +
-											"</em> </span></a>"
+											"</p><span class='pull-right text-muted small'><em><p>"
+											+ '&nbsp;'
+											+ mc.response
+											+ '&nbsp;'
+											+ mc.timestampStr 
+											+ "</p></em> </span></a>"
 										);
 										return;
 										}
@@ -126,13 +131,13 @@
 										);
 									}
 
-									ev.target.innerText = "Stop";
+									ev.target.innerText = "Stop Monitor";
 								} else {
 									if (window._sse) {
 										window._sse.close();
 										window._sse = null;
 									}
-									ev.target.innerText="Start";
+									ev.target.innerText="Start Monitor";
 								}
 							}
 						</script>

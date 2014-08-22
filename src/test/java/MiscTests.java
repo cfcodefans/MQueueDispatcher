@@ -45,7 +45,7 @@ public class MiscTests {
 		
 		final List<Future> ftList = new ArrayList<Future>();
 		
-		for (int i = 0; i < MiscUtils.AVAILABLE_PROCESSORS; i++) {
+		for (int i = 0; i < MiscUtils.AVAILABLE_PROCESSORS * 5; i++) {
 			final Future ft = es.submit(new Runnable() {
 				
 				@Override

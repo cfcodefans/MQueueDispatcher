@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -22,6 +21,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.impl.NoConnectionReuseStrategy;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.reactor.IOReactorConfig;
@@ -55,6 +55,7 @@ public class HttpDispatcherActor implements IMessageActor {
 		}
 
 		public void completed(final HttpResponse resp) {
+			sw.stop();
 			String respStr = null;
 			try {
 				respStr = EntityUtils.toString(resp.getEntity());
@@ -64,7 +65,6 @@ public class HttpDispatcherActor implements IMessageActor {
 			}
 
 			mc.setResponse(String.format("{status: %d, resp: '%s'}", resp.getStatusLine().getStatusCode(), respStr.trim()));
-			sw.stop();
 			
 			Monitor.prefLog(mc, log);
 			Responder.instance().handover(mc);
@@ -85,7 +85,7 @@ public class HttpDispatcherActor implements IMessageActor {
 
 	public static final int DEFAULT_TIMEOUT = 30000;
 
-	private static final int CLIENT_NUM = MiscUtils.AVAILABLE_PROCESSORS;
+	private static final int CLIENT_NUM = MiscUtils.AVAILABLE_PROCESSORS * 5;
 
 	private static HttpDispatcherActor instance = new HttpDispatcherActor();
 
@@ -106,7 +106,7 @@ public class HttpDispatcherActor implements IMessageActor {
 		return params;
 	}
 
-	private List<CloseableHttpAsyncClient> hacs;
+	private CloseableHttpAsyncClient[] hacs;
 
 	private LoopingArrayIterator<CloseableHttpAsyncClient> httpClientIterator = null;
 
@@ -157,7 +157,7 @@ public class HttpDispatcherActor implements IMessageActor {
 
 		final HttpClientContext httpClientCtx = HttpClientContext.create();
 		// if (destCfg.getTimeout() != DEFAULT_TIMEOUT) {
-		final int timeout = (int) Math.max(destCfg.getTimeout(), 1000);
+		final int timeout = (int) Math.max(destCfg.getTimeout(), DEFAULT_TIMEOUT);
 		httpClientCtx.setRequestConfig(RequestConfig.custom().setSocketTimeout(timeout).setConnectTimeout(timeout).build());
 		// }
 
@@ -176,7 +176,7 @@ public class HttpDispatcherActor implements IMessageActor {
 	}
 
 	public void shutdown() {
-		if (CollectionUtils.isEmpty(hacs))
+		if (ArrayUtils.isEmpty(hacs))
 			return;
 		try {
 			for (final CloseableHttpAsyncClient hac : hacs) {
@@ -205,7 +205,7 @@ public class HttpDispatcherActor implements IMessageActor {
 	}
 
 	private void initHttpAsyncClients() {
-		hacs = new ArrayList<CloseableHttpAsyncClient>();
+		hacs = new CloseableHttpAsyncClient[CLIENT_NUM];
 		for (int i = 0, j = CLIENT_NUM; i < j; i++) {
 			final RequestConfig reqCfg = RequestConfig.custom()
 											.setSocketTimeout(DEFAULT_TIMEOUT)
@@ -214,13 +214,14 @@ public class HttpDispatcherActor implements IMessageActor {
 			
 			final IOReactorConfig ioCfg = IOReactorConfig.custom().setInterestOpQueued(true).build();
 			final CloseableHttpAsyncClient hac = HttpAsyncClients.custom()
-													.setMaxConnPerRoute(50)
+//													.setMaxConnPerRoute(50)
+													.setConnectionReuseStrategy(new NoConnectionReuseStrategy())
 													.setDefaultRequestConfig(reqCfg)
 													.setDefaultIOReactorConfig(ioCfg)
 													.build();
 			hac.start();
-			hacs.add(hac);
+			hacs[i] = hac;
 		}
-		httpClientIterator = new LoopingArrayIterator<CloseableHttpAsyncClient>(hacs.toArray(new CloseableHttpAsyncClient[0]));
+		httpClientIterator = new LoopingArrayIterator<CloseableHttpAsyncClient>(hacs);
 	}
 }

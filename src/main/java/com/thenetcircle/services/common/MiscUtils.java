@@ -88,8 +88,8 @@ public class MiscUtils {
 
 		public E loop() {		
 			final E[] array = this.getArray();
-			loopIdx.compareAndSet(array.length, 0);
-			return array[loopIdx.getAndIncrement()];
+//			loopIdx.compareAndSet(array.length, 0);
+			return array[loopIdx.getAndIncrement() % array.length];
 		}
 		
 		private AtomicInteger loopIdx = new AtomicInteger();

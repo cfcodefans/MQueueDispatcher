@@ -8,12 +8,13 @@
 				<table id="message_ctx_tbl" class="table table-striped" style="table-layout:fixed">
 					<thead>
 						<tr>
-							<th>id</th>
-							<th>time</th>
+							<th width="120px">id</th>
+							<th width="150px">time</th>
 							<th>message</th>
 							<th>response</th>
-							<th>fail times</th>
-							<th></th>
+							<th width="120px">fail times</th>
+							<th width="120px"></th>
+
 						</tr>
 					</thead>
 
@@ -29,7 +30,9 @@
 								<xsl:value-of select="messageContent" />
 							</td>
 							<td style="word-wrap:break-word;" width="200px">
-								<p><xsl:value-of select="response" /></p>
+								<p>
+									<xsl:value-of select="response" />
+								</p>
 							</td>
 							<td>
 								<xsl:value-of select="failTimes" />
