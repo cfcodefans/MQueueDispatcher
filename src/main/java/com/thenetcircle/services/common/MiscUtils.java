@@ -88,7 +88,7 @@ public class MiscUtils {
 
 		public E loop() {		
 			final E[] array = this.getArray();
-//			loopIdx.compareAndSet(array.length, 0);
+			loopIdx.compareAndSet(array.length, 0);
 			return array[loopIdx.getAndIncrement() % array.length];
 		}
 		
@@ -101,21 +101,21 @@ public class MiscUtils {
 	}
 
 	public static String toXML(final Object bean) {
-			final StringWriter sw = new StringWriter();
-			try {
-				JAXBContext jc = JAXBContext.newInstance(bean.getClass());
-	
-				Marshaller m = jc.createMarshaller();
-				m.setProperty(Marshaller.JAXB_FRAGMENT, true);
-				m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-	//			marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-16");
-	
-				m.marshal(bean, sw);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return sw.toString();
+		final StringWriter sw = new StringWriter();
+		try {
+			JAXBContext jc = JAXBContext.newInstance(bean.getClass());
+
+			Marshaller m = jc.createMarshaller();
+			m.setProperty(Marshaller.JAXB_FRAGMENT, true);
+			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			// marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-16");
+
+			m.marshal(bean, sw);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		return sw.toString();
+	}
 
 	public static <T> T toObj(final String xmlStr, final Class<T> cls) {
 		if (StringUtils.isBlank(xmlStr) || cls == null) {
