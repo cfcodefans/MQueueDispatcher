@@ -53,11 +53,13 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 			
 			final Query q = em.createQuery("update MessageContext mc set "
 					+ " mc.failTimes=:failTimes, "
-					+ " mc.response=:response, "
+					+ " mc.response.statusCode=:statusCode, "
+					+ " mc.response.responseStr=:responseStr, "
 					+ " mc.timestamp=:_timestamp "
 					+ " where mc.id=:id");
 			q.setParameter("failTimes", Long.valueOf(mc.getFailTimes()));
-			q.setParameter("response", mc.getResponse());
+			q.setParameter("statusCode", mc.getResponse().getStatusCode());
+			q.setParameter("responseStr", mc.getResponse().getResponseStr());
 			q.setParameter("_timestamp", Long.valueOf(mc.getTimestamp()));
 			q.setParameter("id", Long.valueOf(mc.getId()));
 			
@@ -144,27 +146,37 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 	public void handle(final Collection<MessageContext> mcs) {
 		if (CollectionUtils.isEmpty(mcs)) return;
 		
-		em = JpaModule.getEntityManager();
-		
-		final EntityTransaction transaction = em.getTransaction();
 		try {
-			if (!transaction.isActive()) {
-				transaction.begin();
-			} else {
-				em.joinTransaction();
+			em = JpaModule.getEntityManager();
+			
+			final EntityTransaction transaction = em.getTransaction();
+			try {
+				if (!transaction.isActive()) {
+					transaction.begin();
+				} else {
+					em.joinTransaction();
+				}
+				
+				for (final MessageContext mc : mcs) {
+					if (mc != null) {
+						log.info("handle Message: \n" + mc);
+					}
+					handle(mc);
+				}
+				em.flush();
+				transaction.commit();
+			} catch (Exception e) {
+				log.error("failed by exception", e);
+				if (transaction.isActive()) {
+					transaction.rollback();
+				}
+			}
+		} catch (Exception e) {
+			if (e instanceof InterruptedException) {
+				throw e;
 			}
 			
-			for (final MessageContext mc : mcs) {
-				if (mc != null) {
-					log.info("handle Message: \n" + mc);
-				}
-				handle(mc);
-			}
-			em.flush();
-			transaction.commit();
-		} catch (Exception e) {
 			log.error("failed by exception", e);
-			transaction.rollback();
 		}
 	}
 

@@ -25,6 +25,8 @@ import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
+import com.thenetcircle.services.dispatcher.entity.MessageContext;
+import com.thenetcircle.services.dispatcher.entity.MsgResp;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
 
@@ -146,6 +148,17 @@ public class PersistenceTest {
 		ExchangeCfgDao ecDao = new ExchangeCfgDao(em);
 		List<ExchangeCfg> ecs = ecDao.findAll();
 		System.out.println(ecs.get(0).getQueues());
+	}
+	
+	@Test
+	public void testMsgCtx() {
+		QueueCfgDao qcDao = new QueueCfgDao(em);
+		QueueCfg qc = qcDao.find(282);
+		Assert.assertNotNull(qc);
+		
+		MessageContext mc = new MessageContext();
+		mc.setQueueCfg(qc);
+		mc.setResponse(new MsgResp(MsgResp.FAILED, "test"));
 	}
 	
 	@Test

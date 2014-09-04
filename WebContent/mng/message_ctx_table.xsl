@@ -12,6 +12,7 @@
 							<th width="150px">time</th>
 							<th>message</th>
 							<th>response</th>
+							<th width="120px">status code</th>
 							<th width="120px">fail times</th>
 							<th width="120px"></th>
 
@@ -31,8 +32,11 @@
 							</td>
 							<td style="word-wrap:break-word;" width="200px">
 								<p>
-									<xsl:value-of select="response" />
+									<xsl:value-of select="response/responseStr" />
 								</p>
+							</td>
+							<td>
+								<xsl:value-of select="response/statusCode" />
 							</td>
 							<td>
 								<xsl:value-of select="failTimes" />

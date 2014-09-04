@@ -8,6 +8,7 @@ import javax.persistence.Basic;
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -34,6 +35,7 @@ import com.thenetcircle.services.common.MiscUtils;
 @Table(name = "msg_ctx", indexes= {@Index(columnList="")})
 @Cacheable
 public class MessageContext implements Serializable {
+	
 	public static final int DEFAULT_RETRY_LIMIT = 100;
 
 	private static final long serialVersionUID = 1L;
@@ -61,10 +63,18 @@ public class MessageContext implements Serializable {
 	private QueueCfg queueCfg;
 
 	@Basic
-	private String response = "ok";
-
-	@Basic
 	private long timestamp = System.currentTimeMillis();
+
+	@Embedded
+	private MsgResp response = null;
+	
+	public MsgResp getResponse() {
+		return response;
+	}
+
+	public void setResponse(MsgResp response) {
+		this.response = response;
+	}
 
 	public MessageContext() {
 		super();
@@ -148,11 +158,6 @@ public class MessageContext implements Serializable {
 		return queueCfg;
 	}
 
-	@XmlElement
-	public String getResponse() {
-		return response;
-	}
-
 	@XmlTransient
 	public long getTimestamp() {
 		return timestamp;
@@ -194,7 +199,7 @@ public class MessageContext implements Serializable {
 
 	@Transient
 	public boolean isSucceeded() {
-		return StringUtils.containsIgnoreCase(response, "resp: 'ok'");
+		return response != null && StringUtils.equalsIgnoreCase(response.getResponseStr(), "ok");
 	}
 
 	public void setDelivery(Delivery delivery) {
@@ -220,10 +225,6 @@ public class MessageContext implements Serializable {
 		this.queueCfg = queueCfg;
 	}
 
-	public void setResponse(String response) {
-		this.response = response;
-	}
-
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
@@ -232,13 +233,13 @@ public class MessageContext implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("{class:\"MessageContext\",id:").append(id)
-				.append(", queueCfg:").append(queueCfg)
+		builder.append("{class:\"MessageContext\",id: ").append(id)
+				.append(", queueCfg: ").append(queueCfg)
 //				.append(", delivery:").append(delivery)
-				.append(", messageBody:'").append(new String(messageBody))
-				.append("', response:'").append(response)
-				.append(", failTimes:").append(failTimes)
-				.append("', timestamp: '").append(new Date(timestamp))
+				.append(", messageBody: '").append(new String(messageBody))
+				.append("', response: ").append(response)
+				.append(", failTimes: ").append(failTimes)
+				.append(", timestamp: '").append(new Date(timestamp))
 				.append("'}");
 		return builder.toString();
 	}

@@ -35,6 +35,7 @@ import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.ampq.Responder;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
+import com.thenetcircle.services.dispatcher.entity.MsgResp;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.mgr.Monitor;
 
@@ -64,7 +65,10 @@ public class HttpDispatcherActor implements IMessageActor {
 				respStr = e.getMessage();
 			}
 
-			mc.setResponse(String.format("{status: %d, resp: '%s'}", resp.getStatusLine().getStatusCode(), respStr.trim()));
+			mc.setResponse(new MsgResp(resp.getStatusLine().getStatusCode(), StringUtils.trimToEmpty(respStr)));
+			
+//			mc.setResponse(StringUtils.trimToEmpty(respStr));
+//			mc.setStatusCode(resp.getStatusLine().getStatusCode());
 			
 			Monitor.prefLog(mc, log);
 			Responder.instance().handover(mc);
@@ -74,7 +78,11 @@ public class HttpDispatcherActor implements IMessageActor {
 			sw.stop();
 			final long time = sw.getTime();
 			log.error(String.format("after %d ms \nfailed to process response from url: \n%s", time, mc.getQueueCfg().getDestCfg().getUrl()), e);
-			mc.setResponse(String.format("{status: %s, resp: '%s', time: %d}", e.getClass().getSimpleName(), e.getMessage(), time));
+			
+			mc.setResponse(new MsgResp(MsgResp.FAILED, 
+					String.format("{status: %s, resp: '%s', time: %d}", e.getClass().getSimpleName(), e.getMessage(), time)));
+			
+//			mc.setResponse(String.format("{status: %s, resp: '%s', time: %d}", e.getClass().getSimpleName(), e.getMessage(), time));
 //			mc.setResponse(e.getClass().getSimpleName() + ": " + e.getMessage());
 			
 			
