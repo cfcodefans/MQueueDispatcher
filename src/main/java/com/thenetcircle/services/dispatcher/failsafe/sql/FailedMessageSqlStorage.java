@@ -165,11 +165,15 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 				}
 				em.flush();
 				transaction.commit();
+				em.close();
 			} catch (Exception e) {
 				log.error("failed by exception", e);
 				if (transaction.isActive()) {
+					log.error("rollback transaction");
 					transaction.rollback();
 				}
+				log.error("close EntityManager");
+				em.close();
 			}
 		} catch (Exception e) {
 			if (e instanceof InterruptedException) {

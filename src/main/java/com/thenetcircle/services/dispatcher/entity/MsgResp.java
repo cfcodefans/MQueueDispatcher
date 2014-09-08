@@ -30,7 +30,7 @@ public class MsgResp {
 	}
 
 	@Basic
-	@Column(name="responseStr", columnDefinition="TINYTEXT", nullable=true)//mysql
+	@Column(name="responseStr", columnDefinition="TEXT", nullable=true)//mysql
 	private String responseStr = "ok";
 
 	@XmlElement

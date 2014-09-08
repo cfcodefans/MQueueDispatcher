@@ -74,6 +74,7 @@ public class JpaModule {
 			return em;
 		}
 		
+		log.info("creating EntityManager for Thread: " + Thread.currentThread().getName());
 		ems.remove();
 		
 		log.info(MiscUtils.invocationInfo());
@@ -83,6 +84,9 @@ public class JpaModule {
 		
 		final EntityManager newEM = emf.createEntityManager();
 		ems.set(newEM);
+		
+		log.info("created new EntityManager for Thread: " + Thread.currentThread().getName());
+		
 		return newEM;
 	}
 	

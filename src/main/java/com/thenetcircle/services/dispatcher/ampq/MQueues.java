@@ -134,6 +134,10 @@ public class MQueues {
 		Channel channel = queueAndChannels.get(qc);
 		if (channel == null || !channel.isOpen()) {
 			channel = initChannel(qc);
+			if (channel == null) {
+				log.error("fail to create channel: \n\t" + qc);
+				return null;
+			}
 			queueAndChannels.put(qc, channel);
 		}
 //		if (!channel.isOpen()) {
@@ -150,6 +154,10 @@ public class MQueues {
 		ConnectionFactory connFactory = connFactories.get(sc);
 		if (connFactory == null) {
 			connFactory = initConnFactory(sc);
+			if (connFactory == null) {
+				log.error("fail to create ConnectionFactory: \n\t" + sc);
+				return null;
+			}
 			connFactories.put(sc, connFactory);
 		}
 
@@ -169,6 +177,7 @@ public class MQueues {
 		c = new ConsumerActor(qc);
 		try {
 			ch.basicConsume(qc.getQueueName(), false, c);
+			
 			queueAndConsumers.put(qc, c);
 
 			logStr = "created consumer for queue: \n\t" + qc;

@@ -1,31 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" 
-              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence 
+<persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence 
               http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-<!-- <persistence-unit name="mqueue-dispatcher" transaction-type="RESOURCE_LOCAL"> -->
-	
+	<!-- <persistence-unit name="mqueue-dispatcher" transaction-type="RESOURCE_LOCAL"> -->
+
 	<persistence-unit name="mqueue-dispatcher" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-<!-- 		<exclude-unlisted-classes>false</exclude-unlisted-classes> -->
+		<!-- <exclude-unlisted-classes>false</exclude-unlisted-classes> -->
 
 		<class>com.thenetcircle.services.dispatcher.entity.ExchangeCfg</class>
 		<class>com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg</class>
 		<class>com.thenetcircle.services.dispatcher.entity.MessageContext</class>
 		<class>com.thenetcircle.services.dispatcher.entity.QueueCfg</class>
 		<class>com.thenetcircle.services.dispatcher.entity.ServerCfg</class>
-		
+
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
 
 		<properties>
 			<!-- jdbc connection properties -->
-<!-- 			<property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver" /> -->
+			<!-- <property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver" /> -->
 			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
-<!-- 			<property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:hsql://localhost/dispatcher" /> -->
-<!-- 			<property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:hsql://localhost:9002/dispatcher" /> -->
-<!-- 			<property name="javax.persistence.jdbc.user" value="sa" /> -->
-<!-- 			<property name="javax.persistence.jdbc.password" value="" /> -->
+			<!-- <property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:hsql://localhost/dispatcher" /> -->
+			<!-- <property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:hsql://localhost:9002/dispatcher" /> -->
+			<!-- <property name="javax.persistence.jdbc.user" value="sa" /> -->
+			<!-- <property name="javax.persistence.jdbc.password" value="" /> -->
 			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://bart:4000/dispatcher" />
 			<property name="javax.persistence.jdbc.user" value="dispatcher" />
 			<property name="javax.persistence.jdbc.password" value="dispatcher" />
@@ -39,19 +38,25 @@
 			<property name="hibernate.format_sql" value="true" />
 			<property name="hibernate.show_sql" value="true" />
 			<property name="hibernate.archive.autodetection" value="class" />
-			<property name="hibernate.current_session_context_class" value="thread"/>
+			<property name="hibernate.current_session_context_class" value="thread" />
 
 
-	<!-- Important -->
-	<property name="hibernate.connection.provider_class"
-		value="org.hibernate.c3p0.internal.C3P0ConnectionProvider" />
+			<!-- Important -->
+			<property name="hibernate.connection.provider_class" value="org.hibernate.c3p0.internal.C3P0ConnectionProvider" />
 
-	<property name="hibernate.c3p0.max_size" value="100" />
-	<property name="hibernate.c3p0.min_size" value="0" />
-	<property name="hibernate.c3p0.acquire_increment" value="1" />
-	<property name="hibernate.c3p0.idle_test_period" value="300" />
-	<property name="hibernate.c3p0.max_statements" value="0" />
-	<property name="hibernate.c3p0.timeout" value="100" />
+			<property name="hibernate.c3p0.max_size" value="20" />
+			<property name="hibernate.c3p0.min_size" value="2" />
+			<property name="hibernate.c3p0.acquire_increment" value="1" />
+<!-- 			<property name="hibernate.c3p0.maxStatements" value="50" /> -->
+
+<!-- 			c3p0.maxIdleTime -->
+			<property name="hibernate.c3p0.timeout" value="100" /> 
+			<property name="hibernate.c3p0.preferredTestQuery" value="select 1" />
+<!-- 			idleConnectionTestPeriod -->
+			<property name="hibernate.c3p0.idle_test_period" value="40" />
+			<property name="hibernate.c3p0.maxConnectionAge" value="300" />
+			<property name="hibernate.c3p0.testConnectionOnCheckin" value="true" />
+			<property name="hibernate.c3p0.testConnectionOnCheckout" value="true" />
 		</properties>
 	</persistence-unit>
 
@@ -64,16 +69,7 @@
 		<class>com.thenetcircle.services.dispatcher.entity.ServerCfg</class>
 	</persistence-unit>
 </persistence>
-      <!-- query & object cache properties 
-      <property name="hibernate.bytecode.use_reflection_optimizer" value="true"/>
-      <property name="hibernate.cache.region.factory_class" value="com.thenetcircle.services.manager.cache.EhCacheFactory"/>
-      <property name="hibernate.cache.use_structured_entries" value="true"/>
-      <property name="hibernate.cache.use_query_cache" value="true"/>
-      <property name="hibernate.cache.use_second_level_cache" value="true"/>-->
-      <!-- c3p0 connection pool properties 
-      <property name="hibernate.c3p0.acquire_increment" value="1"/>
-      <property name="hibernate.c3p0.idle_test_period" value="100"/>
-      <property name="hibernate.c3p0.max_size" value="10"/>
-      <property name="hibernate.c3p0.max_statements" value="0"/>
-      <property name="hibernate.c3p0.min_size" value="10"/>
-      <property name="hibernate.c3p0.timeout" value="100"/>-->
+<!-- query & object cache properties <property name="hibernate.bytecode.use_reflection_optimizer" value="true"/> <property name="hibernate.cache.region.factory_class" value="com.thenetcircle.services.manager.cache.EhCacheFactory"/> 
+	<property name="hibernate.cache.use_structured_entries" value="true"/> <property name="hibernate.cache.use_query_cache" value="true"/> <property name="hibernate.cache.use_second_level_cache" value="true"/> -->
+<!-- c3p0 connection pool properties <property name="hibernate.c3p0.acquire_increment" value="1"/> <property name="hibernate.c3p0.idle_test_period" value="100"/> <property name="hibernate.c3p0.max_size" 
+	value="10"/> <property name="hibernate.c3p0.max_statements" value="0"/> <property name="hibernate.c3p0.min_size" value="10"/> <property name="hibernate.c3p0.timeout" value="100"/> -->
