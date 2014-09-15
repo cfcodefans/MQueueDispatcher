@@ -20,7 +20,7 @@ import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
 import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
-import com.thenetcircle.services.dispatcher.mgr.Monitor;
+import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
 
 public class Responder implements IMessageActor, Runnable {
 
@@ -81,7 +81,7 @@ public class Responder implements IMessageActor, Runnable {
 		final QueueCfg queueCfg = mc.getQueueCfg();
 		queueCfg.getStatus().processed();
 		
-		final Monitor monitor = Monitor.instance();
+		final MsgMonitor monitor = MsgMonitor.instance();
 		final MQueues qs = MQueues.instance();
 		monitor.handover(mc);
 		
@@ -90,7 +90,7 @@ public class Responder implements IMessageActor, Runnable {
 				if (mc.getFailTimes() > 1) {
 					failsafe.handover(mc);
 				}
-				Monitor.prefLog(mc, log);
+				MsgMonitor.prefLog(mc, log);
 				return qs.acknowledge(mc);
 			}
 			

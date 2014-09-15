@@ -25,7 +25,7 @@ import com.thenetcircle.services.dispatcher.ampq.MQueues;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
-import com.thenetcircle.services.dispatcher.mgr.Monitor;
+import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
 import com.thenetcircle.services.dispatcher.mgr.QueueOperator;
 
 @Path("monitor")
@@ -47,7 +47,7 @@ public class MonitorRes {
 				log.info("Monitor ends");
 				super.remove(chunkedOutput);
 				if (cnt.get() <= 0) {
-					Monitor.instance().unregister(qc);
+					MsgMonitor.instance().unregister(qc);
 				}
 			}
 			
@@ -116,10 +116,10 @@ public class MonitorRes {
 
 		final EventOutput eventOutput = new EventOutput();
 
-		Watcher watcher = (Watcher) Monitor.instance().getQueueMonitor(qc);
+		Watcher watcher = (Watcher) MsgMonitor.instance().getQueueMonitor(qc);
 		if (watcher == null) {
 			watcher = new Watcher(qc);
-			Monitor.instance().register(qc, watcher);
+			MsgMonitor.instance().register(qc, watcher);
 		}
 
 		watcher.broadcaster.add(eventOutput);

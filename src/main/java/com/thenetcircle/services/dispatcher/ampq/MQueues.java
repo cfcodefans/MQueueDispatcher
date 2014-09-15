@@ -1,7 +1,9 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -11,7 +13,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,7 +35,7 @@ import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
-import com.thenetcircle.services.dispatcher.mgr.Monitor;
+import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
 
 //TODO this class becomes rather messy
 // maintain configurations, maintain messages, maintain living queues and IMessageActor instances;
@@ -98,7 +102,7 @@ public class MQueues {
 //				return mc;
 //			}
 			ch.basicAck(deliveryTag, false);
-			Monitor.prefLog(mc, log);
+			MsgMonitor.prefLog(mc, log);
 		} catch (final IOException e) {
 			log.error("failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse(), e);
 		}
@@ -140,9 +144,7 @@ public class MQueues {
 			}
 			queueAndChannels.put(qc, channel);
 		}
-//		if (!channel.isOpen()) {
-//			log.warn("channel is not opened: \n" + qc.getQueueName());
-//		}
+
 		return channel;
 	}
 
@@ -173,8 +175,8 @@ public class MQueues {
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
 		String logStr = null;
 
-		final Channel ch = getChannel(qc);
 		c = new ConsumerActor(qc);
+		final Channel ch = getChannel(qc);
 		try {
 			ch.basicConsume(qc.getQueueName(), false, c);
 			
@@ -183,13 +185,14 @@ public class MQueues {
 			logStr = "created consumer for queue: \n\t" + qc;
 			logForSrv.info(logStr);
 			log.info(logStr);
+			return c;
 		} catch (IOException e) {
 			logStr = "failed to initiate consumer for queue: \n\t" + qc;
 			log.error(logStr, e);
 			logForSrv.error(logStr, e);
 		}
 
-		return c;
+		return null;
 	}
 
 //	public IMessageActor getNextActor(final IMessageActor actor) {
@@ -204,7 +207,7 @@ public class MQueues {
 		return queueCfgs;
 	}
 
-	public void updateQueueCfg(final QueueCfg qc) {
+	public synchronized void updateQueueCfg(final QueueCfg qc) {
 		if (queueCfgs.contains(qc)) {
 			removeQueueCfg(qc);
 		}
@@ -212,6 +215,13 @@ public class MQueues {
 		creatQueue(qc);
 	}
 
+	public synchronized void updateQueueCfgs(final Collection<QueueCfg> qcs) {
+		if (CollectionUtils.isEmpty(qcs)) return;
+		for (final QueueCfg qc : qcs) {
+			updateQueueCfg(qc);
+		}
+	}
+	
 	public void initWithQueueCfgs(final List<QueueCfg> queueCfgs2) {
 		setQueueCfgs(queueCfgs2);
 
@@ -306,10 +316,41 @@ public class MQueues {
 		clearInstances();
 
 		shutdownActors();
+	}
+	
+	public synchronized Collection<QueueCfg> shutdown(final ServerCfg sc) {
+		log.info(MiscUtils.invocationInfo());
+		log.info(String.format("going to shutdown all connections to server: \n\t%s", sc));
 		
-//		for (IMessageActor actor : actors.keySet()) {
-//			actor.stop();
-//		}
+		if (sc == null) {
+			return Collections.emptyList();
+		}
+		
+		final Collection<QueueCfg> qcs = getQueueCfgsByServerCfg(sc);
+		for (final QueueCfg qc : qcs) {
+			if (qc == null) continue;
+			removeQueueCfg(qc);
+		}
+		
+		log.info(String.format("have removed all Consumers on server: \n\t%s", sc));
+		
+		final LoopingArrayIterator<Connection> it = serverAndConns.remove(sc);
+		if (it == null) {
+			return Collections.emptyList();
+		}
+		
+		for (final Connection conn : it.getArray()) {
+			if (conn == null || !(conn.isOpen())) continue;
+			try {
+				conn.close();
+			} catch (IOException e) {
+				log.error(String.format("failed to close connection to server: \n\t%s", sc), e);
+			}
+		}
+		
+		log.info(String.format("has closed %d connections to server: \n\t%s", it.getArray().length, sc));
+		
+		return qcs;
 	}
 
 	private synchronized void clearInstances() {
@@ -353,6 +394,21 @@ public class MQueues {
 
 	}
 
+	private Collection<QueueCfg> getQueueCfgsByServerCfg(final ServerCfg sc) {
+		if (sc == null) {
+			return Collections.emptySet();
+		}
+		
+		final Collection<QueueCfg> qcs = new LinkedHashSet<QueueCfg>();
+		for (final QueueCfg qc : this.queueCfgs) {
+			if (qc != null && sc.equals(qc.getServerCfg())) {
+				qcs.add(qc);
+			}
+		}
+		
+		return qcs;
+	}
+	
 	private Connection getConn(final ServerCfg sc) throws IOException {
 		final ConnectionFactory connFactory = getConnFactory(sc);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
@@ -366,26 +422,24 @@ public class MQueues {
 
 		LoopingArrayIterator<Connection> li = serverAndConns.get(sc);
 		if (li != null) {
-			return li.loop();
-		}
-			
-		int queueNum = 0;
-		for (final QueueCfg qc : this.queueCfgs) {
-			if (sc.equals(qc.getServerCfg())) {
-				queueNum ++;
+			final Connection conn = li.next();
+			if (conn != null && conn.isOpen()) {
+				return conn;
 			}
 		}
+			
+		final int queueNum = getQueueCfgsByServerCfg(sc).size();
 		final int connSize = Math.max((int) Math.ceil(((double)queueNum / (double)this.queueCfgs.size()) * 200.0) + 1, 4);
 		
 		log.info(String.format("create %d connection to server: %s\t%s", connSize, sc.getHost(), sc.getVirtualHost()));
-		final Connection[] conns = new Connection[connSize];
+		final List<Connection> connList = new ArrayList<Connection>(connSize);
 
-		for (int i = 0; i < conns.length; i++) {
+		for (int i = 0; i < connSize; i++) {
 			try {
 				final ExecutorService es = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory("Connection.ConsumerWorkService"));
 //						Executors.newFixedThreadPool(Math.max(1, (int)Math.ceil(queueNum / connSize)), 
 //																		MiscUtils.namedThreadFactory("Connection.ConsumerWorkService"));
-				conns[i] = connFactory.newConnection(es);
+				connList.add(connFactory.newConnection(es));
 			} catch (Exception e) {
 				String logStr = String.format("failed to create connection for server: \n\t%s\n", sc.toString());
 				log.error(logStr, e);
@@ -393,14 +447,19 @@ public class MQueues {
 			}
 		}
 
-		li = new LoopingArrayIterator<Connection>(conns);
+		li = new LoopingArrayIterator<Connection>(connList.toArray(new Connection[0]));
 		serverAndConns.put(sc, li);
 
 		String logStr = String.format("connection created for server: \n\t%s\n", sc.toString());
 		log.info(logStr);
 		logForSrv.info(logStr);
 		
-		return li.loop();
+		final Connection conn = li.next();
+		if (conn != null && conn.isOpen()) {
+			return conn;
+		}
+		
+		return null;
 	}
 
 //	private ExecutorService getExecutorsForConn() {
@@ -450,6 +509,8 @@ public class MQueues {
 					log.info("\n\n");
 					log.error("channel is closed! \n\t" + cause.getMessage());
 					log.info("\n\n");
+					
+					onError(qc, cause);
 				}
 			});
 
@@ -498,5 +559,30 @@ public class MQueues {
 
 		return cf;
 	}
+	
+	public synchronized void onError(final QueueCfg qc, final ShutdownSignalException shutdownSignal) {
+		if (shutdownSignal == null) {
+			return;
+		}
+		log.error(String.format("Connection Error occured on:\n\t%s\nwith: \n\t", shutdownSignal.getReference(), qc));
+		if (shutdownSignal.getReference() == null) {
+			return;
+		}
+		
+		log.error(shutdownSignal.getMessage());
+		
+		//if this is connection failure
+		if (shutdownSignal.isHardError()) {
+			updateQueueCfgs(shutdown(qc.getServerCfg()));
+		} else {
+			//if this is channel failure
+			updateQueueCfg(qc);
+		}
+	}
 
+	private class Reconnections {
+		private ScheduledExecutorService reconnectExecutor = Executors.newSingleThreadScheduledExecutor();
+	}
+	
+	
 }

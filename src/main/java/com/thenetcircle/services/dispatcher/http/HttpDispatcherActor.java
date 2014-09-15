@@ -37,7 +37,7 @@ import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.MsgResp;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
-import com.thenetcircle.services.dispatcher.mgr.Monitor;
+import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
 
 public class HttpDispatcherActor implements IMessageActor {
 
@@ -70,7 +70,7 @@ public class HttpDispatcherActor implements IMessageActor {
 //			mc.setResponse(StringUtils.trimToEmpty(respStr));
 //			mc.setStatusCode(resp.getStatusLine().getStatusCode());
 			
-			Monitor.prefLog(mc, log);
+			MsgMonitor.prefLog(mc, log);
 			Responder.instance().handover(mc);
 		}
 
@@ -86,7 +86,7 @@ public class HttpDispatcherActor implements IMessageActor {
 //			mc.setResponse(e.getClass().getSimpleName() + ": " + e.getMessage());
 			
 			
-			Monitor.prefLog(mc, log);
+			MsgMonitor.prefLog(mc, log);
 			Responder.instance().handover(mc);
 		}
 	}
@@ -130,7 +130,7 @@ public class HttpDispatcherActor implements IMessageActor {
 
 	@SuppressWarnings({ "deprecation" })
 	public MessageContext handle(final MessageContext mc) {
-		Monitor.prefLog(mc, log);
+		MsgMonitor.prefLog(mc, log);
 
 		final QueueCfg qc = mc.getQueueCfg();
 		final HttpDestinationCfg destCfg = qc.getDestCfg();
@@ -170,7 +170,7 @@ public class HttpDispatcherActor implements IMessageActor {
 		// }
 
 		httpClientIterator.loop().execute(req, httpClientCtx, new RespHandler(mc));
-		Monitor.prefLog(mc, log);
+		MsgMonitor.prefLog(mc, log);
 		return mc;
 	}
 

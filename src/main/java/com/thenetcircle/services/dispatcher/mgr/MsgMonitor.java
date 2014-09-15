@@ -16,19 +16,19 @@ import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
-public class Monitor implements IMessageActor, Runnable {
+public class MsgMonitor implements IMessageActor, Runnable {
 
-	private static Monitor instance = new Monitor();
+	private static MsgMonitor instance = new MsgMonitor();
 
-	public Monitor() {
+	public MsgMonitor() {
 		executor.submit(this);
 	}
 
-	public static Monitor instance() {
+	public static MsgMonitor instance() {
 		return instance;
 	}
 
-	protected static final Log log = LogFactory.getLog(Monitor.class.getName());
+	protected static final Log log = LogFactory.getLog(MsgMonitor.class.getName());
 	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
 	private ExecutorService executor = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory("Monitor"));
 
