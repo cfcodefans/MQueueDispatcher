@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -85,7 +86,9 @@ public class MQueues {
 
 	private MQueues() {
 		initActors();
+		ReconnectActor.startUp();
 	}
+
 
 	public MessageContext acknowledge(final MessageContext mc) {
 		if (mc == null || mc.getDelivery() == null) {
@@ -116,14 +119,7 @@ public class MQueues {
 		return mc;
 	}
 
-	public synchronized void addQueueCfg(final QueueCfg qc) {
-		if (qc == null) {
-			return;
-		}
-
-		getQueueCfgs().add(qc);
-		creatQueue(qc);
-	}
+	
 
 //	public IMessageActor firstActor() {
 //		final IMessageActor actor = actors.firstKey();
@@ -207,12 +203,19 @@ public class MQueues {
 		return queueCfgs;
 	}
 
-	public synchronized void updateQueueCfg(final QueueCfg qc) {
+	/**
+	 * remove the QueueCfg, and initiate it again
+	 * 
+	 * @param qc
+	 * @return
+	 * 		null if update was failed for some reason
+	 */
+	public synchronized QueueCfg updateQueueCfg(final QueueCfg qc) {
 		if (queueCfgs.contains(qc)) {
 			removeQueueCfg(qc);
 		}
 		queueCfgs.add(qc);
-		creatQueue(qc);
+		return creatQueue(qc);
 	}
 
 	public synchronized void updateQueueCfgs(final Collection<QueueCfg> qcs) {
@@ -254,7 +257,7 @@ public class MQueues {
 			return;
 		}
 
-		final Channel ch = getChannel(qc);
+		final Channel ch = queueAndChannels.get(qc);
 		if (ch == null || !ch.isOpen()) {
 			return;
 		}
@@ -366,7 +369,7 @@ public class MQueues {
 		queueCfgs.clear();
 	}
 
-	private void creatQueue(final QueueCfg qc) {
+	private QueueCfg creatQueue(final QueueCfg qc) {
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
 		try {
 			if (getConnFactory(qc.getServerCfg()) == null) {
@@ -388,10 +391,13 @@ public class MQueues {
 			}
 
 			log.info(String.format("%d: %s is created", qc.getId(), qc.getQueueName()));
+			
+			return qc;
 		} catch (Exception e) {
 			log.error("failed to load queues", e);
 		}
-
+		
+		return null;
 	}
 
 	private Collection<QueueCfg> getQueueCfgsByServerCfg(final ServerCfg sc) {
@@ -473,6 +479,7 @@ public class MQueues {
 	}
 
 	private void shutdownActors() {
+		ReconnectActor.stop();
 		Responder.stopAll();
 		HttpDispatcherActor.instance().shutdown();
 		FailedMessageSqlStorage.instance().stop();
@@ -561,7 +568,7 @@ public class MQueues {
 	}
 	
 	public synchronized void onError(final QueueCfg qc, final ShutdownSignalException shutdownSignal) {
-		if (shutdownSignal == null) {
+		if (shutdownSignal == null || qc == null) {
 			return;
 		}
 		log.error(String.format("Connection Error occured on:\n\t%s\nwith: \n\t", shutdownSignal.getReference(), qc));
@@ -570,18 +577,62 @@ public class MQueues {
 		}
 		
 		log.error(shutdownSignal.getMessage());
-		
+		  
 		//if this is connection failure
-		if (shutdownSignal.isHardError()) {
-			updateQueueCfgs(shutdown(qc.getServerCfg()));
+		if (!shutdownSignal.isHardError()) {
+			final Collection<QueueCfg> closedQueues = shutdown(qc.getServerCfg());
+			ReconnectActor.instance.registerReconnectionRequests(closedQueues);
 		} else {
 			//if this is channel failure
-			updateQueueCfg(qc);
+//			updateQueueCfg(qc);
+			ReconnectActor.instance.registerReconnectionRequest(qc);
 		}
 	}
 
-	private class Reconnections {
-		private ScheduledExecutorService reconnectExecutor = Executors.newSingleThreadScheduledExecutor();
+	private static class ReconnectActor implements Runnable {
+		private Set<QueueCfg> toReconnectQueueCfgs = new LinkedHashSet<QueueCfg>();
+		private static ScheduledExecutorService reconnectExecutor = Executors.newSingleThreadScheduledExecutor();
+		
+		public synchronized void registerReconnectionRequest(final QueueCfg qc) {
+			toReconnectQueueCfgs.add(qc);
+		}
+		public synchronized void registerReconnectionRequests(final Collection<QueueCfg> qcs) {
+			toReconnectQueueCfgs.addAll(qcs);
+		}
+		
+		public synchronized boolean isDisconnected(final QueueCfg qc) {
+			return qc == null || toReconnectQueueCfgs.contains(qc); 
+		}
+		
+		public synchronized void reconnect() {
+			log.info(String.format("going to reconnect %d QueueCfg", toReconnectQueueCfgs.size()));
+			final Set<QueueCfg> _toReconnectQueueCfgs = new LinkedHashSet<QueueCfg>();
+			for (final QueueCfg qc : toReconnectQueueCfgs) {
+				if (MQueues.instance().updateQueueCfg(qc) != null) 
+					continue;
+				
+				_toReconnectQueueCfgs.add(qc);
+			}
+			toReconnectQueueCfgs = _toReconnectQueueCfgs;
+		}
+		
+		public void run() {
+			try {
+				reconnect();
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		}
+		
+		public static void startUp() {
+			reconnectExecutor.scheduleAtFixedRate(instance, 0, 10, TimeUnit.SECONDS);
+		}
+		
+		public static void stop() {
+			reconnectExecutor.shutdownNow();
+		}
+		
+		public static ReconnectActor instance = new ReconnectActor();
 	}
 	
 	
