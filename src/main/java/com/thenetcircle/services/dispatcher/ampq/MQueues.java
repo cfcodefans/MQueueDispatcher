@@ -293,6 +293,7 @@ public class MQueues {
 
 	public synchronized void shutdown() {
 		log.info(MiscUtils.invocationInfo());
+		shutdownActors();
 
 		final Set<Connection> conns = new HashSet<Connection>();
 		for (final Channel ch : queueAndChannels.values()) {
@@ -317,8 +318,6 @@ public class MQueues {
 		}
 
 		clearInstances();
-
-		shutdownActors();
 	}
 	
 	public synchronized Collection<QueueCfg> shutdown(final ServerCfg sc) {
@@ -376,18 +375,21 @@ public class MQueues {
 				final String errMsgStr = "failed to create ConnectionFactory for ServerCfg: \n" + qc.getServerCfg();
 				log.error(errMsgStr);
 				logForSrv.error(errMsgStr);
+				return null;
 			}
 
 			if (getChannel(qc) == null) {
 				final String errMsgStr = "failed to create Channel for QueueCfg: \n" + qc;
 				log.error(errMsgStr);
 				logForSrv.error(errMsgStr);
+				return null;
 			}
 
 			if (getConsumer(qc) == null) {
 				final String errMsgStr = "failed to create ConsumerActor for QueueCfg: \n" + qc;
 				log.error(errMsgStr);
 				logForSrv.error(errMsgStr);
+				return null;
 			}
 
 			log.info(String.format("%d: %s is created", qc.getId(), qc.getQueueName()));
@@ -428,7 +430,7 @@ public class MQueues {
 
 		LoopingArrayIterator<Connection> li = serverAndConns.get(sc);
 		if (li != null) {
-			final Connection conn = li.next();
+			final Connection conn = li.loop();
 			if (conn != null && conn.isOpen()) {
 				return conn;
 			}
@@ -460,7 +462,7 @@ public class MQueues {
 		log.info(logStr);
 		logForSrv.info(logStr);
 		
-		final Connection conn = li.next();
+		final Connection conn = li.loop();
 		if (conn != null && conn.isOpen()) {
 			return conn;
 		}
@@ -479,7 +481,7 @@ public class MQueues {
 	}
 
 	private void shutdownActors() {
-		ReconnectActor.stop();
+		ReconnectActor.stop();;
 		Responder.stopAll();
 		HttpDispatcherActor.instance().shutdown();
 		FailedMessageSqlStorage.instance().stop();
@@ -634,6 +636,4 @@ public class MQueues {
 		
 		public static ReconnectActor instance = new ReconnectActor();
 	}
-	
-	
 }

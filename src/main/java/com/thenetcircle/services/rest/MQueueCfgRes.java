@@ -1,5 +1,6 @@
 package com.thenetcircle.services.rest;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -20,6 +21,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -99,7 +101,6 @@ public class MQueueCfgRes {
 
 		try {
 			qc = qcDao.create(qc);
-//			qc = qcDao.find(qc.getId());
 			MQueues.instance().updateQueueCfg(qc);
 			JGroupsActor.instance().restartQueues(qc);
 			return qc;
@@ -154,9 +155,13 @@ public class MQueueCfgRes {
 	@GET
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response getAll() {
-//		final List<QueueCfg> qcList = qcDao.findAll();
-		final QueueCfg[] qcs = MQueues.instance().getQueueCfgs().toArray(new QueueCfg[0]);
-		return Response.ok(qcs, MediaType.APPLICATION_XML_TYPE).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
+		final List<QueueCfg> qcList = qcDao.findAll();
+		final Collection<QueueCfg> queueCfgs = MQueues.instance().getQueueCfgs();
+		final Collection<QueueCfg> nonStartedQueueCfgs = CollectionUtils.subtract(qcList, queueCfgs);
+		for (final QueueCfg qc : nonStartedQueueCfgs) {
+			qc.setEnabled(false);
+		}
+		return Response.ok(qcList.toArray(new QueueCfg[0]), MediaType.APPLICATION_XML_TYPE).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
 	}
 
 	@GET
