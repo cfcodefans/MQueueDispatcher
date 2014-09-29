@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.common.MiscUtils;
-import com.thenetcircle.services.dispatcher.ampq.MQueues;
+import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
@@ -101,7 +101,7 @@ public class MQueueCfgRes {
 
 		try {
 			qc = qcDao.create(qc);
-			MQueues.instance().updateQueueCfg(qc);
+			MQueueMgr.instance().updateQueueCfg(qc);
 			JGroupsActor.instance().restartQueues(qc);
 			return qc;
 		} catch (Exception e) {
@@ -123,10 +123,10 @@ public class MQueueCfgRes {
 		qc = qcDao.update(qc);
 		
 		if (on) {
-			MQueues.instance().updateQueueCfg(qc);
+			MQueueMgr.instance().updateQueueCfg(qc);
 			JGroupsActor.instance().restartQueues(qc);
 		} else {
-			MQueues.instance().removeQueueCfg(qc);
+			MQueueMgr.instance().stopQueue(qc);
 			JGroupsActor.instance().stopQueues(qc);
 		}
 		
@@ -156,7 +156,7 @@ public class MQueueCfgRes {
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response getAll() {
 		final List<QueueCfg> qcList = qcDao.findAll();
-		final Collection<QueueCfg> queueCfgs = MQueues.instance().getQueueCfgs();
+		final Collection<QueueCfg> queueCfgs = MQueueMgr.instance().getQueueCfgs();
 		final Collection<QueueCfg> nonStartedQueueCfgs = CollectionUtils.subtract(qcList, queueCfgs);
 		for (final QueueCfg qc : nonStartedQueueCfgs) {
 			qc.setEnabled(false);
@@ -198,7 +198,7 @@ public class MQueueCfgRes {
 		
 		try {
 			qc = qcDao.update(qc);
-			MQueues.instance().updateQueueCfg(qc);
+			MQueueMgr.instance().updateQueueCfg(qc);
 			JGroupsActor.instance().restartQueues(qc);
 			return qc;
 		} catch (Exception e) {
@@ -212,10 +212,8 @@ public class MQueueCfgRes {
 	@Produces({ MediaType.APPLICATION_JSON })
 	public QueueCfg newQueueCfg() {
 		QueueCfg qc = new QueueCfg();
-		{
-			HttpDestinationCfg destCfg = new HttpDestinationCfg();
-			qc.setDestCfg(destCfg);
-		}
+		HttpDestinationCfg destCfg = new HttpDestinationCfg();
+		qc.setDestCfg(destCfg);
 		return qc;
 	}
 	
@@ -229,7 +227,7 @@ public class MQueueCfgRes {
 		}
 		
 		final QueueCfg qc = qcDao.find(qcId);
-		if (qc == null || !MQueues.instance().getQueueCfgs().contains(qc)) {
+		if (qc == null || !MQueueMgr.instance().isQueueRunning(qc)) {
 			throw new WebApplicationException(
 					Response.status(Status.BAD_REQUEST).entity("Queue: " + qcId + " isn't running now").build());
 		}

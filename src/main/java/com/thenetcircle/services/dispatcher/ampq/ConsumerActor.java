@@ -6,6 +6,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.QueueingConsumer.Delivery;
@@ -19,8 +20,8 @@ public class ConsumerActor extends DefaultConsumer {
 	private QueueCfg queueCfg;
 	protected static final Log log = LogFactory.getLog(ConsumerActor.class.getName());
 
-	public ConsumerActor(final QueueCfg queueCfg) {
-		super(MQueues.instance().getChannel(queueCfg));
+	public ConsumerActor(final Channel ch, final QueueCfg queueCfg) {
+		super(ch);
 		this.queueCfg = queueCfg;
 	}
 

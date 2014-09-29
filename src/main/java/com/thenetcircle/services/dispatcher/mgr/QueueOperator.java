@@ -11,7 +11,7 @@ import com.rabbitmq.client.AMQP.Queue;
 import com.rabbitmq.client.AMQP.Queue.PurgeOk;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.GetResponse;
-import com.thenetcircle.services.dispatcher.ampq.MQueues;
+import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
@@ -27,7 +27,7 @@ public class QueueOperator {
 	}
 
 	public long getTotalMessageCount() {
-		Channel ch = MQueues.instance().getChannel(queueCfg);
+		Channel ch = MQueueMgr.instance().getChannel(queueCfg);
 
 		Queue.DeclareOk re = null;
 		try {
@@ -40,7 +40,7 @@ public class QueueOperator {
 	}
 
 	public List<byte[]> getMessages(int size) {
-		Channel ch = MQueues.instance().getChannel(queueCfg);
+		Channel ch = MQueueMgr.instance().getChannel(queueCfg);
 
 		List<byte[]> msgList = new ArrayList<byte[]>(size);
 		try {
@@ -57,7 +57,7 @@ public class QueueOperator {
 	}
 
 	public long purge() {
-		Channel ch = MQueues.instance().getChannel(queueCfg);
+		Channel ch = MQueueMgr.instance().getChannel(queueCfg);
 		try {
 			PurgeOk re = ch.queuePurge(queueCfg.getQueueName());
 			return re.getMessageCount();
@@ -68,7 +68,7 @@ public class QueueOperator {
 	}
 	
 	public void sendMessage(final String msgStr) {
-		final Channel ch = MQueues.instance().getChannel(queueCfg);
+		final Channel ch = MQueueMgr.instance().getChannel(queueCfg);
 		if (ch == null) {
 			log.warn("not channel generated for queue: " + queueCfg.getQueueName());
 			return;

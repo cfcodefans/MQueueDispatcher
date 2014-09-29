@@ -82,7 +82,7 @@ public class Responder implements IMessageActor, Runnable {
 		queueCfg.getStatus().processed();
 		
 		final MsgMonitor monitor = MsgMonitor.instance();
-		final MQueues qs = MQueues.instance();
+		final MQueueMgr qm = MQueueMgr.instance();
 		monitor.handover(mc);
 		
 		try {
@@ -91,7 +91,7 @@ public class Responder implements IMessageActor, Runnable {
 					failsafe.handover(mc);
 				}
 				MsgMonitor.prefLog(mc, log);
-				return qs.acknowledge(mc);
+				return qm.acknowledge(mc);
 			}
 			
 			queueCfg.getStatus().failed();
@@ -112,7 +112,7 @@ public class Responder implements IMessageActor, Runnable {
 			}
 			
 			log.info(String.format("MessageContext: %d exceeds the retryLimit: %d", mc.getId(), mc.getQueueCfg().getRetryLimit()));
-			return qs.acknowledge(mc);
+			return qm.acknowledge(mc);
 		} catch (Exception e) {
 			log.error("failed to handle: \n\t" + mc, e);
 		}

@@ -13,7 +13,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.common.MiscUtils;
-import com.thenetcircle.services.dispatcher.ampq.MQueues;
+import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.persistence.jpa.JpaModule;
@@ -35,7 +35,7 @@ public class StartUpListener implements ServletContextListener {
 	@Override
 	public void contextDestroyed(final ServletContextEvent paramServletContextEvent) {
 		log.info(MiscUtils.invocationInfo());
-		MQueues.instance().shutdown();
+		MQueueMgr.instance().shutdown();
 		JpaModule.instance().destory();
 		MonitorRes.shutdown();
 		JGroupsActor.instance().stop();
@@ -59,10 +59,10 @@ public class StartUpListener implements ServletContextListener {
 			Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory("MQueueLoader")).submit(new Runnable() {
 				@Override
 				public void run() {
-					MQueues.instance().initWithQueueCfgs(qcList);
+					MQueueMgr.instance().startQueues(qcList);
 				}
 			});
-			Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
+			Runtime.getRuntime().addShutdownHook(MQueueMgr.cleaner);
 
 		} catch (Exception e) {
 			log.error("failed to load queues", e);

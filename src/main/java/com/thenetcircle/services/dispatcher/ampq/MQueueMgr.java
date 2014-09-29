@@ -1,209 +1,85 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
+import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 
 public class MQueueMgr {
 
 	public static int NUM_CHANNEL_PER_CONN = 3;
-	
-	private static class QueueCtx {
-		public QueueCfg qc;
-		public Channel ch;
-		public ConsumerActor ca;
-		
-		@Override
-		public int hashCode() {
-			return ObjectUtils.hashCode(qc);
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (!(obj instanceof QueueCtx))
-				return false;
-			QueueCtx other = (QueueCtx) obj;
-			if (qc == null) {
-				if (other.qc != null)
-					return false;
-			} else if (!qc.equals(other.qc))
-				return false;
-			return true;
-		}
-	}
-
-//	private static class ConnCtx {
-////		public String key;
-//		public ServerCfg sc;
-//		public Map<String, Connection> keyAndConns = new HashMap<String, Connection>();
-//		public Map<QueueCfg, String> qcAndConns = new HashMap<QueueCfg, String>();
-//		
-//	}
-	
-	private static class NamedConnection {
-		public String name;
-		public Connection conn;
-		public ServerCfg sc;
-		
-		public Set<QueueCfg> qcSet = new HashSet<QueueCfg>();
-		
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((name == null) ? 0 : name.hashCode());
-			result = prime * result + ((sc == null) ? 0 : sc.hashCode());
-			return result;
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (!(obj instanceof NamedConnection))
-				return false;
-			NamedConnection other = (NamedConnection) obj;
-			if (name == null) {
-				if (other.name != null)
-					return false;
-			} else if (!name.equals(other.name))
-				return false;
-			if (sc == null) {
-				if (other.sc != null)
-					return false;
-			} else if (!sc.equals(other.sc))
-				return false;
-			return true;
-		}
-		
-		public static NamedConnection connWithFewestChannels(final Collection<NamedConnection> connSet) {
-			if (CollectionUtils.isEmpty(connSet)) {
-				return null;
-			}
-			
-			return Collections.min(connSet, new Comparator<NamedConnection>() {
-				@Override
-				public int compare(NamedConnection o1, NamedConnection o2) {
-					Integer s1 = (o1 != null && o1.qcSet != null) ? o1.qcSet.size() : Integer.MAX_VALUE;
-					Integer s2 = (o2 != null && o2.qcSet != null) ? o2.qcSet.size() : Integer.MAX_VALUE;
-					return s1.compareTo(s2);
-				}
-			});
-		}
-	}
-
-	private Map<QueueCfg, QueueCtx> cfgAndCtxs = new HashMap<QueueCfg, QueueCtx>();
-	private Map<QueueCfg, NamedConnection> cfgAndConns = new HashMap<QueueCfg, NamedConnection>();
-	
-	private Map<ServerCfg, Set<NamedConnection>> serverCfgAndConns = new HashMap<ServerCfg, Set<NamedConnection>>();
-	// this is pointless for now, unless some additional process we need in
-		// between
-	//	private final LinkedMap<IMessageActor, IMessageActor> actors = new LinkedMap<IMessageActor, IMessageActor>();
-	
-	//	private static LoopingArrayIterator<ExecutorService> connExecutors = null;// Executors.newCachedThreadPool(); //.newFixedThreadPool(CONN_NUM);
-	//	static {
-	//		final List<ExecutorService> list = new ArrayList<ExecutorService>();
-	//		for (int i = 0, j = CONN_NUM; i < j; i++) {
-	//			list.add(Executors.newSingleThreadExecutor());
-	//		}
-	//		connExecutors = new LoopingArrayIterator<ExecutorService>(list.toArray(new ExecutorService[0]));
-	//	}
-	
-		private Map<ServerCfg, ConnectionFactory> connFactories = new HashMap<ServerCfg, ConnectionFactory>();
-	
+	static MQueueMgr instance = new MQueueMgr();
 	protected static final Logger log = Logger.getLogger(MQueueMgr.class);
 	
-	public QueueCfg startQueue(final QueueCfg qc) {
-		if (cfgAndCtxs.containsKey(qc)) {
-			stopQueue(qc);
-		}
-		
-		final ServerCfg sc = qc.getServerCfg();
-		final Set<NamedConnection> connSet = serverCfgAndConns.get(sc);
-		if (connSet == null) {
-			serverCfgAndConns.put(sc, new LinkedHashSet<NamedConnection>());
-			
-			final NamedConnection nc = new NamedConnection();
-//			nc.conn = getConnFactory(sc).newConnection(executor)
-		}
-		
-		
-		return null;
+	public static MQueueMgr instance() {
+		return instance;
 	}
 	
-	private QueueCfg stopQueue(final QueueCfg qc) {
-		if (qc == null || !cfgAndCtxs.containsKey(qc)) {
-			return qc;
+	private static final void _error(final ServerCfg sc, final String infoStr, final Throwable t) {
+		log.error(infoStr, t);
+		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
+		if (logForSrv != null) {
+			log.error(infoStr, t);
 		}
-		
-		final QueueCtx _qc  = cfgAndCtxs.get(qc);
-		final Channel ch = _qc.ch;
-		
-
-		_info(qc.getServerCfg(), "going to remove queue:\n\t" + qc);
-
-		try {
-			if (ch == null || !ch.isOpen()) {
-				return qc;
-			}
-			ch.close(AMQP.CONNECTION_FORCED, "OK");
-
-			_info(qc.getServerCfg(), "removed queue:\n\t" + qc.getQueueName());
-			
-			final NamedConnection nc = cfgAndConns.remove(qc);
-			if (nc == null) {
-				return qc;
-			}
-			
-			nc.qcSet.remove(qc);
-			if (!cfgAndConns.values().contains(nc) && CollectionUtils.isEmpty(nc.qcSet)) {
-				nc.conn.close(AMQP.CONNECTION_FORCED, "OK");
-			}
-			
-			final Set<NamedConnection> conns = serverCfgAndConns.get(nc.sc);
-			if (conns != null) {
-				conns.remove(nc);
-			}
-		} catch (final Exception e) {
-			_error(qc.getServerCfg(), "failed to shut down Queue: \n" + qc.getQueueName(), e);
-		} 
-		
-		return qc;
+	}
+	
+	@SuppressWarnings("deprecation")
+	static final void _info(final ServerCfg sc, final String infoStr) {
+		log(sc, Priority.INFO, infoStr);
 	}
 
+	private static final void log(final ServerCfg sc, final Priority priority, final String infoStr) {
+		log.log(priority, infoStr);
+		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
+		if (logForSrv != null) {
+			log.log(priority, infoStr);
+		}
+	}
+	
+	
+	private Map<QueueCfg, QueueCtx> cfgAndCtxs = new HashMap<QueueCfg, QueueCtx>();
+
+	private Map<ServerCfg, ConnectionFactory> connFactories = new HashMap<ServerCfg, ConnectionFactory>();
+
+	ReconnectActor reconnActor = new ReconnectActor();
+	
+	private ScheduledExecutorService reconnActorThread = Executors.newSingleThreadScheduledExecutor();
+	
+	private Map<ServerCfg, Set<NamedConnection>> serverCfgAndConns = new HashMap<ServerCfg, Set<NamedConnection>>();
+	public static final Thread cleaner = new Thread() {
+		public void run() {
+			log.info("system shutdown!");
+			MQueueMgr.instance().shutdown();
+		}
+	};
 	
 
-
-
-
-
-
-
-
-
-
+	public MQueueMgr() {
+		initActors();
+	}
+	
 	public synchronized ConnectionFactory getConnFactory(final ServerCfg sc) {
 		if (sc == null) {
 			return null;
@@ -222,6 +98,119 @@ public class MQueueMgr {
 		return connFactory;
 	}
 
+	
+	public QueueCfg startQueue(final QueueCfg qc) {
+		if (cfgAndCtxs.containsKey(qc)) {
+			stopQueue(qc);
+		}
+
+		final ServerCfg sc = qc.getServerCfg();
+		Set<NamedConnection> connSet = serverCfgAndConns.get(sc);
+		if (connSet == null) {
+			connSet = new LinkedHashSet<NamedConnection>();
+			serverCfgAndConns.put(sc, connSet);
+		}
+
+		NamedConnection nc = null;
+		for (final NamedConnection _nc : connSet) {
+			if (_nc.qcSet.size() < NUM_CHANNEL_PER_CONN) {
+				nc = _nc;
+				break;
+			}
+		}
+
+		try {
+			if (nc == null) {
+				nc = new NamedConnection();
+				nc.name = String.format("conn_%s_%s_%s", sc.getHost(), sc.getUserName(), UUID.randomUUID());
+				nc.conn = getConnFactory(sc).newConnection(Executors.newSingleThreadExecutor());
+				nc.conn.addShutdownListener(nc);
+				connSet.add(nc);
+			}
+
+			{
+				final QueueCtx queueCtx = new QueueCtx();
+
+				final Channel ch = nc.conn.createChannel();
+				
+				ch.addShutdownListener(queueCtx);
+				
+				final ConsumerActor ca = new ConsumerActor(ch, qc);
+				ch.basicConsume(qc.getQueueName(), false, ca);
+
+				queueCtx.ca = ca;
+				queueCtx.qc = qc;
+				queueCtx.ch = ch;
+
+				queueCtx.nc = nc;
+				nc.qcSet.add(qc);
+				
+				qc.setEnabled(true);
+			}
+		} catch (Exception e) {
+			_error(sc, "failed to start queue: \n\t" + qc, e);
+		}
+
+		return qc;
+	}
+	
+	public QueueCfg stopQueue(final QueueCfg qc) {
+		if (qc == null || !cfgAndCtxs.containsKey(qc)) {
+			return qc;
+		}
+		
+		reconnActor.stopReconnect(qc);
+		
+		final QueueCtx queueCtx  = cfgAndCtxs.get(qc);
+		final Channel ch = queueCtx.ch;
+
+		_info(qc.getServerCfg(), "going to remove queue:\n\t" + qc);
+
+		try {
+			if (ch != null && ch.isOpen()) {
+				ch.close(AMQP.CONNECTION_FORCED, "OK");
+			}
+
+			_info(qc.getServerCfg(), "removed queue:\n\t" + qc.getQueueName());
+			
+			final NamedConnection nc = queueCtx.nc;
+			if (nc == null) {
+				qc.setEnabled(false);
+				return qc;
+			}
+			
+			queueCtx.nc = null;
+			nc.qcSet.remove(qc);
+			
+			cleanNamedConnection(nc);
+			
+			qc.setEnabled(false);
+		} catch (final Exception e) {
+			_error(qc.getServerCfg(), "failed to shut down Queue: \n" + qc.getQueueName(), e);
+		} 
+		
+		return qc;
+	}
+	
+	private void cleanNamedConnection(final NamedConnection nc) throws IOException {
+		if (!CollectionUtils.isEmpty(nc.qcSet)) {
+			return;
+		}
+		
+		if (nc.conn.isOpen()) {
+			nc.conn.close(AMQP.CONNECTION_FORCED, "OK");
+		}
+		final Set<NamedConnection> conns = serverCfgAndConns.get(nc.sc);
+		if (conns != null) {
+			if (conns.contains(nc)) {
+				conns.remove(nc);
+			}
+			if (conns.isEmpty()) {
+				serverCfgAndConns.remove(nc.sc);
+			}
+		}
+	}
+	
 	private synchronized ConnectionFactory initConnFactory(final ServerCfg sc) {
 		if (sc == null)
 			return null;
@@ -246,32 +235,76 @@ public class MQueueMgr {
 		return cf;
 	}
 
-	private static final void log(final ServerCfg sc, final Priority priority, final String infoStr) {
-		log.log(priority, infoStr);
-		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
-		if (logForSrv != null) {
-			log.log(priority, infoStr);
-		}
+	public synchronized void shutdown() {
+		log.info(MiscUtils.invocationInfo());
+		shutdownActors();
 	}
-	
-	private static final void _info(final ServerCfg sc, final String infoStr) {
-		log(sc, Priority.INFO, infoStr);
-	}
-	
-	private static final void _error(final ServerCfg sc, final String infoStr, final Throwable t) {
-		log.error(infoStr, t);
-		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
-		if (logForSrv != null) {
-			log.error(infoStr, t);
-		}
-	}
-	
 
-	private static MQueueMgr instance = new MQueueMgr();
-	
-	public static MQueueMgr instance() {
-		return instance;
+	private void initActors() {
+		reconnActorThread.scheduleAtFixedRate(reconnActor, 30, 30, TimeUnit.SECONDS);
+		Responder.instance();
+		HttpDispatcherActor.instance();
+		FailedMessageSqlStorage.instance();
+	}
+
+	private void shutdownActors() {
+		reconnActorThread.shutdownNow();
+		Responder.stopAll();
+		HttpDispatcherActor.instance().shutdown();
+		FailedMessageSqlStorage.instance().stop();
+	}
+
+	public MessageContext acknowledge(final MessageContext mc) {
+		if (mc == null || mc.getDelivery() == null) {
+			return mc;
+		}
+
+		final long deliveryTag = mc.getDelivery().getEnvelope().getDeliveryTag();
+		final QueueCfg qc = mc.getQueueCfg();
+
+		try {
+			final QueueCtx queueCtx = cfgAndCtxs.get(qc);
+			final Channel ch = queueCtx.ch;
+			if (!ch.isOpen()) {
+				log.error("can't acknowledge the message as channel is closed!");
+				return mc;
+			}
+			ch.basicAck(deliveryTag, false);
+			// MsgMonitor.prefLog(mc, log);
+		} catch (final IOException e) {
+			log.error("failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse(), e);
+		}
+
+		_info(qc.getServerCfg(), "the result of job for q " + qc.getName() + " on server " + qc.getServerCfg().getVirtualHost() + "\nresponse: " + mc.getResponse());
+
+		return mc;
 	}
 	
+	public Channel getChannel(final QueueCfg qc) {
+		final QueueCtx queueCtx = cfgAndCtxs.get(qc);
+		return queueCtx != null ? queueCtx.ch : null;
+	}
+
+	public void updateQueueCfg(final QueueCfg qc) {
+		startQueue(qc);
+	}
+
+	public void startQueues(final List<QueueCfg> qcList) {
+		for (final QueueCfg qc : qcList) {
+			startQueue(qc);
+		}
+	}
 	
+	public boolean isQueueRunning(final QueueCfg qc) {
+		final QueueCtx queueCtx = cfgAndCtxs.get(qc);
+		return queueCtx != null && queueCtx.ch != null && queueCtx.ch.isOpen();
+	}
+	
+	public boolean isInReconnectSet(final QueueCfg qc) {
+		return reconnActor.isInReconnectSet(qc);
+	}
+
+	public Collection<QueueCfg> getQueueCfgs() {
+		return cfgAndCtxs.keySet();
+	}
 }

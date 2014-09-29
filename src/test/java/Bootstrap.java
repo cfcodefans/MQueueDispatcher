@@ -101,7 +101,7 @@ public class Bootstrap {
 			return ;
 		}
 		
-		MQueues.instance().initWithQueueCfgs(qcList);
+		MQueues.instance().startQueues(qcList);
 		Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
 	}
 }

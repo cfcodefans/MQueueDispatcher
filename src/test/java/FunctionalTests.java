@@ -135,7 +135,7 @@ public class FunctionalTests {
 	
 	@Test
 	public void testConsumerActor() throws Exception {
-		MQueues.instance().initWithQueueCfgs(Arrays.asList(qc));
+		MQueues.instance().startQueues(Arrays.asList(qc));
 
 		final Channel ch = MQueues.instance().getChannel(qc);
 		Assert.assertNotNull(ch);

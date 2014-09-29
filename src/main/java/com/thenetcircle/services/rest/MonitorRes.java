@@ -21,7 +21,7 @@ import org.glassfish.jersey.media.sse.SseFeature;
 import org.glassfish.jersey.server.ChunkedOutput;
 
 import com.thenetcircle.services.dispatcher.IMessageActor;
-import com.thenetcircle.services.dispatcher.ampq.MQueues;
+import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -141,7 +141,7 @@ public class MonitorRes {
 		}
 
 		final QueueCfg qc = qcDao.find(qcId);
-		if (qc == null || !MQueues.instance().getQueueCfgs().contains(qc)) {
+		if (qc == null || !MQueueMgr.instance().isQueueRunning(qc)) {
 			throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Queue: " + qcId + " isn't running now").build());
 		}
 

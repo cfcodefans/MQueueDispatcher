@@ -481,7 +481,7 @@ public class MQueues {
 	}
 
 	private void shutdownActors() {
-		ReconnectActor.stop();;
+		ReconnectActor.stop();
 		Responder.stopAll();
 		HttpDispatcherActor.instance().shutdown();
 		FailedMessageSqlStorage.instance().stop();

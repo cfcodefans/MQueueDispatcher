@@ -16,7 +16,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
 import com.thenetcircle.services.common.MiscUtils;
-import com.thenetcircle.services.dispatcher.ampq.MQueues;
+import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.rest.WeldBinder;
@@ -43,11 +43,11 @@ public class Bootstrap {
 //			
 //			System.out.println(queueCfgs);
 			
-//			final MQueues mqueues = MQueues.instance();
-//			mqueues.initWithQueueCfgs(queueCfgs);
+//			final MQueueMgr MQueueMgr = MQueueMgr.instance();
+//			MQueueMgr.initWithQueueCfgs(queueCfgs);
 //			
-//			Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
-//			log.info("register MQueues.cleaner to shutdown hook");
+//			Runtime.getRuntime().addShutdownHook(MQueueMgr.cleaner);
+//			log.info("register MQueueMgr.cleaner to shutdown hook");
 //			Bootstrap bs = WeldContext.INSTANCE.getBean(Bootstrap.class);
 //			bs.startup();
 //			startHttpServer();
@@ -99,7 +99,7 @@ public class Bootstrap {
 			return ;
 		}
 		
-		MQueues.instance().initWithQueueCfgs(qcList);
-		Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
+		MQueueMgr.instance().startQueues(qcList);
+		Runtime.getRuntime().addShutdownHook(MQueueMgr.cleaner);
 	}
 }

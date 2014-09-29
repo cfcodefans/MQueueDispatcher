@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.common.Jsons;
-import com.thenetcircle.services.dispatcher.ampq.MQueues;
+import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
@@ -133,7 +133,7 @@ public class ExchangeCfgRes {
 			
 			final QueueCfg[] qcs = edited.getQueues().toArray(new QueueCfg[0]);
 			for (final QueueCfg qc : qcs) {
-				MQueues.instance().updateQueueCfg(qc);
+				MQueueMgr.instance().updateQueueCfg(qc);
 			}
 			JGroupsActor.instance().restartQueues(qcs);
 			

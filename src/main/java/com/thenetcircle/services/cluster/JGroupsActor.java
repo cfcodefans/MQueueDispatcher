@@ -18,7 +18,7 @@ import org.jgroups.View;
 
 import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.common.MiscUtils;
-import com.thenetcircle.services.dispatcher.ampq.MQueues;
+import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.persistence.jpa.JpaModule;
@@ -31,7 +31,7 @@ public class JGroupsActor extends ReceiverAdapter {
 			@Override
 			public void execute(Set<QueueCfg> qcs) {
 				for (final QueueCfg qc : qcs) {
-					MQueues.instance().removeQueueCfg(qc);
+					MQueueMgr.instance().stopQueue(qc);
 				}
 			}
 		},
@@ -39,7 +39,7 @@ public class JGroupsActor extends ReceiverAdapter {
 			@Override
 			public void execute(Set<QueueCfg> qcs) {
 				for (final QueueCfg qc : qcs) {
-					MQueues.instance().updateQueueCfg(qc);
+					MQueueMgr.instance().updateQueueCfg(qc);
 				}
 			}
 		};
