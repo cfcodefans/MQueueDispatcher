@@ -16,7 +16,7 @@ import org.junit.Test;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.thenetcircle.services.dispatcher.ampq.MQueues;
+import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -86,7 +86,7 @@ public class FunctionalTests {
 		qc.setExclusive(false);
 		qc.setRetryLimit(3);
 		
-		Runtime.getRuntime().addShutdownHook(MQueues.cleaner);
+		Runtime.getRuntime().addShutdownHook(MQueueMgr.cleaner);
 		
 		em.persist(qc);
 		
@@ -135,15 +135,15 @@ public class FunctionalTests {
 	
 	@Test
 	public void testConsumerActor() throws Exception {
-		MQueues.instance().startQueues(Arrays.asList(qc));
+		MQueueMgr.instance().startQueues(Arrays.asList(qc));
 
-		final Channel ch = MQueues.instance().getChannel(qc);
+		final Channel ch = MQueueMgr.instance().getChannel(qc);
 		Assert.assertNotNull(ch);
 	}
 
 	@AfterClass
 	public static void tearDown() {
-//		MQueues.getInstance().shutdown();
+//		MQueueMgr.getInstance().shutdown();
 		JpaModule.instance().destory();
 	}
 	

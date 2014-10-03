@@ -21,7 +21,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.QueueingConsumer.Delivery;
 import com.thenetcircle.services.common.MiscUtils;
-import com.thenetcircle.services.dispatcher.ampq.MQueues;
+import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -93,7 +93,7 @@ public class ThreadsTest {
 	static List<ServerCfg> serverCfgs = new ArrayList<ServerCfg>();
 	static List<ExchangeCfg> exchangeCfgs = new ArrayList<ExchangeCfg>();
 	
-	static MQueues md = MQueues.instance();
+	static MQueueMgr md = MQueueMgr.instance();
 	
 	
 	static Channel publisher = null;
@@ -134,7 +134,7 @@ public class ThreadsTest {
 			queueCfgs.add(qc);
 		}
 		
-		md.setQueueCfgs(queueCfgs);
+		md.startQueues(queueCfgs);
 		
 		for (final QueueCfg qc : queueCfgs) {
 			md.getChannel(qc);

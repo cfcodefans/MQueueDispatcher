@@ -67,7 +67,7 @@ public class StartUpListener implements ServletContextListener {
 		} catch (Exception e) {
 			log.error("failed to load queues", e);
 		} finally {
-			qcDao.clean();
+			qcDao.close();
 		}
 	}
 

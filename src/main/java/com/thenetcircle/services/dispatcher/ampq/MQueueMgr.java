@@ -1,6 +1,7 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -13,19 +14,26 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.ShutdownListener;
+import com.rabbitmq.client.ShutdownSignalException;
+import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
+import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
+import com.thenetcircle.services.persistence.jpa.JpaModule;
 
 public class MQueueMgr {
 
@@ -42,6 +50,14 @@ public class MQueueMgr {
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
 			log.error(infoStr, t);
+		}
+	}
+	
+	private static final void _error(final ServerCfg sc, final String infoStr) {
+		log.error(infoStr);
+		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
+		if (logForSrv != null) {
+			log.error(infoStr);
 		}
 	}
 	
@@ -134,7 +150,16 @@ public class MQueueMgr {
 				final Channel ch = nc.conn.createChannel();
 				
 				ch.addShutdownListener(queueCtx);
-				
+
+				for (final ExchangeCfg ec : qc.getExchanges()) {
+					// if (!exchangeAndChannels.containsKey(ec)) {
+					ch.exchangeDeclare(ec.getExchangeName(), ec.getType(), ec.isDurable(), ec.isAutoDelete(), null);
+					// exchangeAndChannels.put(ec, ch);
+					// }
+
+					ch.queueDeclare(qc.getQueueName(), qc.isDurable(), qc.isExclusive(), qc.isAutoDelete(), null);
+					ch.queueBind(qc.getQueueName(), StringUtils.defaultIfBlank(ec.getExchangeName(), StringUtils.EMPTY), qc.getRouteKey());
+				}
 				final ConsumerActor ca = new ConsumerActor(ch, qc);
 				ch.basicConsume(qc.getQueueName(), false, ca);
 
@@ -146,6 +171,11 @@ public class MQueueMgr {
 				nc.qcSet.add(qc);
 				
 				qc.setEnabled(true);
+				
+				final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
+				qcDao.update(qc);
+				
+				cfgAndCtxs.put(qc, queueCtx);
 			}
 		} catch (Exception e) {
 			_error(sc, "failed to start queue: \n\t" + qc, e);
@@ -264,9 +294,14 @@ public class MQueueMgr {
 
 		try {
 			final QueueCtx queueCtx = cfgAndCtxs.get(qc);
+			if (queueCtx == null) {
+				_error(qc.getServerCfg(), "can't acknowledge the message as channel is not created!\n\t" + qc);
+				return mc;
+			}
+			
 			final Channel ch = queueCtx.ch;
 			if (!ch.isOpen()) {
-				log.error("can't acknowledge the message as channel is closed!");
+				_error(qc.getServerCfg(), "can't acknowledge the message as channel is closed!\n\t" + qc);
 				return mc;
 			}
 			ch.basicAck(deliveryTag, false);
@@ -306,5 +341,25 @@ public class MQueueMgr {
 
 	public Collection<QueueCfg> getQueueCfgs() {
 		return cfgAndCtxs.keySet();
+	}
+
+	public void updateServerCfg(final ServerCfg edited) {
+		if (edited == null) {
+			return;
+		}
+		
+		final List<QueueCfg> qcs = new ArrayList<QueueCfg>();
+		
+		for (final QueueCfg qc : cfgAndCtxs.keySet()) {
+			if (edited.equals(qc.getServerCfg())) {
+				qcs.add(qc);
+			}
+		}
+		
+		for (final QueueCfg qc : qcs) {
+			updateQueueCfg(qc);
+		}
+		
+		JGroupsActor.instance().restartQueues(qcs.toArray(new QueueCfg[0]));
 	}
 }

@@ -67,7 +67,7 @@ public class QueueCfgDao extends BaseDao<QueueCfg> {
 		if (!em.contains(qc)) {
 			prepare(qc);
 		}
-		return super.update(qc);
+		return super.edit(qc);
 	}
 
 	private void prepare(final QueueCfg qc) {

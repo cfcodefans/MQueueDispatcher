@@ -198,7 +198,7 @@ public class JGroupsActor extends ReceiverAdapter {
 		}
 		
 		cmd.execute(qcs);
-		qcDao.clean();
+		qcDao.close();;
 	}
 
 	@Override

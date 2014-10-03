@@ -3,7 +3,9 @@ package com.thenetcircle.services.dispatcher.ampq;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.persistence.jpa.JpaModule;
 
 class ReconnectActor implements Runnable {
 	private Set<QueueCfg> queuesForReconnect = new LinkedHashSet<QueueCfg>();
@@ -24,10 +26,15 @@ class ReconnectActor implements Runnable {
 				MQueueMgr.log.info("no queue needs to be reconnected");
 				return;
 			}
+			final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
 
-			Set<QueueCfg> _queuesForReconnect = new LinkedHashSet<QueueCfg>();
+			final Set<QueueCfg> _queuesForReconnect = new LinkedHashSet<QueueCfg>();
 			for (final QueueCfg qc : queuesForReconnect) {
-				QueueCfg _qc = MQueueMgr.instance.startQueue(qc);
+				
+				
+				qcDao.refresh(qc);
+				
+				final QueueCfg _qc = MQueueMgr.instance.startQueue(qc);
 				if (!qc.isEnabled()) {
 					_queuesForReconnect.add(_qc);
 				}

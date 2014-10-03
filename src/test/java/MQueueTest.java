@@ -39,11 +39,11 @@ public class MQueueTest {
 	public static void init() {
 		factory = new ConnectionFactory();
 
-		// factory.setUsername("admin");
-		// factory.setPassword("admin");
-		// factory.setVirtualHost("localhost");
-		factory.setHost("localhost");
-		// factory.setPort(5672);
+		factory.setUsername("consumer");
+		factory.setPassword("consumer");
+		factory.setVirtualHost("/");
+		factory.setHost("rainflying-debian.thenetcircle.lab");
+		factory.setPort(5672);
 	}
 
 	private static Connection conn = null;

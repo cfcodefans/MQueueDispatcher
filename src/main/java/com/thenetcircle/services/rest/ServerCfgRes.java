@@ -104,18 +104,14 @@ public class ServerCfgRes {
 		}
 
 		try {
+			final MQueueMgr qm = MQueueMgr.instance();
 			ServerCfg sc = Jsons.read(reqStr, ServerCfg.class);
 			if (sc == null) {
 				throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("invalid ServerCfg: " + reqStr).build());
 			}
 
-			final ServerCfg edited = scDao.update(sc);
-			
-			final List<QueueCfg> qcs = qcDao.findQueuesByServer(edited);
-			for (final QueueCfg qc : qcs) {
-				MQueueMgr.instance().updateQueueCfg(qc);
-			}
-			JGroupsActor.instance().restartQueues(qcs.toArray(new QueueCfg[0]));
+			final ServerCfg edited = scDao.edit(sc);
+			qm.updateServerCfg(edited);
 			
 			return edited;
 		} catch (Exception e) {

@@ -66,7 +66,7 @@ public class ExchangeCfgDao extends BaseDao<ExchangeCfg> {
 //		_ec.setType(ec.getType());
 //		_ec.setVersion(ec.getVersion());
 //		
-		final ExchangeCfg edited = super.update(ec);
+		final ExchangeCfg edited = super.edit(ec);
 		return edited;
 	}
 }
