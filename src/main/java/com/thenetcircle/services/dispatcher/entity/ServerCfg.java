@@ -48,6 +48,16 @@ public class ServerCfg extends Configuration {
 	@Basic
 	private boolean enabled = true;
 
+	@Basic
+	private String mails;
+	public String getMails() {
+		return mails;
+	}
+
+	public void setMails(String mails) {
+		this.mails = mails;
+	}
+
 	public boolean isEnabled() {
 		return enabled;
 	}

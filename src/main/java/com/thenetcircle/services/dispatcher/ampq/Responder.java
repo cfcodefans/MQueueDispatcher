@@ -87,7 +87,7 @@ public class Responder implements IMessageActor, Runnable {
 		
 		try {
 			if (mc.isSucceeded()) {
-				if (mc.getFailTimes() > 1) {
+				if (mc.getFailTimes() > 0) {
 					failsafe.handover(mc);
 				}
 				MsgMonitor.prefLog(mc, log);

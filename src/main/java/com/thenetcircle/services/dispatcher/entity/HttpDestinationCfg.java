@@ -32,7 +32,7 @@ public class HttpDestinationCfg extends Configuration {
 
 	@Basic
 	private String url;
-
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

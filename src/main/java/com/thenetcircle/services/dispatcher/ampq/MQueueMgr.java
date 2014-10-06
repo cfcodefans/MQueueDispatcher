@@ -49,7 +49,7 @@ public class MQueueMgr {
 		log.error(infoStr, t);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
-			log.error(infoStr, t);
+			logForSrv.error(infoStr, t);
 		}
 	}
 	
@@ -57,20 +57,24 @@ public class MQueueMgr {
 		log.error(infoStr);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
-			log.error(infoStr);
+			logForSrv.error(infoStr);
 		}
 	}
 	
 	@SuppressWarnings("deprecation")
 	static final void _info(final ServerCfg sc, final String infoStr) {
-		log(sc, Priority.INFO, infoStr);
+		log.info(infoStr);
+		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
+		if (logForSrv != null) {
+			logForSrv.info(infoStr);
+		}
 	}
 
 	private static final void log(final ServerCfg sc, final Priority priority, final String infoStr) {
 		log.log(priority, infoStr);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
-			log.log(priority, infoStr);
+			logForSrv.log(priority, infoStr);
 		}
 	}
 	
