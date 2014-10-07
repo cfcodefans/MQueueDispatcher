@@ -3,18 +3,24 @@ package com.thenetcircle.services.dispatcher.ampq;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.persistence.jpa.JpaModule;
 
 class ReconnectActor implements Runnable {
 	private Set<QueueCfg> queuesForReconnect = new LinkedHashSet<QueueCfg>();
+	protected static final Logger log = Logger.getLogger(ReconnectActor.class);
 
 	public void reconnect(final QueueCfg qc) {
 		if (qc == null) {
 			return;
 		}
-		MQueueMgr._info(qc.getServerCfg(), "going to reconnect queue: /n/t" + qc);
+		
+		final String infoStr = "going to reconnect queue: /n/t" + qc;
+		log.info(infoStr);
+		MQueueMgr._info(qc.getServerCfg(), infoStr);
 		synchronized (queuesForReconnect) {
 			queuesForReconnect.add(qc);
 		}
@@ -44,7 +50,9 @@ class ReconnectActor implements Runnable {
 	}
 
 	public void stopReconnect(final QueueCfg qc) {
-		MQueueMgr._info(qc.getServerCfg(), "not going to reconnect queue: /n/t" + qc);
+		final String infoStr = "not going to reconnect queue: /n/t" + qc;
+		log.info(infoStr);
+		MQueueMgr._info(qc.getServerCfg(), infoStr);
 		synchronized (queuesForReconnect) {
 			queuesForReconnect.remove(qc);
 		}

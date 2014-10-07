@@ -76,3 +76,7 @@ function sendMsgToQueue(qc_id, msgStr) {
 	var xhr = RS.ctx.MQueueCfgRes.sendMessage.with_message(msgStr).with_qc_id(qc_id).call({async:false});
 }
 
+function resendFailedMsg(qc_id, msg_id) {
+	var xhr = RS.ctx.FailedJobRes.resendFailedMsg.with_qc_id(qc_id).with_mc_id(msg_id).call({async:false});
+}
+

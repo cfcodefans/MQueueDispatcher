@@ -105,4 +105,13 @@ public class MiscTests {
 	public void testMediaType() {
 		System.out.println(MediaType.APPLICATION_XML_TYPE);
 	}
+	
+	@Test
+	public void testSendMail() {
+		try {
+			MiscUtils.sendMail("sh.thenetcircle.com", 25, "dispatcher@thenetcircle.com", "fan@thenetcircle.com", "test", "test");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

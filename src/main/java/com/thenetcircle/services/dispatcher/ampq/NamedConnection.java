@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ShutdownListener;
@@ -17,6 +19,7 @@ class NamedConnection implements ShutdownListener {
 	public Set<QueueCfg> qcSet = new HashSet<QueueCfg>();
 	
 	public ServerCfg sc;
+	protected static final Logger log = Logger.getLogger(NamedConnection.class);
 	
 	@Override
 	public boolean equals(Object obj) {
@@ -39,6 +42,7 @@ class NamedConnection implements ShutdownListener {
 			return false;
 		return true;
 	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -55,13 +59,17 @@ class NamedConnection implements ShutdownListener {
 		if (reasonObj instanceof AMQP.Connection.Close) {
 			AMQP.Connection.Close close  = (AMQP.Connection.Close) reasonObj;
 			if (AMQP.CONNECTION_FORCED == close.getReplyCode() && "OK".equals(close.getReplyText())) {
-				MQueueMgr._info(sc, String.format("\n close connection to server: \n\t %s", sc));
+				final String infoStr = String.format("\n close connection to server: \n\t %s", sc);
+				log.error(infoStr);
+				MQueueMgr._info(sc, infoStr);
 				return;
 			}
 		}
 		
 		if (!cause.isHardError()) {
-			MQueueMgr._info(sc, String.format("\n unexpected shutdown on connection to server: \n\t %s \n\n\t", sc, cause.getCause()));
+			final String infoStr = String.format("\n unexpected shutdown on connection to server: \n\t %s \n\n\t", sc, cause.getCause());
+			log.error(infoStr);
+			MQueueMgr._info(sc, infoStr);
 			return;
 		} 
 		

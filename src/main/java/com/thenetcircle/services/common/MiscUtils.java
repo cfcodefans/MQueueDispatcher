@@ -6,11 +6,19 @@ import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -150,5 +158,29 @@ public class MiscUtils {
 	
 	public static ThreadFactory namedThreadFactory(final String name) {
 		return new BasicThreadFactory.Builder().namingPattern(name + "_%d").build();
+	}
+	
+	public static void sendMail(final String smtpHost, final int smtpPort, final String from, final String toAddrs, final String subject, final String content) throws Exception {
+		final Properties props = new Properties();
+		props.put("mail.smtp.host", smtpHost);
+		props.put("mail.smtp.port", String.valueOf(smtpPort));
+		
+		Session session = Session.getDefaultInstance(props);
+		
+		Message msg = new MimeMessage(session);
+		
+		msg.setFrom(new InternetAddress(from));
+		
+		final List<InternetAddress> toAddrList = new LinkedList<InternetAddress>(); 
+		for (final String toAddr : StringUtils.split(toAddrs, ",")) {
+			toAddrList.add(new InternetAddress(toAddr));
+		}
+		
+		msg.setRecipients(Message.RecipientType.TO, toAddrList.toArray(new InternetAddress[0]));
+		
+		msg.setSubject(subject);
+		msg.setText(content);
+		
+		Transport.send(msg);
 	}
 }

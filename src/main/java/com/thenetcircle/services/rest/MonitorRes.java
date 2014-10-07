@@ -26,6 +26,7 @@ import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
+import com.thenetcircle.services.dispatcher.mgr.NotificationActor;
 import com.thenetcircle.services.dispatcher.mgr.QueueOperator;
 
 @Path("monitor")
@@ -148,4 +149,11 @@ public class MonitorRes {
 		return new QueueOperator(qc).getTotalMessageCount();
 	}
 
+	@GET
+	@Path("/report")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String report() {
+		NotificationActor.instance().reportFailedMessages();
+		return "ok";
+	}
 }

@@ -16,6 +16,7 @@ import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.mgr.NotificationActor;
 import com.thenetcircle.services.persistence.jpa.JpaModule;
 import com.thenetcircle.services.rest.MonitorRes;
 
@@ -30,6 +31,7 @@ public class StartUpListener implements ServletContextListener {
 		log.info(MiscUtils.invocationInfo());
 		loadQueues();
 		JGroupsActor.instance().start();
+		NotificationActor.instance().start();
 	}
 
 	@Override
@@ -39,6 +41,7 @@ public class StartUpListener implements ServletContextListener {
 		JpaModule.instance().destory();
 		MonitorRes.shutdown();
 		JGroupsActor.instance().stop();
+		NotificationActor.instance().stop();
 	}
 
 	private void loadQueues() {

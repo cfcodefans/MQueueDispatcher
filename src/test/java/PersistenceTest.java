@@ -1,6 +1,7 @@
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -12,6 +13,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -23,11 +25,14 @@ import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
 import com.thenetcircle.services.common.Jsons;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
+import com.thenetcircle.services.dispatcher.dao.MessageContextDao;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
+import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.MsgResp;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 
 public class PersistenceTest {
@@ -167,6 +172,23 @@ public class PersistenceTest {
 		List<QueueCfg> qcs = qcDao.findAll();
 		
 		System.out.println(MiscUtils.toXML(qcs.get(0)));
+	}
+	
+	@Test
+	public void testFailedMsgReport() {
+		MessageContextDao mcDao = new MessageContextDao(em);
+		
+		ServerCfgDao scDao = new ServerCfgDao(em); 
+		
+		List<ServerCfg> scList = scDao.findAll();
+		
+		Assert.assertTrue(CollectionUtils.isNotEmpty(scList));
+
+		Date end = new Date();
+		Date start = DateUtils.addWeeks(end, -1);
+		for (final ServerCfg sc : scList) {
+			System.out.println(mcDao.queryFailedJobsReport(sc, start, end));
+		}
 	}
 	
 	@AfterClass

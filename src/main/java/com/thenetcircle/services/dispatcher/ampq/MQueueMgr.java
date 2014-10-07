@@ -21,8 +21,6 @@ import org.apache.log4j.Priority;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.ShutdownListener;
-import com.rabbitmq.client.ShutdownSignalException;
 import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.common.MiscUtils;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
@@ -46,7 +44,7 @@ public class MQueueMgr {
 	}
 	
 	private static final void _error(final ServerCfg sc, final String infoStr, final Throwable t) {
-		log.error(infoStr, t);
+//		log.error(infoStr, t);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
 			logForSrv.error(infoStr, t);
@@ -54,7 +52,7 @@ public class MQueueMgr {
 	}
 	
 	private static final void _error(final ServerCfg sc, final String infoStr) {
-		log.error(infoStr);
+//		log.error(infoStr);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
 			logForSrv.error(infoStr);
@@ -63,7 +61,7 @@ public class MQueueMgr {
 	
 	@SuppressWarnings("deprecation")
 	static final void _info(final ServerCfg sc, final String infoStr) {
-		log.info(infoStr);
+//		log.info(infoStr);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
 			logForSrv.info(infoStr);
@@ -71,7 +69,7 @@ public class MQueueMgr {
 	}
 
 	private static final void log(final ServerCfg sc, final Priority priority, final String infoStr) {
-		log.log(priority, infoStr);
+//		log.log(priority, infoStr);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
 			logForSrv.log(priority, infoStr);
@@ -110,6 +108,7 @@ public class MQueueMgr {
 			connFactory = initConnFactory(sc);
 			if (connFactory == null) {
 				log.error("fail to create ConnectionFactory: \n\t" + sc);
+				_error(sc, "fail to create ConnectionFactory: \n\t" + sc);
 				return null;
 			}
 			connFactories.put(sc, connFactory);
@@ -299,13 +298,17 @@ public class MQueueMgr {
 		try {
 			final QueueCtx queueCtx = cfgAndCtxs.get(qc);
 			if (queueCtx == null) {
-				_error(qc.getServerCfg(), "can't acknowledge the message as channel is not created!\n\t" + qc);
+				final String infoStr = "can't acknowledge the message as channel is not created!\n\t" + qc;
+				log.error(infoStr);
+				_error(qc.getServerCfg(), infoStr);
 				return mc;
 			}
 			
 			final Channel ch = queueCtx.ch;
 			if (!ch.isOpen()) {
-				_error(qc.getServerCfg(), "can't acknowledge the message as channel is closed!\n\t" + qc);
+				final String infoStr = "can't acknowledge the message as channel is closed!\n\t" + qc;
+				log.error(infoStr);
+				_error(qc.getServerCfg(), infoStr);
 				return mc;
 			}
 			ch.basicAck(deliveryTag, false);
