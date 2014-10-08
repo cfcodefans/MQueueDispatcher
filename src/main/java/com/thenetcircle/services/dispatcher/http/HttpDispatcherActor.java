@@ -222,7 +222,8 @@ public class HttpDispatcherActor implements IMessageActor {
 			
 			final IOReactorConfig ioCfg = IOReactorConfig.custom().setInterestOpQueued(true).build();
 			final CloseableHttpAsyncClient hac = HttpAsyncClients.custom()
-//													.setMaxConnPerRoute(50)
+													.setMaxConnTotal(10)
+													.setMaxConnPerRoute(2)
 													.setConnectionReuseStrategy(new NoConnectionReuseStrategy())
 													.setDefaultRequestConfig(reqCfg)
 													.setDefaultIOReactorConfig(ioCfg)

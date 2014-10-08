@@ -28,15 +28,14 @@ public class NotificationActor implements Runnable {
 	
 	@Override
 	public void run() {
-
-		reportFailedMessages();
+		final Date now = new Date();
+		reportFailedMessages(lastCheckTime, now);
+		lastCheckTime = now;
 	}
 
-	public void reportFailedMessages() {
+	public void reportFailedMessages(final Date start, final Date end) {
 		final Map<String, StringBuilder> mailsAndContents = new HashMap<String, StringBuilder>();
 		
-		final Date now = new Date();
-
 		final EntityManager em = JpaModule.getEntityManager();
 		
 		final ServerCfgDao scDao = new ServerCfgDao(em);
@@ -48,7 +47,7 @@ public class NotificationActor implements Runnable {
 		final String mailStr = StringUtils.join(new String[] {
 				
 				"Dear Admins",
-				String.format("from %s to %s", lastCheckTime, now),
+				String.format("from %s to %s", start, end),
 				"there are :"
 				
 		}, "\n");
@@ -62,7 +61,7 @@ public class NotificationActor implements Runnable {
 				continue;
 			}
 			
-			String contentStr = mcDao.queryFailedJobsReport(sc, lastCheckTime, now);
+			String contentStr = mcDao.queryFailedJobsReport(sc, start, end);
 			if (StringUtils.isEmpty(contentStr)) {
 				continue;
 			}
@@ -86,11 +85,9 @@ public class NotificationActor implements Runnable {
 			try {
 				MiscUtils.sendMail("localhost", 25, "dispatcher@thenetcircle.com", entry.getKey(), "failed message report", entry.getValue().toString());
 			} catch (Exception e) {
-				log.error("failed to send report by " + now, e);
+				log.error("failed to send report by " + end, e);
 			}
 		}
-		
-		lastCheckTime = now;
 	}
 	
 	private NotificationActor() {

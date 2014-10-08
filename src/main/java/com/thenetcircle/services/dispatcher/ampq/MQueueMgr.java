@@ -162,6 +162,9 @@ public class MQueueMgr {
 
 					ch.queueDeclare(qc.getQueueName(), qc.isDurable(), qc.isExclusive(), qc.isAutoDelete(), null);
 					ch.queueBind(qc.getQueueName(), StringUtils.defaultIfBlank(ec.getExchangeName(), StringUtils.EMPTY), qc.getRouteKey());
+					
+					//TODO add qos
+//					ch.basicQos(1);
 				}
 				final ConsumerActor ca = new ConsumerActor(ch, qc);
 				ch.basicConsume(qc.getQueueName(), false, ca);
