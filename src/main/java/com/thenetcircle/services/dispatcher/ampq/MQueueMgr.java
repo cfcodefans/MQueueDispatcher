@@ -163,8 +163,9 @@ public class MQueueMgr {
 					ch.queueDeclare(qc.getQueueName(), qc.isDurable(), qc.isExclusive(), qc.isAutoDelete(), null);
 					ch.queueBind(qc.getQueueName(), StringUtils.defaultIfBlank(ec.getExchangeName(), StringUtils.EMPTY), qc.getRouteKey());
 					
-					//TODO add qos
-//					ch.basicQos(1);
+					if (qc.getPrefetchSize() > 0) {
+						ch.basicQos(qc.getPrefetchSize());
+					}
 				}
 				final ConsumerActor ca = new ConsumerActor(ch, qc);
 				ch.basicConsume(qc.getQueueName(), false, ca);
@@ -184,7 +185,9 @@ public class MQueueMgr {
 				cfgAndCtxs.put(qc, queueCtx);
 			}
 		} catch (Exception e) {
-			_error(sc, "failed to start queue: \n\t" + qc, e);
+			final String infoStr = "failed to start queue: \n\t" + qc;
+			log.error(infoStr, e);
+			_error(sc, infoStr, e);
 		}
 
 		return qc;
@@ -212,6 +215,7 @@ public class MQueueMgr {
 			final NamedConnection nc = queueCtx.nc;
 			if (nc == null) {
 				qc.setEnabled(false);
+				cfgAndCtxs.remove(qc);
 				return qc;
 			}
 			
@@ -221,8 +225,11 @@ public class MQueueMgr {
 			cleanNamedConnection(nc);
 			
 			qc.setEnabled(false);
+			cfgAndCtxs.remove(qc);
 		} catch (final Exception e) {
-			_error(qc.getServerCfg(), "failed to shut down Queue: \n" + qc.getQueueName(), e);
+			final String infoStr = "failed to shut down Queue: \n" + qc.getQueueName();
+			log.error(infoStr, e);
+			_error(qc.getServerCfg(), infoStr, e);
 		} 
 		
 		return qc;
@@ -317,7 +324,9 @@ public class MQueueMgr {
 			ch.basicAck(deliveryTag, false);
 			// MsgMonitor.prefLog(mc, log);
 		} catch (final IOException e) {
-			log.error("failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse(), e);
+			final String infoStr = "failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse();
+			log.error(infoStr, e);
+			_error(qc.getServerCfg(), infoStr, e);
 		}
 
 		_info(qc.getServerCfg(), "the result of job for q " + qc.getName() + " on server " + qc.getServerCfg().getVirtualHost() + "\nresponse: " + mc.getResponse());

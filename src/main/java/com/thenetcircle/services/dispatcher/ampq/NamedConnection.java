@@ -73,10 +73,11 @@ class NamedConnection implements ShutdownListener {
 			return;
 		} 
 		
-		Set<QueueCfg> _queuesForReconnect = new LinkedHashSet<QueueCfg>(qcSet);
+		final Set<QueueCfg> _queuesForReconnect = new LinkedHashSet<QueueCfg>(qcSet);
+		final MQueueMgr _instance = MQueueMgr.instance();
 		for (final QueueCfg qc : _queuesForReconnect) {
-			MQueueMgr.instance().stopQueue(qc);
-			MQueueMgr.instance().reconnActor.reconnect(qc);
+			_instance.stopQueue(qc);
+			_instance.reconnActor.reconnect(qc);
 		}
 	}
 }

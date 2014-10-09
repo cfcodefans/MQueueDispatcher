@@ -33,22 +33,55 @@ import com.thenetcircle.services.dispatcher.failsafe.FailsafeCfg;
 @Table(name="queue_cfg")
 @Cacheable
 public class QueueCfg extends Configuration {
-	private static final int DEFAUTL_RETRY_TIMES = 100;
+	@Embeddable
+	public static class Status {
+		@Basic
+		private long failed = 0;
+		@Basic
+		private long processed = 0;
+		
+		public long failed() {
+			return ++failed;
+		}
+		public long getFailed() {
+			return failed;
+		}
+		public long getProcessed() {
+			return processed;
+		}
+		public long processed() {
+			return ++processed;
+		}
+		
+		public void setFailed(long failed) {
+			this.failed = failed;
+		}
+		
+		public void setProcessed(long processed) {
+			this.processed = processed;
+		}
+	}
 
 	public static final String DEFAULT_ROUTE_KEY = "default_route_key";
 
-	private static final long serialVersionUID = 1L;
+	private static final int DEFAUTL_RETRY_TIMES = 100;
 	
+	private static final long serialVersionUID = 1L;
+
+	public static ExchangeCfg defaultExchange(QueueCfg qc) {
+		return new ExchangeCfg(qc.getName()+"_exchange", qc.getServerCfg());
+	}
+
 	@Basic
 	private boolean autoDelete = false;
 
 	@OneToOne(fetch=FetchType.EAGER, cascade= {CascadeType.ALL})
 	@JoinColumn(name = "dest_cfg_id")
 	private HttpDestinationCfg destCfg;
-
+	
 	@Basic
 	private boolean durable = true;
-
+	
 	@Basic
 	private boolean enabled = true;
 	
@@ -57,7 +90,7 @@ public class QueueCfg extends Configuration {
 	
 	@Basic
 	private boolean exclusive = false;
-	
+
 	@Transient
 	private FailsafeCfg failsafeCfg = new FailsafeCfg();
 	
@@ -67,17 +100,10 @@ public class QueueCfg extends Configuration {
 
 	@Basic
 	private String name;
-	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	@Basic
-	private int priority;
+	@Column(name="prefetch_size")
+	private int prefetchSize;
 
 	@Basic
 	private String queueName;
@@ -91,6 +117,9 @@ public class QueueCfg extends Configuration {
 	@ManyToOne(fetch=FetchType.EAGER, cascade= {CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "server_id")
 	private ServerCfg serverCfg;
+
+	@Embedded
+	private Status status = new Status();
 
 	@Override
 	public boolean equals(Object obj) {
@@ -137,8 +166,12 @@ public class QueueCfg extends Configuration {
 		return id;
 	}
 
-	public int getPriority() {
-		return priority;
+	public String getName() {
+		return name;
+	}
+
+	public int getPrefetchSize() {
+		return prefetchSize;
 	}
 
 	public String getQueueName() {
@@ -155,6 +188,10 @@ public class QueueCfg extends Configuration {
 
 	public ServerCfg getServerCfg() {
 		return serverCfg;
+	}
+
+	public Status getStatus() {
+		return status;
 	}
 
 	@Override
@@ -182,7 +219,7 @@ public class QueueCfg extends Configuration {
 	public boolean isEnabled() {
 		return enabled;
 	}
-
+	
 	public boolean isExclusive() {
 		return exclusive;
 	}
@@ -221,14 +258,18 @@ public class QueueCfg extends Configuration {
 		this.id = id;
 	}
 	
-	public void setPriority(int priority) {
-		this.priority = priority;
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setPrefetchSize(int priority) {
+		this.prefetchSize = priority;
 	}
 
 	public void setQueueName(String queueName) {
 		this.queueName = queueName;
 	}
-
+	
 	public void setRetryLimit(int _retryLimit) {
 		if (_retryLimit < 0) {
 			_retryLimit = DEFAUTL_RETRY_TIMES;
@@ -239,61 +280,21 @@ public class QueueCfg extends Configuration {
 	public void setRouteKey(String routeKey) {
 		this.routeKey = routeKey;
 	}
-
+	
 	public void setServerCfg(ServerCfg serverCfg) {
 		this.serverCfg = serverCfg;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("{class:\"QueueCfg\", id:'").append(id).append("', queueName:'").append(queueName).append("', durable:'").append(durable).append("', exclusive:'").append(exclusive).append("', autoDelete:'").append(autoDelete).append("', routeKey:'").append(routeKey)
-				.append("', \nexchanges:").append(exchanges).append(", \nserverCfg:'").append(serverCfg).append("', \npriority:'").append(priority).append("', destCfg:'").append(destCfg).append("', enabled:'").append(enabled).append("', failsafeCfg:").append(failsafeCfg)
+				.append("', \nexchanges:").append(exchanges).append(", \nserverCfg:'").append(serverCfg).append("', \npriority:'").append(prefetchSize).append("', destCfg:'").append(destCfg).append("', enabled:'").append(enabled).append("', failsafeCfg:").append(failsafeCfg)
 				.append(", retryLimit:'").append(retryLimit).append("'}");
 		return builder.toString();
-	}
-	
-	public static ExchangeCfg defaultExchange(QueueCfg qc) {
-		return new ExchangeCfg(qc.getName()+"_exchange", qc.getServerCfg());
-	}
-	
-	@Embeddable
-	public static class Status {
-		@Basic
-		private long processed = 0;
-		@Basic
-		private long failed = 0;
-		
-		public long getProcessed() {
-			return processed;
-		}
-		public void setProcessed(long processed) {
-			this.processed = processed;
-		}
-		public long getFailed() {
-			return failed;
-		}
-		public void setFailed(long failed) {
-			this.failed = failed;
-		}
-		
-		public long processed() {
-			return ++processed;
-		}
-		
-		public long failed() {
-			return ++failed;
-		}
-	}
-	
-	@Embedded
-	private Status status = new Status();
-
-	public Status getStatus() {
-		return status;
-	}
-
-	public void setStatus(Status status) {
-		this.status = status;
 	}
 }
