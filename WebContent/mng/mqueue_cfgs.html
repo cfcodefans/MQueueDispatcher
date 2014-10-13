@@ -78,12 +78,16 @@
 							</div>
 						<div class="form-group">
 							<label for="routeKey" class="col-sm-2 control-label">route key</label>
-							<div class="col-sm-4">
+							<div class="col-sm-2">
 								<input type="text" class="form-control" id="routeKey">
 							</div>
 							<label for="retryLimit" class="col-sm-2 control-label">retry limit</label>
-							<div class="col-sm-4">
+							<div class="col-sm-2">
 								<input type="number" class="form-control" id="retryLimit" min="0">
+							</div>
+							<label for="prefetchSize" class="col-sm-2 control-label">Prefetch Size</label>
+							<div class="col-sm-2">
+								<input type="number" class="form-control" id="prefetchSize" min="0">
 							</div>
 						</div>
 
@@ -189,6 +193,7 @@
 		ef.find("#queueName").val(qc.queueName);
 		ef.find("#routeKey").val(qc.routeKey);
 		ef.find("#retryLimit").val(qc.retryLimit);
+		ef.find("#prefetchSize").val(qc.prefetchSize);
 
 		ef.find("#exclusive").attr("checked", qc.exclusive);
 		ef.find("#durable").attr("checked", qc.durable);
@@ -218,6 +223,7 @@
 		qc.name = ef["cfgName"].value;
 		qc.routeKey = ef["routeKey"].value;
 		qc.retryLimit = ef["retryLimit"].value;
+		qc.prefetchSize = ef["prefetchSize"].value;
 		
 		qc.exclusive = ef["exclusive"].checked;
 		qc.durable = ef["durable"].checked;

@@ -196,8 +196,12 @@
 					<li class="list-group-item">
 						<div class="row">
 							<label for="retryLimit" class="col-sm-2 control-label">Retry Limit</label>
-							<div class="col-sm-10">
+							<div class="col-sm-4">
 								<input type="number" class="form-control input-sm" id="retryLimit" min="0">
+							</div>
+							<label for="prefetchSize" class="col-sm-2 control-label">Prefetch Size</label>
+							<div class="col-sm-4">
+								<input type="number"  class="form-control input-sm"  id="prefetchSize"  min="0">
 							</div>
 						</div>
 					</li>
@@ -291,6 +295,7 @@
 			ef.find("#queueName").val(qc.queueName);
 			ef.find("#routeKey").val(qc.routeKey);
 			ef.find("#retryLimit").val(qc.retryLimit);
+			ef.find("#prefetchSize").val(qc.prefetchSize);
 
 			ef.find("#exclusive").attr("checked", qc.exclusive);
 			ef.find("#durable").attr("checked", qc.durable);

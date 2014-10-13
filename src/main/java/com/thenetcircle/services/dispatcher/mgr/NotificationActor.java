@@ -104,7 +104,7 @@ public class NotificationActor implements Runnable {
 	public void start() {
 		stop();
 		ses = Executors.newSingleThreadScheduledExecutor();
-		ses.scheduleAtFixedRate(this, 30, 3600, TimeUnit.SECONDS);
+		ses.scheduleAtFixedRate(this, 30, 3600 * 6, TimeUnit.SECONDS);
 	}
 	
 	public void stop() {
