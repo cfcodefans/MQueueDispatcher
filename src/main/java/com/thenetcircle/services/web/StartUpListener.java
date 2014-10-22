@@ -62,7 +62,12 @@ public class StartUpListener implements ServletContextListener {
 			Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory("MQueueLoader")).submit(new Runnable() {
 				@Override
 				public void run() {
-					MQueueMgr.instance().startQueues(qcList);
+					final MQueueMgr mqueueMgr = MQueueMgr.instance();
+					final List<QueueCfg> startedQueueList = mqueueMgr.startQueues(qcList);
+					for (final QueueCfg qc : startedQueueList) {
+						if (qc.isEnabled()) continue;
+						mqueueMgr.getReconnActor().reconnect(qc);
+					}
 				}
 			});
 			Runtime.getRuntime().addShutdownHook(MQueueMgr.cleaner);

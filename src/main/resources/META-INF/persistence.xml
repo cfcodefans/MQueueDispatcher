@@ -8,16 +8,11 @@
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 		<!-- <exclude-unlisted-classes>false</exclude-unlisted-classes> -->
 
-		<class>com.thenetcircle.services.dispatcher.entity.ExchangeCfg</class>
-		<class>com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg</class>
-		<class>com.thenetcircle.services.dispatcher.entity.MessageContext</class>
-		<class>com.thenetcircle.services.dispatcher.entity.QueueCfg</class>
-		<class>com.thenetcircle.services.dispatcher.entity.ServerCfg</class>
-
-		<exclude-unlisted-classes>true</exclude-unlisted-classes>
-		<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>
 
 		<properties>
+			<!-- Auto detect annotation model classes -->
+			<property name="hibernate.archive.autodetection" value="class" />
+		
 			<!-- jdbc connection properties -->
 			<!-- <property name="javax.persistence.jdbc.driver" value="org.hsqldb.jdbcDriver" /> -->
 			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />

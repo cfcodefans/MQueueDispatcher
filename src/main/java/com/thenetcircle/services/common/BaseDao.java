@@ -57,7 +57,10 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		log.info(MiscUtils.invocationInfo());
 		try {
 			if (em != null && em.isOpen()) {
-				em.flush();
+				final EntityTransaction transaction = em.getTransaction();
+				if (transaction != null && transaction.isActive()) {
+					em.flush();
+				}
 				em.close();
 			}
 		} catch (Exception e) {

@@ -44,7 +44,6 @@ public class MQueueMgr {
 	}
 	
 	private static final void _error(final ServerCfg sc, final String infoStr, final Throwable t) {
-//		log.error(infoStr, t);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
 			logForSrv.error(infoStr, t);
@@ -52,7 +51,6 @@ public class MQueueMgr {
 	}
 	
 	private static final void _error(final ServerCfg sc, final String infoStr) {
-//		log.error(infoStr);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
 			logForSrv.error(infoStr);
@@ -61,7 +59,6 @@ public class MQueueMgr {
 	
 	@SuppressWarnings("deprecation")
 	static final void _info(final ServerCfg sc, final String infoStr) {
-//		log.info(infoStr);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
 			logForSrv.info(infoStr);
@@ -69,7 +66,6 @@ public class MQueueMgr {
 	}
 
 	private static final void log(final ServerCfg sc, final Priority priority, final String infoStr) {
-//		log.log(priority, infoStr);
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
 			logForSrv.log(priority, infoStr);
@@ -83,6 +79,10 @@ public class MQueueMgr {
 
 	ReconnectActor reconnActor = new ReconnectActor();
 	
+	public ReconnectActor getReconnActor() {
+		return reconnActor;
+	}
+
 	private ScheduledExecutorService reconnActorThread = Executors.newSingleThreadScheduledExecutor();
 	
 	private Map<ServerCfg, Set<NamedConnection>> serverCfgAndConns = new HashMap<ServerCfg, Set<NamedConnection>>();
@@ -144,6 +144,7 @@ public class MQueueMgr {
 				nc.name = String.format("conn_%s_%s_%s", sc.getHost(), sc.getUserName(), UUID.randomUUID());
 				nc.conn = getConnFactory(sc).newConnection(Executors.newSingleThreadExecutor());
 				nc.conn.addShutdownListener(nc);
+				nc.sc = sc;
 				connSet.add(nc);
 			}
 
@@ -155,15 +156,11 @@ public class MQueueMgr {
 				ch.addShutdownListener(queueCtx);
 
 				for (final ExchangeCfg ec : qc.getExchanges()) {
-					// if (!exchangeAndChannels.containsKey(ec)) {
 					ch.exchangeDeclare(ec.getExchangeName(), ec.getType(), ec.isDurable(), ec.isAutoDelete(), null);
-					// exchangeAndChannels.put(ec, ch);
-					// }
-
 					ch.queueDeclare(qc.getQueueName(), qc.isDurable(), qc.isExclusive(), qc.isAutoDelete(), null);
 					ch.queueBind(qc.getQueueName(), StringUtils.defaultIfBlank(ec.getExchangeName(), StringUtils.EMPTY), qc.getRouteKey());
 					
-					if (qc.getPrefetchSize() > 0) {
+					if (qc.getPrefetchSize() != null && qc.getPrefetchSize() > 0) {
 						ch.basicQos(qc.getPrefetchSize());
 					}
 				}
@@ -183,17 +180,19 @@ public class MQueueMgr {
 				qcDao.update(qc);
 				
 				cfgAndCtxs.put(qc, queueCtx);
+				return qc;
 			}
 		} catch (Exception e) {
 			final String infoStr = "failed to start queue: \n\t" + qc;
 			log.error(infoStr, e);
 			_error(sc, infoStr, e);
 		}
-
+		
+		qc.setEnabled(false);
 		return qc;
 	}
 	
-	public QueueCfg stopQueue(final QueueCfg qc) {
+	public synchronized QueueCfg stopQueue(final QueueCfg qc) {
 		if (qc == null || !cfgAndCtxs.containsKey(qc)) {
 			return qc;
 		}
@@ -206,10 +205,14 @@ public class MQueueMgr {
 		_info(qc.getServerCfg(), "going to remove queue:\n\t" + qc);
 
 		try {
-			if (ch != null && ch.isOpen()) {
-				ch.close(AMQP.CONNECTION_FORCED, "OK");
+			try {
+				if (ch != null && ch.isOpen()) {
+					ch.close(AMQP.CONNECTION_FORCED, "OK");
+				}
+			} catch (Exception e) {
+				log.error("what is up?", e);
 			}
-
+			
 			_info(qc.getServerCfg(), "removed queue:\n\t" + qc.getQueueName());
 			
 			final NamedConnection nc = queueCtx.nc;
@@ -236,21 +239,24 @@ public class MQueueMgr {
 	}
 	
 	private void cleanNamedConnection(final NamedConnection nc) throws IOException {
-		if (!CollectionUtils.isEmpty(nc.qcSet)) {
+		if (CollectionUtils.isNotEmpty(nc.qcSet)) {
 			return;
 		}
 		
-		if (nc.conn.isOpen()) {
-			nc.conn.close(AMQP.CONNECTION_FORCED, "OK");
-		}
 		final Set<NamedConnection> conns = serverCfgAndConns.get(nc.sc);
 		if (conns != null) {
-			if (conns.contains(nc)) {
-				conns.remove(nc);
-			}
+			conns.remove(nc);
 			if (conns.isEmpty()) {
 				serverCfgAndConns.remove(nc.sc);
 			}
+		}
+		
+		try {
+			if (nc.conn.isOpen()) {
+				nc.conn.close(AMQP.CONNECTION_FORCED, "OK");
+			}
+		} catch (Exception e) {
+			log.error("what is up?", e);
 		}
 	}
 	
@@ -343,10 +349,11 @@ public class MQueueMgr {
 		startQueue(qc);
 	}
 
-	public void startQueues(final List<QueueCfg> qcList) {
+	public List<QueueCfg> startQueues(final List<QueueCfg> qcList) {
 		for (final QueueCfg qc : qcList) {
 			startQueue(qc);
 		}
+		return qcList;
 	}
 	
 	public boolean isQueueRunning(final QueueCfg qc) {

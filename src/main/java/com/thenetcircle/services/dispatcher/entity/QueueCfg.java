@@ -103,7 +103,7 @@ public class QueueCfg extends Configuration {
 
 	@Basic
 	@Column(name="prefetch_size")
-	private int prefetchSize;
+	private Integer prefetchSize;
 
 	@Basic
 	private String queueName;
@@ -170,7 +170,7 @@ public class QueueCfg extends Configuration {
 		return name;
 	}
 
-	public int getPrefetchSize() {
+	public Integer getPrefetchSize() {
 		return prefetchSize;
 	}
 

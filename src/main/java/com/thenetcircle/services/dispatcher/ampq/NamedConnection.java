@@ -18,6 +18,13 @@ class NamedConnection implements ShutdownListener {
 	public String name;
 	public Set<QueueCfg> qcSet = new HashSet<QueueCfg>();
 	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("{class:\"NamedConnection\", name:'").append(name).append("', sc:'").append(sc).append("'}");
+		return builder.toString();
+	}
+
 	public ServerCfg sc;
 	protected static final Logger log = Logger.getLogger(NamedConnection.class);
 	
@@ -53,7 +60,6 @@ class NamedConnection implements ShutdownListener {
 	}
 	
 	public void shutdownCompleted(final ShutdownSignalException cause) {
-//		final Object ref = cause.getReference();
 		final Object reasonObj = cause.getReason();
 		
 		if (reasonObj instanceof AMQP.Connection.Close) {
