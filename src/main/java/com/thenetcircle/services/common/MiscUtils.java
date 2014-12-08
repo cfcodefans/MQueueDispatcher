@@ -34,6 +34,15 @@ import org.apache.commons.lang3.math.NumberUtils;
 public class MiscUtils {
 	public static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
+	public static long getPropertyNumber(String name, long defaultValule) {
+		String str = System.getProperty(name);
+		
+		if (StringUtils.isNumeric(str)) {
+			return Long.parseLong(str);
+		}
+		return defaultValule;
+	}
+	
 	public static String invocationInfo() {
 		StackTraceElement[] ste = Thread.currentThread().getStackTrace();
 		int i = 2;
@@ -97,6 +106,7 @@ public class MiscUtils {
 		public E loop() {		
 			final E[] array = this.getArray();
 			loopIdx.compareAndSet(array.length, 0);
+//			System.out.println(array.getClass().getName() + ".index: " + loopIdx.get());
 			return array[loopIdx.getAndIncrement() % array.length];
 		}
 		

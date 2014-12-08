@@ -21,7 +21,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.impl.NoConnectionReuseStrategy;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.reactor.IOReactorConfig;
@@ -87,13 +86,14 @@ public class HttpDispatcherActor implements IMessageActor {
 			
 			
 			MsgMonitor.prefLog(mc, log);
-			Responder.instance().handover(mc);
+//			Responder.instance().handover(mc);
+			Responder.instance(mc.getDelivery().getEnvelope().getDeliveryTag());
 		}
 	}
 
 	public static final int DEFAULT_TIMEOUT = 30000;
 
-	private static final int CLIENT_NUM = MiscUtils.AVAILABLE_PROCESSORS * 5;
+	private static int CLIENT_NUM = MiscUtils.AVAILABLE_PROCESSORS * 5;
 
 	private static HttpDispatcherActor instance = new HttpDispatcherActor();
 
@@ -119,6 +119,7 @@ public class HttpDispatcherActor implements IMessageActor {
 	private LoopingArrayIterator<CloseableHttpAsyncClient> httpClientIterator = null;
 
 	private HttpDispatcherActor() {
+		CLIENT_NUM = (int)MiscUtils.getPropertyNumber("httpclient.number", CLIENT_NUM);
 		initHttpAsyncClients();
 	}
 
@@ -169,8 +170,10 @@ public class HttpDispatcherActor implements IMessageActor {
 		httpClientCtx.setRequestConfig(RequestConfig.custom().setSocketTimeout(timeout).setConnectTimeout(timeout).build());
 		// }
 
-		httpClientIterator.loop().execute(req, httpClientCtx, new RespHandler(mc));
+		final CloseableHttpAsyncClient[] clientArray = httpClientIterator.getArray();
+		clientArray[(int)(mc.getDelivery().getEnvelope().getDeliveryTag() % clientArray.length)].execute(req, httpClientCtx, new RespHandler(mc));
 		MsgMonitor.prefLog(mc, log);
+		log.info("\n");
 		return mc;
 	}
 
@@ -222,9 +225,9 @@ public class HttpDispatcherActor implements IMessageActor {
 			
 			final IOReactorConfig ioCfg = IOReactorConfig.custom().setInterestOpQueued(true).build();
 			final CloseableHttpAsyncClient hac = HttpAsyncClients.custom()
-													.setMaxConnTotal(10)
-													.setMaxConnPerRoute(2)
-													.setConnectionReuseStrategy(new NoConnectionReuseStrategy())
+													.setMaxConnTotal((int)MiscUtils.getPropertyNumber("http.client.max.connection", 50))
+													.setMaxConnPerRoute((int)MiscUtils.getPropertyNumber("http.client.max.connection.per_route", 20))
+//													.setConnectionReuseStrategy(new NoConnectionReuseStrategy())
 													.setDefaultRequestConfig(reqCfg)
 													.setDefaultIOReactorConfig(ioCfg)
 													.build();

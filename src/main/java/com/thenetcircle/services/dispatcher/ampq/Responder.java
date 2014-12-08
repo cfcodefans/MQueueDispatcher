@@ -138,7 +138,8 @@ public class Responder implements IMessageActor, Runnable {
 	private static LoopingArrayIterator<Responder> instances = null;
 	static {
 		final List<Responder> list = new ArrayList<Responder>();
-		for (int i = 0, j = MiscUtils.AVAILABLE_PROCESSORS * 4; i < j; i++) {
+		final int RESPOND_NUMBER = (int)MiscUtils.getPropertyNumber("respond.number", MiscUtils.AVAILABLE_PROCESSORS * 4);
+		for (int i = 0, j = RESPOND_NUMBER; i < j; i++) {
 			list.add(new Responder());
 		}
 		instances = new LoopingArrayIterator<Responder>(list.toArray(new Responder[0]));
@@ -150,5 +151,10 @@ public class Responder implements IMessageActor, Runnable {
 	
 	public static Responder instance() {
 		return instances.loop();
+	}
+	
+	public static Responder instance(long deliveryTag) {
+		final Responder[] array = instances.getArray();
+		return array[(int)(deliveryTag % array.length)];
 	}
 }

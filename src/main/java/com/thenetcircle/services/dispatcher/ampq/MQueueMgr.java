@@ -35,7 +35,7 @@ import com.thenetcircle.services.persistence.jpa.JpaModule;
 
 public class MQueueMgr {
 
-	public static int NUM_CHANNEL_PER_CONN = 3;
+	public static int NUM_CHANNEL_PER_CONN = 2;
 	static MQueueMgr instance = new MQueueMgr();
 	protected static final Logger log = Logger.getLogger(MQueueMgr.class);
 	
@@ -95,6 +95,7 @@ public class MQueueMgr {
 	
 
 	public MQueueMgr() {
+		NUM_CHANNEL_PER_CONN = (int)MiscUtils.getPropertyNumber("channel.number.connection", NUM_CHANNEL_PER_CONN);
 		initActors();
 	}
 	
@@ -142,7 +143,7 @@ public class MQueueMgr {
 			if (nc == null) {
 				nc = new NamedConnection();
 				nc.name = String.format("conn_%s_%s_%s", sc.getHost(), sc.getUserName(), UUID.randomUUID());
-				nc.conn = getConnFactory(sc).newConnection(Executors.newSingleThreadExecutor());
+				nc.conn = getConnFactory(sc).newConnection(Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory(MQueueMgr.class.getSimpleName())));
 				nc.conn.addShutdownListener(nc);
 				nc.sc = sc;
 				connSet.add(nc);
@@ -321,12 +322,12 @@ public class MQueueMgr {
 			}
 			
 			final Channel ch = queueCtx.ch;
-			if (!ch.isOpen()) {
-				final String infoStr = "can't acknowledge the message as channel is closed!\n\t" + qc;
-				log.error(infoStr);
-				_error(qc.getServerCfg(), infoStr);
-				return mc;
-			}
+//			if (!ch.isOpen()) {
+//				final String infoStr = "can't acknowledge the message as channel is closed!\n\t" + qc;
+//				log.error(infoStr);
+//				_error(qc.getServerCfg(), infoStr);
+//				return mc;
+//			}
 			ch.basicAck(deliveryTag, false);
 			// MsgMonitor.prefLog(mc, log);
 		} catch (final IOException e) {

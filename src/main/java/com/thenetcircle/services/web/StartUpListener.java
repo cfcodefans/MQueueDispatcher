@@ -50,7 +50,7 @@ public class StartUpListener implements ServletContextListener {
 			log.info(MiscUtils.invocationInfo());
 			log.info("\n\tloading QueueCfg from database\n");
 
-			final List<QueueCfg> qcList = qcDao.findAll();
+			final List<QueueCfg> qcList = qcDao.findEnabled();
 
 			if (CollectionUtils.isEmpty(qcList)) {
 				log.warn("\n\tnot QueueCfg found!\n");

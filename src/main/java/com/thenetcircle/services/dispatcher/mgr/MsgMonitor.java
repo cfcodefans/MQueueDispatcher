@@ -104,11 +104,9 @@ public class MsgMonitor implements IMessageActor, Runnable {
 	}
 
 	public static void prefLog(final MessageContext mc, final Log _log, String...infos) {
-//		final long dt = mc.getId();
-//		if (dt % 100 == 11) {
-//			_log.info("http performance: \t" + dt + " at \t" + System.currentTimeMillis());
-//		}
-		
-		
+		final long dt = mc.getId();
+		if (dt % 100 == 11) {
+			_log.info("http performance: \t" + dt + " at \t" + System.currentTimeMillis());
+		}
 	}
 }
