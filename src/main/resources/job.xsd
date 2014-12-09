@@ -25,9 +25,9 @@
     <xs:element name="request-timeout" type="xs:integer"/>
     <xs:element name="monitor">
         <xs:complexType>
-            <xs:attribute name="httpHost" use="required" type="xs:NCName"/>
+            <xs:attribute name="httpHost" use="required" type="xs:string"/>
             <xs:attribute name="httpPort" use="required" type="xs:integer"/>
-            <xs:attribute name="rHost" use="required" type="xs:NCName"/>
+            <xs:attribute name="rHost" use="required" type="xs:string"/>
             <xs:attribute name="rPort" use="required" type="xs:integer"/>
         </xs:complexType>
     </xs:element>
@@ -40,28 +40,30 @@
     </xs:element>
     <xs:element name="queueserver">
         <xs:complexType>
-            <xs:attribute name="host" use="required" type="xs:NCName"/>
+            <xs:attribute name="host" use="required" type="xs:string"/>
             <xs:attribute name="logFileName" type="xs:string"/>
-            <xs:attribute name="name" use="required" type="xs:NCName"/>
-            <xs:attribute name="password" use="required" type="xs:NCName"/>
+            <xs:attribute name="name" use="required" type="xs:string"/>
+            <xs:attribute name="password" use="required" type="xs:string"/>
             <xs:attribute name="port" use="required" type="xs:integer"/>
-            <xs:attribute name="redisHost" type="xs:NCName"/>
+            <xs:attribute name="redisHost" type="xs:string"/>
             <xs:attribute name="redisPort" type="xs:integer"/>
             <xs:attribute name="retryIntervalSeconds" type="xs:integer"/>
-            <xs:attribute name="userName" use="required" type="xs:NCName"/>
-            <xs:attribute name="vhost" use="required"/>
+            <xs:attribute name="userName" use="required" type="xs:string"/>
+            <xs:attribute name="vhost" use="required" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="job">
         <xs:complexType>
-            <xs:attribute name="exchange" use="required" type="xs:NCName"/>
-            <xs:attribute name="name" use="required" type="xs:NCName"/>
-            <xs:attribute name="retryLimit" use="required" type="xs:integer"/>
-            <xs:attribute name="routeKey" use="optional" type="xs:NCName"/>
-            <xs:attribute name="server" use="required" type="xs:NCName"/>
-            <xs:attribute name="url" use="required" type="xs:anyURI"/>
-            <xs:attribute name="exchangeDurable" use="optional" type="xs:boolean"/>
-            <xs:attribute name="queueDurable" use="optional" type="xs:boolean"/>
+        	<xs:attribute name="exchange" use="required" type="xs:string" />
+        	<xs:attribute name="name" use="required" type="xs:string" />
+        	<xs:attribute name="retryLimit" use="required" type="xs:integer" />
+        	<xs:attribute name="routeKey" use="optional" type="xs:string" />
+        	<xs:attribute name="server" use="required" type="xs:NCName" />
+        	<xs:attribute name="url" use="required" type="xs:anyURI" />
+        	<xs:attribute name="exchangeDurable" use="optional" type="xs:boolean" />
+        	<xs:attribute name="queueDurable" use="optional" type="xs:boolean" />
+        	<xs:attribute name="urlHost" use="optional" type="xs:string" />
+        	<xs:attribute name="type" type="xs:string"></xs:attribute>
         </xs:complexType>
     </xs:element>
 </xs:schema>
