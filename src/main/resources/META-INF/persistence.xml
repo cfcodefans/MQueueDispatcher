@@ -36,22 +36,6 @@
 			<property name="hibernate.current_session_context_class" value="thread" />
 
 
-			<!-- Important -->
-			<property name="hibernate.connection.provider_class" value="org.hibernate.c3p0.internal.C3P0ConnectionProvider" />
-
-			<property name="hibernate.c3p0.max_size" value="20" />
-			<property name="hibernate.c3p0.min_size" value="2" />
-			<property name="hibernate.c3p0.acquire_increment" value="1" />
-<!-- 			<property name="hibernate.c3p0.maxStatements" value="50" /> -->
-
-<!-- 			c3p0.maxIdleTime -->
-			<property name="hibernate.c3p0.timeout" value="100" /> 
-			<property name="hibernate.c3p0.preferredTestQuery" value="select 1" />
-<!-- 			idleConnectionTestPeriod -->
-			<property name="hibernate.c3p0.idle_test_period" value="40" />
-			<property name="hibernate.c3p0.maxConnectionAge" value="300" />
-			<property name="hibernate.c3p0.testConnectionOnCheckin" value="true" />
-			<property name="hibernate.c3p0.testConnectionOnCheckout" value="true" />
 		</properties>
 	</persistence-unit>
 

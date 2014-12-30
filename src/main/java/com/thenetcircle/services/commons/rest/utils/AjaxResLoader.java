@@ -80,7 +80,8 @@ public class AjaxResLoader extends ResourceConfig {
 		private AjaxResContext() {}
 		
 		public static AjaxResContext getInstance(String name) {
-			return cache.putIfAbsent(name, new AjaxResContext());
+			cache.putIfAbsent(name, new AjaxResContext());
+			return cache.get(name);
 		}
 
 		private ResourceModel resModel = null;

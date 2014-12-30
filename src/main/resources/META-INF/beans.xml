@@ -11,6 +11,6 @@
 	</scan>
 
 	<interceptors>
-		<class>com.thenetcircle.services.weld.TransactionalInterceptor</class>
+		<class>com.thenetcircle.services.commons.persistence.jpa.cdi.TransactionalInterceptor</class>
 	</interceptors>
 </beans> 
