@@ -1,4 +1,4 @@
-package com.thenetcircle.services.common;
+package com.thenetcircle.services.commons.persistence.jpa;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -18,7 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.weld.Transactional;
+import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.persistence.jpa.cdi.Transactional;
 
 
 //implements IBaseDao<T> {

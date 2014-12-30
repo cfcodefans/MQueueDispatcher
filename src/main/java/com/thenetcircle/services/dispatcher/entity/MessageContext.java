@@ -28,7 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import com.rabbitmq.client.QueueingConsumer.Delivery;
-import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.commons.MiscUtils;
 
 @XmlRootElement
 @Entity
@@ -60,6 +60,7 @@ public class MessageContext implements Serializable {
 
 	@ManyToOne(fetch = FetchType.EAGER, cascade=CascadeType.REFRESH)
 	@JoinColumn(name = "queue_cfg_id")
+	@XmlTransient
 	private QueueCfg queueCfg;
 
 	@Basic
@@ -154,6 +155,7 @@ public class MessageContext implements Serializable {
 		return result;
 	}
 
+	@XmlTransient
 	public QueueCfg getQueueCfg() {
 		return queueCfg;
 	}
@@ -185,16 +187,11 @@ public class MessageContext implements Serializable {
 
 	@Transient
 	public boolean isExceedFailTimes() {
-		int retryLimit = (queueCfg != null ? queueCfg.getRetryLimit() : DEFAULT_RETRY_LIMIT);
-		if (retryLimit == 0) {
-			return false;
+		if (queueCfg != null) {
+			int retryLimit = queueCfg.getRetryLimit();
+			return failTimes > (retryLimit < 0 ? DEFAULT_RETRY_LIMIT : retryLimit);
 		}
-		
-		if (retryLimit < 0) {
-			retryLimit = DEFAULT_RETRY_LIMIT;
-		}
-		
-		return failTimes > retryLimit;
+		return failTimes > DEFAULT_RETRY_LIMIT;
 	}
 
 	@Transient

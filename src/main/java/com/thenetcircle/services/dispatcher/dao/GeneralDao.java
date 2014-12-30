@@ -3,7 +3,7 @@ package com.thenetcircle.services.dispatcher.dao;
 import javax.enterprise.context.RequestScoped;
 import javax.persistence.EntityManager;
 
-import com.thenetcircle.services.common.BaseDao;
+import com.thenetcircle.services.commons.persistence.jpa.BaseDao;
 
 //@Default
 //@Transactional

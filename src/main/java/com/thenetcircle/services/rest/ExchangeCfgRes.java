@@ -23,7 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.cluster.JGroupsActor;
-import com.thenetcircle.services.common.Jsons;
+import com.thenetcircle.services.commons.Jsons;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;

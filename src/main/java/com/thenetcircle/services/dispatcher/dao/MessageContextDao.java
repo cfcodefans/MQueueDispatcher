@@ -9,7 +9,7 @@ import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.thenetcircle.services.common.BaseDao;
+import com.thenetcircle.services.commons.persistence.jpa.BaseDao;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;

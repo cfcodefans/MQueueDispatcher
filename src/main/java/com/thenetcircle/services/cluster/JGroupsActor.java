@@ -16,12 +16,12 @@ import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 
-import com.thenetcircle.services.common.Jsons;
-import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.commons.Jsons;
+import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
-import com.thenetcircle.services.persistence.jpa.JpaModule;
 
 public class JGroupsActor extends ReceiverAdapter {
 	private static final String EXTERNAL_JGRP_PROPERTIES = "jgroup_settings";
@@ -198,7 +198,7 @@ public class JGroupsActor extends ReceiverAdapter {
 		}
 		
 		cmd.execute(qcs);
-		qcDao.close();;
+		qcDao.close();
 	}
 
 	@Override

@@ -6,7 +6,7 @@ import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Default;
 import javax.persistence.EntityManager;
 
-import com.thenetcircle.services.common.BaseDao;
+import com.thenetcircle.services.commons.persistence.jpa.BaseDao;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Default

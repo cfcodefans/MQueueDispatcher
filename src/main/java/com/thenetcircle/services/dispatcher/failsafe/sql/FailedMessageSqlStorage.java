@@ -1,8 +1,7 @@
 package com.thenetcircle.services.dispatcher.failsafe.sql;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,12 +15,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
+import com.thenetcircle.services.dispatcher.entity.MsgResp;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
-import com.thenetcircle.services.persistence.jpa.JpaModule;
 
 public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 
@@ -42,31 +42,43 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 	public MessageContext handle(final MessageContext mc) {
 		if (mc == null) return mc;
 		try {
-			if (mc.isSucceeded()) {
+			if (mc.isSucceeded() && mc.getId() > 0) {
 				delete(mc.getId());
 				return mc;
 			}
 			
 			mc.fail();
-//			final MessageContext merge = em.
-//			mc.setFailTimes(merge.getFailTimes());
 			
-			final Query q = em.createQuery("update MessageContext mc set "
-					+ " mc.failTimes=:failTimes, "
-					+ " mc.response.statusCode=:statusCode, "
-					+ " mc.response.responseStr=:responseStr, "
-					+ " mc.timestamp=:_timestamp "
-					+ " where mc.id=:id");
-			q.setParameter("failTimes", Long.valueOf(mc.getFailTimes()));
-			q.setParameter("statusCode", mc.getResponse().getStatusCode());
-			q.setParameter("responseStr", mc.getResponse().getResponseStr());
-			q.setParameter("_timestamp", Long.valueOf(mc.getTimestamp()));
-			q.setParameter("id", Long.valueOf(mc.getId()));
-			
-		    final int updatedFailMsg = q.executeUpdate();
-			log.info("update failed job: " + updatedFailMsg);
-			if (updatedFailMsg <= 0) {
+			if (mc.getId() > 0) {
+				final Query q = em.createQuery("update MessageContext mc set "
+						+ " mc.failTimes=:failTimes, "
+						+ " mc.response.statusCode=:statusCode, "
+						+ " mc.response.responseStr=:responseStr, "
+						+ " mc.timestamp=:_timestamp "
+						+ " where mc.id=:id");
+				q.setParameter("failTimes", Long.valueOf(mc.getFailTimes()));
+				final MsgResp resp = mc.getResponse();
+				if (resp != null) {
+					q.setParameter("statusCode", resp.getStatusCode());
+					q.setParameter("responseStr", resp.getResponseStr());
+				} else {
+					
+				}
+				q.setParameter("_timestamp", Long.valueOf(mc.getTimestamp()));
+				q.setParameter("id", Long.valueOf(mc.getId()));
+				
+			    final int updatedFailMsg = q.executeUpdate();
+			    
+				log.info("update failed job: " + updatedFailMsg);
+				if (updatedFailMsg <= 0) {
+					final MessageContext merge = em.merge(mc);
+					em.flush();
+					mc.setFailTimes(merge.getFailTimes());
+					mc.setId(merge.getId());
+				}
+			} else {
 				final MessageContext merge = em.merge(mc);
+				em.flush();
 				mc.setFailTimes(merge.getFailTimes());
 				mc.setId(merge.getId());
 			}
@@ -92,24 +104,27 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 			while (!Thread.interrupted()) {
 //				log.info("waiting for failed messages......");
 				
-				final List<MessageContext> mcList = new ArrayList<MessageContext>(100);
-				
-				MessageContext mc = null;
-				for (int i = 0; i < 50; i++) {
-					mc = buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT);
-					if (mc == null) {
-						break;
-					}
-					mcList.add(mc);
-				}
+//				final List<MessageContext> mcList = new ArrayList<MessageContext>(100);
+//				
+//				MessageContext mc = null;
+//				for (int i = 0; i < 50; i++) {
+//					mc = buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT);
+//					if (mc == null) {
+//						break;
+//					}
+//					mcList.add(mc);
+//				}
 				
 //				handle(Utils.pull(buf, 100));
 //				log.info(String.format("polled %d failed messages......", mcList.size()));
-				handle(mcList);
+//				handle(mcList);
+				handle(Arrays.asList(buf.take()));
 			}
-		} catch (InterruptedException e) {
+		} 
+		catch (InterruptedException e) {
 			log.error("Interrupted during waiting for new failed job", e);
-		} catch (final Exception e) {
+		} 
+		catch (final Exception e) {
 			log.error("Interrupted by exception", e);
 		}
 		log.info("FailedMessageSqlStorage ends");
@@ -163,7 +178,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 					}
 					handle(mc);
 				}
-				em.flush();
+//				em.flush();
 				transaction.commit();
 				em.close();
 			} catch (Exception e) {

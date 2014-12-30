@@ -28,8 +28,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
-import com.thenetcircle.services.common.MiscUtils;
-import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
+import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.ampq.Responder;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
@@ -66,28 +66,21 @@ public class HttpDispatcherActor implements IMessageActor {
 
 			mc.setResponse(new MsgResp(resp.getStatusLine().getStatusCode(), StringUtils.trimToEmpty(respStr)));
 			
-//			mc.setResponse(StringUtils.trimToEmpty(respStr));
-//			mc.setStatusCode(resp.getStatusLine().getStatusCode());
-			
 			MsgMonitor.prefLog(mc, log);
-			Responder.instance().handover(mc);
+			Responder.instance(mc.getDelivery().getEnvelope().getDeliveryTag()).handover(mc);
 		}
 
 		public void failed(final Exception e) {
 			sw.stop();
 			final long time = sw.getTime();
-			log.error(String.format("after %d ms \nfailed to process response from url: \n%s", time, mc.getQueueCfg().getDestCfg().getUrl()), e);
+			final long deliveryTag = mc.getDelivery().getEnvelope().getDeliveryTag();
+			log.error(String.format("Message: %d failed after %d ms \n gettng response from url: \n%s", deliveryTag, time, mc.getQueueCfg().getDestCfg().getUrl()), e);
 			
 			mc.setResponse(new MsgResp(MsgResp.FAILED, 
 					String.format("{status: %s, resp: '%s', time: %d}", e.getClass().getSimpleName(), e.getMessage(), time)));
 			
-//			mc.setResponse(String.format("{status: %s, resp: '%s', time: %d}", e.getClass().getSimpleName(), e.getMessage(), time));
-//			mc.setResponse(e.getClass().getSimpleName() + ": " + e.getMessage());
-			
-			
 			MsgMonitor.prefLog(mc, log);
-//			Responder.instance().handover(mc);
-			Responder.instance(mc.getDelivery().getEnvelope().getDeliveryTag());
+			Responder.instance(deliveryTag).handover(mc);
 		}
 	}
 
@@ -108,7 +101,7 @@ public class HttpDispatcherActor implements IMessageActor {
 			return null;
 		}
 		final List<NameValuePair> params = new ArrayList<NameValuePair>();
-		for (int i = 0, j = nameAndValues.length; i < j - 1; i += 2) {
+		for (int i = 0, j = nameAndValues.length - 1; i < j; i += 2) {
 			params.add(new BasicNameValuePair(nameAndValues[i], nameAndValues[i + 1]));
 		}
 		return params;
@@ -173,7 +166,6 @@ public class HttpDispatcherActor implements IMessageActor {
 		final CloseableHttpAsyncClient[] clientArray = httpClientIterator.getArray();
 		clientArray[(int)(mc.getDelivery().getEnvelope().getDeliveryTag() % clientArray.length)].execute(req, httpClientCtx, new RespHandler(mc));
 		MsgMonitor.prefLog(mc, log);
-		log.info("\n");
 		return mc;
 	}
 
@@ -182,23 +174,12 @@ public class HttpDispatcherActor implements IMessageActor {
 	}
 
 	public MessageContext handover(MessageContext mc) {
-		handle(mc);
-		return mc;
-	}
-
-	public void shutdown() {
-		if (ArrayUtils.isEmpty(hacs))
-			return;
-		try {
-			for (final CloseableHttpAsyncClient hac : hacs) {
-				hac.close();
-			}
-		} catch (IOException e) {
-			log.error("failed to close httpclient", e);
-		}
+		return handle(mc);
 	}
 
 	public void stop() {
+		if (ArrayUtils.isEmpty(hacs))
+			return;
 		for (final CloseableHttpAsyncClient hac : hacs) {
 			close(hac);
 		}
@@ -217,7 +198,7 @@ public class HttpDispatcherActor implements IMessageActor {
 
 	private void initHttpAsyncClients() {
 		hacs = new CloseableHttpAsyncClient[CLIENT_NUM];
-		for (int i = 0, j = CLIENT_NUM; i < j; i++) {
+		for (int i = 0; i < CLIENT_NUM; i++) {
 			final RequestConfig reqCfg = RequestConfig.custom()
 											.setSocketTimeout(DEFAULT_TIMEOUT)
 											.setConnectTimeout(DEFAULT_TIMEOUT)
@@ -226,7 +207,7 @@ public class HttpDispatcherActor implements IMessageActor {
 			final IOReactorConfig ioCfg = IOReactorConfig.custom().setInterestOpQueued(true).build();
 			final CloseableHttpAsyncClient hac = HttpAsyncClients.custom()
 													.setMaxConnTotal((int)MiscUtils.getPropertyNumber("http.client.max.connection", 50))
-													.setMaxConnPerRoute((int)MiscUtils.getPropertyNumber("http.client.max.connection.per_route", 20))
+													.setMaxConnPerRoute((int)MiscUtils.getPropertyNumber("http.client.max.connection.per_route", 25))
 //													.setConnectionReuseStrategy(new NoConnectionReuseStrategy())
 													.setDefaultRequestConfig(reqCfg)
 													.setDefaultIOReactorConfig(ioCfg)

@@ -8,11 +8,11 @@
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 <!-- 		<jar-file>${project.build.outputDirectory}</jar-file> -->
 <!-- 			<jar-file>../</jar-file> -->
-		<class>com.thenetcircle.services.dispatcher.entity.ExchangeCfg</class>
-		<class>com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg</class>
-		<class>com.thenetcircle.services.dispatcher.entity.MessageContext</class>
-		<class>com.thenetcircle.services.dispatcher.entity.QueueCfg</class>
-		<class>com.thenetcircle.services.dispatcher.entity.ServerCfg</class>
+<!-- 		<class>com.thenetcircle.services.dispatcher.entity.ExchangeCfg</class> -->
+<!-- 		<class>com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg</class> -->
+<!-- 		<class>com.thenetcircle.services.dispatcher.entity.MessageContext</class> -->
+<!-- 		<class>com.thenetcircle.services.dispatcher.entity.QueueCfg</class> -->
+<!-- 		<class>com.thenetcircle.services.dispatcher.entity.ServerCfg</class> -->
 		
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode>

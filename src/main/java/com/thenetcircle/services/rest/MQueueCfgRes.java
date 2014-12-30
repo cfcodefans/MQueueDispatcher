@@ -26,10 +26,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
 import com.thenetcircle.services.cluster.JGroupsActor;
-import com.thenetcircle.services.common.Jsons;
-import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.commons.Jsons;
+import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
@@ -234,12 +233,5 @@ public class MQueueCfgRes {
 		}
 		
 		new QueueOperator(qc).sendMessage(msgStr);
-	}
-	
-	@GET
-	@Path("/job.xml")
-	@Produces({MediaType.APPLICATION_XML})
-	public Response generateJobsXml() {
-		return Response.ok(DispatcherConfig.queueCfgsToXML(qcDao.findEnabled())).build();
 	}
 }

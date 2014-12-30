@@ -12,8 +12,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 
-import com.thenetcircle.services.common.MiscUtils;
-import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
+import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.dispatcher.IMessageActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -45,17 +45,7 @@ public class Responder implements IMessageActor, Runnable {
 
 	@Override
 	public MessageContext handover(final MessageContext mc) {
-//		final String msgStr = new String(mc.getMessageBody());
-//		log.info(" deliveryTag: " + mc.getDelivery().getEnvelope().getDeliveryTag());
-//		if (StringUtils.contains(msgStr, "shutdown")) {
-//			final String queueNameStr = StringUtils.substringAfter(msgStr, " ");
-//			log.info(String.format("shutdown QueueCfg[name='%s']", queueNameStr));
-//			final QueueCfg qc = MQueues.instance().getQueueCfgs().iterator().next();
-//			MQueues.instance().removeQueueCfg(qc);
-//		}
-		
 		buf.offer(mc); 
-//		log.info(MiscUtils.invocationInfo() + re);
 		return mc;
 	}
 
@@ -78,41 +68,38 @@ public class Responder implements IMessageActor, Runnable {
 			return null;
 		}
 		
-		final QueueCfg queueCfg = mc.getQueueCfg();
-		queueCfg.getStatus().processed();
-		
 		final MsgMonitor monitor = MsgMonitor.instance();
 		final MQueueMgr qm = MQueueMgr.instance();
-		monitor.handover(mc);
+		MessageContext _mc = monitor.handover(mc);
 		
 		try {
-			if (mc.isSucceeded()) {
-				if (mc.getFailTimes() > 0) {
+			if (_mc.isSucceeded()) {
+				_mc = qm.acknowledge(mc);
+				if (_mc.getFailTimes() > 0) {
 					failsafe.handover(mc);
 				}
 				MsgMonitor.prefLog(mc, log);
-				return qm.acknowledge(mc);
+				return _mc;
 			}
 			
-			queueCfg.getStatus().failed();
-			
-			final QueueCfg qc = mc.getQueueCfg();
+			final QueueCfg qc = _mc.getQueueCfg();
 			final Logger srvLog = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
-			final String logStr = String.format("\nMessage failed %d times\n\tfrom queue: %s\n\tto url: %s\n\tcontent: %s\n\tresponse: %s\n", 
-					mc.getFailTimes(), 
+			final String logStr = String.format("\nMessage: %d failed %d times\n\tfrom queue: %s\n\tto url: %s\n\tcontent: %s\n\tresponse: %s\n",
+					_mc.getDelivery().getEnvelope().getDeliveryTag(),
+					_mc.getFailTimes(), 
 					qc.getQueueName(), 
 					qc.getDestCfg().getUrl(),
-					mc.getMessageContent(), 
-					mc.getResponse());
+					_mc.getMessageContent(), 
+					_mc.getResponse());
 			log.info(logStr);
 			srvLog.info(logStr);
 			
-			if (!mc.isExceedFailTimes()) {
-				return failsafe.handover(mc);
+			if (!_mc.isExceedFailTimes()) {
+				return failsafe.handover(_mc);
 			}
 			
-			log.info(String.format("MessageContext: %d exceeds the retryLimit: %d", mc.getId(), mc.getQueueCfg().getRetryLimit()));
-			return qm.acknowledge(mc);
+			log.info(String.format("MessageContext: %d exceeds the retryLimit: %d", _mc.getId(), _mc.getQueueCfg().getRetryLimit()));
+			return qm.acknowledge(_mc);
 		} catch (Exception e) {
 			log.error("failed to handle: \n\t" + mc, e);
 		}
@@ -132,8 +119,6 @@ public class Responder implements IMessageActor, Runnable {
 	}
 
 	private ExecutorService executor = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory(Responder.class.getSimpleName()));
-	
-//	private static Responder instance = new Responder();
 	
 	private static LoopingArrayIterator<Responder> instances = null;
 	static {

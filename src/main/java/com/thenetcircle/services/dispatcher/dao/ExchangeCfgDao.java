@@ -8,11 +8,11 @@ import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Default;
 import javax.persistence.EntityManager;
 
-import com.thenetcircle.services.common.BaseDao;
+import com.thenetcircle.services.commons.persistence.jpa.BaseDao;
+import com.thenetcircle.services.commons.persistence.jpa.cdi.Transactional;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
-import com.thenetcircle.services.weld.Transactional;
 
 @Default
 @RequestScoped //for java se, only applicatoin scope available

@@ -1,6 +1,7 @@
 package com.thenetcircle.services.web;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.servlet.ServletContextEvent;
@@ -12,12 +13,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.cluster.JGroupsActor;
-import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg.Status;
 import com.thenetcircle.services.dispatcher.mgr.NotificationActor;
-import com.thenetcircle.services.persistence.jpa.JpaModule;
 import com.thenetcircle.services.rest.MonitorRes;
 
 
@@ -59,17 +61,25 @@ public class StartUpListener implements ServletContextListener {
 			
 			log.info(String.format("loading %d queues...", qcList.size()));
 
-			Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory("MQueueLoader")).submit(new Runnable() {
-				@Override
-				public void run() {
-					final MQueueMgr mqueueMgr = MQueueMgr.instance();
-					final List<QueueCfg> startedQueueList = mqueueMgr.startQueues(qcList);
-					for (final QueueCfg qc : startedQueueList) {
-						if (qc.isEnabled()) continue;
+			final ExecutorService threadPool = Executors.newFixedThreadPool(MiscUtils.AVAILABLE_PROCESSORS, MiscUtils.namedThreadFactory("MQueueLoader"));
+			final MQueueMgr mqueueMgr = MQueueMgr.instance();
+			
+			for (final QueueCfg qc : qcList) {
+				threadPool.submit(new Runnable() {
+					@Override
+					public void run() {
+						final QueueCfg startedQueue = mqueueMgr.startQueue(qc);
+						if (startedQueue.isEnabled() && Status.running.equals(startedQueue.getStatus())) return;
 						mqueueMgr.getReconnActor().reconnect(qc);
 					}
-				}
-			});
+				});
+			}
+			threadPool.shutdown();
+			
+			log.info("\n\nWait for queues initialization");
+			while (!threadPool.isTerminated());
+			log.info("\n\nDone for queues initialization");
+			
 			Runtime.getRuntime().addShutdownHook(MQueueMgr.cleaner);
 
 		} catch (Exception e) {

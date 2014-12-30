@@ -7,9 +7,9 @@ import javax.persistence.Basic;
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -33,33 +33,8 @@ import com.thenetcircle.services.dispatcher.failsafe.FailsafeCfg;
 @Table(name="queue_cfg")
 @Cacheable
 public class QueueCfg extends Configuration {
-	@Embeddable
-	public static class Status {
-		@Basic
-		private long failed = 0;
-		@Basic
-		private long processed = 0;
-		
-		public long failed() {
-			return ++failed;
-		}
-		public long getFailed() {
-			return failed;
-		}
-		public long getProcessed() {
-			return processed;
-		}
-		public long processed() {
-			return ++processed;
-		}
-		
-		public void setFailed(long failed) {
-			this.failed = failed;
-		}
-		
-		public void setProcessed(long processed) {
-			this.processed = processed;
-		}
+	public static enum Status {
+		running, started, stopped
 	}
 
 	public static final String DEFAULT_ROUTE_KEY = "default_route_key";
@@ -118,11 +93,11 @@ public class QueueCfg extends Configuration {
 	@JoinColumn(name = "server_id")
 	private ServerCfg serverCfg;
 
-	@Embedded
-	private Status status = new Status();
+	@Enumerated(EnumType.ORDINAL)
+	private Status status = Status.stopped;
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(Object obj) { 
 		if (this == obj)
 			return true;
 		if (!super.equals(obj))
@@ -237,8 +212,6 @@ public class QueueCfg extends Configuration {
 	}
 
 	public void setEnabled(boolean enabled) {
-		this.status.failed = 0;
-		this.status.processed = 0;
 		this.enabled = enabled;
 	}
 

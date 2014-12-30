@@ -32,7 +32,11 @@
 		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
 		<init-param>
 			<param-name>javax.ws.rs.Application</param-name>
-			<param-value>com.thenetcircle.services.rest.utils.ResLoader</param-value>
+			<param-value>com.thenetcircle.services.commons.rest.utils.AjaxResLoader</param-value>
+		</init-param>
+		<init-param>
+			<param-name>jersey.config.server.application.name</param-name>
+			<param-value>rest-ajax</param-value>
 		</init-param>
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>

@@ -3,12 +3,12 @@ package com.thenetcircle.services.dispatcher.ampq;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -16,22 +16,22 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.thenetcircle.services.cluster.JGroupsActor;
-import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg.Status;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
-import com.thenetcircle.services.persistence.jpa.JpaModule;
 
 public class MQueueMgr {
 
@@ -58,24 +58,24 @@ public class MQueueMgr {
 	}
 	
 	@SuppressWarnings("deprecation")
-	static final void _info(final ServerCfg sc, final String infoStr) {
+	public static final void _info(final ServerCfg sc, final String infoStr) {
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
 			logForSrv.info(infoStr);
 		}
 	}
 
-	private static final void log(final ServerCfg sc, final Priority priority, final String infoStr) {
-		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
-		if (logForSrv != null) {
-			logForSrv.log(priority, infoStr);
-		}
-	}
+//	private static final void log(final ServerCfg sc, final Priority priority, final String infoStr) {
+//		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
+//		if (logForSrv != null) {
+//			logForSrv.log(priority, infoStr);
+//		}
+//	}
 	
 	
-	private Map<QueueCfg, QueueCtx> cfgAndCtxs = new HashMap<QueueCfg, QueueCtx>();
+	private Map<QueueCfg, QueueCtx> cfgAndCtxs = new ConcurrentHashMap<QueueCfg, QueueCtx>();
 
-	private Map<ServerCfg, ConnectionFactory> connFactories = new HashMap<ServerCfg, ConnectionFactory>();
+	private Map<ServerCfg, ConnectionFactory> connFactories = new ConcurrentHashMap<ServerCfg, ConnectionFactory>();
 
 	ReconnectActor reconnActor = new ReconnectActor();
 	
@@ -85,7 +85,8 @@ public class MQueueMgr {
 
 	private ScheduledExecutorService reconnActorThread = Executors.newSingleThreadScheduledExecutor();
 	
-	private Map<ServerCfg, Set<NamedConnection>> serverCfgAndConns = new HashMap<ServerCfg, Set<NamedConnection>>();
+	private Map<ServerCfg, Set<NamedConnection>> serverCfgAndConns = new ConcurrentHashMap<ServerCfg, Set<NamedConnection>>();
+	
 	public static final Thread cleaner = new Thread() {
 		public void run() {
 			log.info("system shutdown!");
@@ -151,7 +152,6 @@ public class MQueueMgr {
 
 			{
 				final QueueCtx queueCtx = new QueueCtx();
-
 				final Channel ch = nc.conn.createChannel();
 				
 				ch.addShutdownListener(queueCtx);
@@ -175,7 +175,7 @@ public class MQueueMgr {
 				queueCtx.nc = nc;
 				nc.qcSet.add(qc);
 				
-				qc.setEnabled(true);
+				qc.setStatus(Status.running);
 				
 				final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
 				qcDao.update(qc);
@@ -189,7 +189,7 @@ public class MQueueMgr {
 			_error(sc, infoStr, e);
 		}
 		
-		qc.setEnabled(false);
+		qc.setStatus(Status.started);
 		return qc;
 	}
 	
@@ -218,7 +218,7 @@ public class MQueueMgr {
 			
 			final NamedConnection nc = queueCtx.nc;
 			if (nc == null) {
-				qc.setEnabled(false);
+				qc.setStatus(Status.stopped);
 				cfgAndCtxs.remove(qc);
 				return qc;
 			}
@@ -228,7 +228,7 @@ public class MQueueMgr {
 			
 			cleanNamedConnection(nc);
 			
-			qc.setEnabled(false);
+			qc.setStatus(Status.stopped);
 			cfgAndCtxs.remove(qc);
 		} catch (final Exception e) {
 			final String infoStr = "failed to shut down Queue: \n" + qc.getQueueName();
@@ -300,7 +300,7 @@ public class MQueueMgr {
 	private void shutdownActors() {
 		reconnActorThread.shutdownNow();
 		Responder.stopAll();
-		HttpDispatcherActor.instance().shutdown();
+		HttpDispatcherActor.instance().stop();
 		FailedMessageSqlStorage.instance().stop();
 	}
 
@@ -329,6 +329,7 @@ public class MQueueMgr {
 //				return mc;
 //			}
 			ch.basicAck(deliveryTag, false);
+			_info(qc.getServerCfg(), "the result of job: " + deliveryTag + " for q " + qc.getName() + " on server " + qc.getServerCfg().getVirtualHost() + "\nresponse: " + mc.getResponse());
 			// MsgMonitor.prefLog(mc, log);
 		} catch (final IOException e) {
 			final String infoStr = "failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse();
@@ -336,7 +337,6 @@ public class MQueueMgr {
 			_error(qc.getServerCfg(), infoStr, e);
 		}
 
-		_info(qc.getServerCfg(), "the result of job for q " + qc.getName() + " on server " + qc.getServerCfg().getVirtualHost() + "\nresponse: " + mc.getResponse());
 
 		return mc;
 	}

@@ -15,11 +15,11 @@ import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
-import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.cdi.rest.WeldBinder;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
-import com.thenetcircle.services.rest.WeldBinder;
 //import com.thenetcircle.services.rest.javascript.bridge.JavaScriptProxyRes;
 //import com.sun.jersey.api.core.PackagesResourceConfig;
 

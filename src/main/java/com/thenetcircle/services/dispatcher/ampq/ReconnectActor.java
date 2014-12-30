@@ -5,10 +5,11 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
-import com.thenetcircle.services.persistence.jpa.JpaModule;
+import com.thenetcircle.services.dispatcher.entity.QueueCfg.Status;
 
 public class ReconnectActor implements Runnable {
 	private Set<QueueCfg> queuesForReconnect = new LinkedHashSet<QueueCfg>();
@@ -48,15 +49,17 @@ public class ReconnectActor implements Runnable {
 					}
 					log.info("reconnecting queue: " + qc.getName());
 					final QueueCfg _qc = MQueueMgr.instance.startQueue(qc);
-					if (!qc.isEnabled()) {
-						final String infoStr = "failed to reconnect queue: \n\t" + qc.getName();
-						log.info(infoStr);
-						MQueueMgr._info(qc.getServerCfg(), infoStr);
-					} else {
-						tempSet.remove(_qc);
-						final String infoStr = "successfully reconnected queue: \n\t" + qc.getName();
-						log.info(infoStr);
-						MQueueMgr._info(qc.getServerCfg(), infoStr);
+					if (qc.isEnabled()) {
+						if (!Status.running.equals(qc.getStatus())) {
+							final String infoStr = "failed to reconnect queue: \n\t" + qc.getName();
+							log.info(infoStr);
+							MQueueMgr._info(qc.getServerCfg(), infoStr);
+						} else {
+							tempSet.remove(_qc);
+							final String infoStr = "successfully reconnected queue: \n\t" + qc.getName();
+							log.info(infoStr);
+							MQueueMgr._info(qc.getServerCfg(), infoStr);
+						}
 					}
 				}
 				queuesForReconnect = tempSet;

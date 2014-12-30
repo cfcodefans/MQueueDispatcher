@@ -1,4 +1,4 @@
-package com.thenetcircle.services.rest;
+package com.thenetcircle.services.commons.rest;
 
 import java.util.List;
 
@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -25,8 +26,8 @@ public class AjaxRes {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getJSProxy(@Context UriInfo uriInfo) {
-		List<AjaxResMetaData> proxyList = AjaxResContext.getInstance("rest-ajax").getProxyList();
+	public Response getJSProxy(@Context UriInfo uriInfo, @QueryParam("appName") String name) {
+		List<AjaxResMetaData> proxyList = AjaxResContext.getInstance(name).getProxyList();
 		for (AjaxResMetaData armd : proxyList) {
 			armd.setBaseUrl(StringUtils.removeEnd(uriInfo.getAbsolutePath().getPath(), "ajax"));
 		}

@@ -1,4 +1,4 @@
-package com.thenetcircle.services.persistence.jpa;
+package com.thenetcircle.services.commons.persistence.jpa;
 
 import java.io.FileInputStream;
 import java.util.Collections;
@@ -18,7 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.commons.MiscUtils;
 
 
 @ApplicationScoped

@@ -1,4 +1,4 @@
-package com.thenetcircle.services.weld;
+package com.thenetcircle.services.commons.persistence.jpa.cdi;
 
 import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.ElementType;

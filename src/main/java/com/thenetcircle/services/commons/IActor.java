@@ -1,4 +1,4 @@
-package com.thenetcircle.services.common;
+package com.thenetcircle.services.commons;
 
 import java.util.Collection;
 import java.util.concurrent.BlockingQueue;

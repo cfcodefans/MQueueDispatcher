@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	
+
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.thenetcircle.services</groupId>
+	<groupId>cf.jee</groupId>
 	<artifactId>dispatcher</artifactId>
 	<version>0.0.1</version>
 	<packaging>war</packaging>
@@ -23,12 +23,12 @@
 		<dependency>
 			<groupId>com.rabbitmq</groupId>
 			<artifactId>amqp-client</artifactId>
-			<version>3.2.4</version>
+			<version>3.4.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.1</version>
+			<version>3.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -36,20 +36,20 @@
 			<version>4.0</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.jgroups</groupId>
-		    <artifactId>jgroups</artifactId>
-		    <version>3.5.0.CR2</version>
+			<groupId>org.jgroups</groupId>
+			<artifactId>jgroups</artifactId>
+			<version>3.5.0.CR2</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.3.3</version>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.httpcomponents</groupId> -->
+		<!-- <artifactId>httpclient</artifactId> -->
+		<!-- <version>4.3.3</version> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpasyncclient</artifactId>
-			<version>4.0.1</version>
+			<version>4.1-beta1</version>
 		</dependency>
 
 		<dependency>
@@ -81,40 +81,40 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>jaxen</groupId>
-			<artifactId>jaxen</artifactId>
-			<version>1.1</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>xml-apis</artifactId>
-					<groupId>xml-apis</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jdom</artifactId>
-					<groupId>jdom</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>xercesImpl</artifactId>
-					<groupId>xerces</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>xom</artifactId>
-					<groupId>xom</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<version>2.3.2</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>jaxen</groupId> -->
+<!-- 			<artifactId>jaxen</artifactId> -->
+<!-- 			<version>1.1</version> -->
+<!-- 			<exclusions> -->
+<!-- 				<exclusion> -->
+<!-- 					<artifactId>xml-apis</artifactId> -->
+<!-- 					<groupId>xml-apis</groupId> -->
+<!-- 				</exclusion> -->
+<!-- 				<exclusion> -->
+<!-- 					<artifactId>jdom</artifactId> -->
+<!-- 					<groupId>jdom</groupId> -->
+<!-- 				</exclusion> -->
+<!-- 				<exclusion> -->
+<!-- 					<artifactId>xercesImpl</artifactId> -->
+<!-- 					<groupId>xerces</groupId> -->
+<!-- 				</exclusion> -->
+<!-- 				<exclusion> -->
+<!-- 					<artifactId>xom</artifactId> -->
+<!-- 					<groupId>xom</groupId> -->
+<!-- 				</exclusion> -->
+<!-- 			</exclusions> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.hsqldb</groupId> -->
+<!-- 			<artifactId>hsqldb</artifactId> -->
+<!-- 			<version>2.3.2</version> -->
+<!-- 		</dependency> -->
 
-	<dependency>
-		<groupId>mysql</groupId>
-		<artifactId>mysql-connector-java</artifactId>
-		<version>5.1.20</version>
-	</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.20</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -127,13 +127,12 @@
 			<artifactId>hibernate-jpa-2.1-api</artifactId>
 			<version>1.0.0.Final</version>
 		</dependency>
-<dependency>
-    <groupId>org.hibernate</groupId>
-    <artifactId>hibernate-c3p0</artifactId>
-    <version>4.3.6.Final</version>
-</dependency>
-		<!--
-		 -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.hibernate</groupId> -->
+<!-- 			<artifactId>hibernate-c3p0</artifactId> -->
+<!-- 			<version>4.3.6.Final</version> -->
+<!-- 		</dependency> -->
+		<!-- -->
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-web-api</artifactId>
@@ -156,17 +155,17 @@
 			<version>2.10</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.glassfish.jersey.media</groupId>
-		    <artifactId>jersey-media-json-jackson</artifactId>
-		    <version>2.10</version>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-json-jackson</artifactId>
+			<version>2.10</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-sse</artifactId>
 			<version>2.10</version>
 		</dependency>
-		
-				<dependency>
+
+		<dependency>
 			<groupId>javax.enterprise</groupId>
 			<artifactId>cdi-api</artifactId>
 			<version>1.1</version>
@@ -183,13 +182,13 @@
 			<artifactId>weld-servlet</artifactId>
 			<version>2.2.0.SP1</version>
 		</dependency>
-		
+
 		<dependency>
-		    <groupId>com.sun.mail</groupId>
-		    <artifactId>javax.mail</artifactId>
-		    <version>1.5.2</version>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
+			<version>1.5.2</version>
 		</dependency>
-		
+
 	</dependencies>
 
 	<build>
@@ -265,8 +264,7 @@
 					<warSourceDirectory>WebContent</warSourceDirectory>
 				</configuration>
 			</plugin>
-<!-- 
- -->
+			<!-- -->
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
@@ -278,9 +276,9 @@
 						</goals>
 						<configuration>
 							<tasks>
-							<!--  dir="target/dispatcher-0.0.1" -->
-								<copy file="target/dispatcher-0.0.1.war" todir="D:\server\jetty-distribution-9\webapps" >
-<!-- 									<fileset dir="target/dispatcher-0.0.1" /> -->
+								<!-- dir="target/dispatcher-0.0.1" -->
+								<copy file="target/dispatcher-0.0.1.war" todir="D:\server\jetty-distribution-9\webapps">
+									<!-- <fileset dir="target/dispatcher-0.0.1" /> -->
 								</copy>
 							</tasks>
 						</configuration>

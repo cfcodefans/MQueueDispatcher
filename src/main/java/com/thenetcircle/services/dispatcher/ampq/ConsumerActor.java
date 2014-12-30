@@ -12,6 +12,7 @@ import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.QueueingConsumer.Delivery;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
+import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
 
@@ -29,13 +30,12 @@ public class ConsumerActor extends DefaultConsumer {
 		final Delivery d = new Delivery(envelope, properties, body);
 		final MessageContext mc = new MessageContext(queueCfg, d);
 
+		final ServerCfg sc = queueCfg.getServerCfg();
+		MQueueMgr._info(sc, "get message: " + d.getEnvelope().getDeliveryTag() + " for q: " + queueCfg.getName()  + " on server " + sc.getVirtualHost());
+		
 		// TODO use injection to decouple dependency
 		MsgMonitor.prefLog(mc, log);
 		HttpDispatcherActor.instance().handover(mc);
-		// MQueues.instance().firstActor().handover(mc);
 	}
 
-//	public void handleShutdownSignal(final String consumerTag, final ShutdownSignalException sig) {
-//		MQueues.instance().onError(queueCfg, sig);
-//	}
 }

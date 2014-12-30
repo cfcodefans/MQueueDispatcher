@@ -1,4 +1,4 @@
-package com.thenetcircle.services.weld;
+package com.thenetcircle.services.commons.persistence.jpa.cdi;
 
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -10,7 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
 
-import com.thenetcircle.services.persistence.jpa.JpaModule;
+import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 
 @Transactional
 @Interceptor
