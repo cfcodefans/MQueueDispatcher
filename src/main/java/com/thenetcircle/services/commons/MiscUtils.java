@@ -1,10 +1,14 @@
 package com.thenetcircle.services.commons;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,6 +23,7 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -27,9 +32,17 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.iterators.ObjectArrayIterator;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.commons.lang3.event.EventUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MiscUtils {
 	public static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
@@ -118,39 +131,6 @@ public class MiscUtils {
 		return MapUtils.putAll(new HashMap(), keyAndVals);
 	}
 
-	public static String toXML(final Object bean) {
-		final StringWriter sw = new StringWriter();
-		try {
-			JAXBContext jc = JAXBContext.newInstance(bean.getClass());
-
-			Marshaller m = jc.createMarshaller();
-			m.setProperty(Marshaller.JAXB_FRAGMENT, true);
-			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			// marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-16");
-
-			m.marshal(bean, sw);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return sw.toString();
-	}
-
-	public static <T> T toObj(final String xmlStr, final Class<T> cls) {
-		if (StringUtils.isBlank(xmlStr) || cls == null) {
-			return null;
-		}
-		
-		try {
-			JAXBContext jc = JAXBContext.newInstance(cls);
-			Unmarshaller um = jc.createUnmarshaller();
-			return um.unmarshal(new StreamSource(new StringReader(xmlStr)), cls).getValue();
-		} catch (JAXBException e) {
-			e.printStackTrace();
-		}
-		
-		return null;
-	}
-	
 	private static long HOST_HASH = System.currentTimeMillis(); 
 	static {
 		try {
@@ -192,5 +172,130 @@ public class MiscUtils {
 		msg.setText(content);
 		
 		Transport.send(msg);
+	}
+
+	public static String lineNumber(final String str) {
+		if (str == null) {
+			return null;
+		}
+	
+		final StringReader sr = new StringReader(str);
+		final BufferedReader br = new BufferedReader(sr);
+	
+		final StringBuilder sb = new StringBuilder(0);
+		long lineNumber = 0;
+		try {
+			for (String line = br.readLine(); line != null; line = br.readLine()) {
+				sb.append(++lineNumber).append("\t").append(line).append('\n');
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	
+		return sb.toString();
+	}
+
+	private static final Log log = LogFactory.getLog(EventUtils.class.getName());
+
+
+	public static NameValuePair[] getParamPairs(Map<String, ?> paramMap) {
+		List<NameValuePair> pairList = new ArrayList<NameValuePair>();
+	
+		for (Map.Entry<String, ?> en : paramMap.entrySet()) {
+			pairList.add(new BasicNameValuePair(en.getKey(), String.valueOf(en.getValue())));
+		}
+	
+		return pairList.toArray(new NameValuePair[0]);
+	}
+
+	public static String mapToJson(Map<String, String> paramMap) {
+		if (MapUtils.isEmpty(paramMap)) {
+			return "{}";
+		}
+	
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			return mapper.writeValueAsString(paramMap);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return paramMap.toString();
+		}
+	}
+
+	public static String toXML(final Object bean) {
+			final StringWriter sw = new StringWriter();
+			
+			try {
+				JAXBContext jc = JAXBContext.newInstance(bean.getClass());
+				Marshaller m = jc.createMarshaller();		
+				m.setProperty(Marshaller.JAXB_FRAGMENT, true);
+				m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+	//			marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-16");
+				m.marshal(bean, sw);
+			} catch (Exception e) {
+				log.error(bean, e);
+			}
+			return sw.toString();
+		}
+
+	public static <T> T toObj(final String xmlStr, final Class<T> cls) {
+		if (StringUtils.isBlank(xmlStr) || cls == null) {
+			return null;
+		}
+		
+		try {
+			JAXBContext jc = JAXBContext.newInstance(cls);
+			Unmarshaller um = jc.createUnmarshaller();
+			return um.unmarshal(new StreamSource(new StringReader(xmlStr)), cls).getValue();
+		} catch (JAXBException e) {
+			log.error(xmlStr, e);
+		}
+		
+		return null;
+	}
+
+	public static Map<String, String> extractParams(MultivaluedMap<String, String> params) {
+		Map<String, String> paramsMap = new HashMap<String, String>();
+		for (String key : params.keySet()) {
+			paramsMap.put(key, params.getFirst(key));
+		}
+		return paramsMap;
+	}
+
+	public static Map<String, String[]> toParamMap(MultivaluedMap<String, String> params) {
+		Map<String, String[]> paramsMap = new HashMap<String, String[]>();
+		for (String key : params.keySet()) {
+			final List<String> valList = params.get(key);
+			paramsMap.put(key, valList.toArray(new String[0]));
+		}
+		return paramsMap;
+	}
+
+	public static Map<String, String> extractParams(Map<String, String[]> params) {
+		Map<String, String> paramsMap = new HashMap<String, String>();
+		for (String key : params.keySet()) {
+			final String[] vals = params.get(key);
+			paramsMap.put(key, ArrayUtils.isEmpty(vals) ? null : vals[0]);
+		}
+		return paramsMap;
+	}
+
+	public static String generate(final String text) {
+		final StringBuffer sb = new StringBuffer();
+		try {
+			final byte[] intext = text.getBytes();
+			final MessageDigest md5 = MessageDigest.getInstance("MD5");
+			final byte[] md5rslt = md5.digest(intext);
+			for (int i = 0; i < md5rslt.length; i++) {
+				final int val = 0xff & md5rslt[i];
+				if (val < 16) {
+					sb.append("0");
+				}
+				sb.append(Integer.toHexString(val));
+			}
+		} catch (final Exception e) {
+			log.error(e, e);
+		}
+		return sb.toString();
 	}
 }

@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -81,34 +80,34 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>jaxen</groupId> -->
-<!-- 			<artifactId>jaxen</artifactId> -->
-<!-- 			<version>1.1</version> -->
-<!-- 			<exclusions> -->
-<!-- 				<exclusion> -->
-<!-- 					<artifactId>xml-apis</artifactId> -->
-<!-- 					<groupId>xml-apis</groupId> -->
-<!-- 				</exclusion> -->
-<!-- 				<exclusion> -->
-<!-- 					<artifactId>jdom</artifactId> -->
-<!-- 					<groupId>jdom</groupId> -->
-<!-- 				</exclusion> -->
-<!-- 				<exclusion> -->
-<!-- 					<artifactId>xercesImpl</artifactId> -->
-<!-- 					<groupId>xerces</groupId> -->
-<!-- 				</exclusion> -->
-<!-- 				<exclusion> -->
-<!-- 					<artifactId>xom</artifactId> -->
-<!-- 					<groupId>xom</groupId> -->
-<!-- 				</exclusion> -->
-<!-- 			</exclusions> -->
-<!-- 		</dependency> -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.hsqldb</groupId> -->
-<!-- 			<artifactId>hsqldb</artifactId> -->
-<!-- 			<version>2.3.2</version> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>jaxen</groupId> -->
+		<!-- <artifactId>jaxen</artifactId> -->
+		<!-- <version>1.1</version> -->
+		<!-- <exclusions> -->
+		<!-- <exclusion> -->
+		<!-- <artifactId>xml-apis</artifactId> -->
+		<!-- <groupId>xml-apis</groupId> -->
+		<!-- </exclusion> -->
+		<!-- <exclusion> -->
+		<!-- <artifactId>jdom</artifactId> -->
+		<!-- <groupId>jdom</groupId> -->
+		<!-- </exclusion> -->
+		<!-- <exclusion> -->
+		<!-- <artifactId>xercesImpl</artifactId> -->
+		<!-- <groupId>xerces</groupId> -->
+		<!-- </exclusion> -->
+		<!-- <exclusion> -->
+		<!-- <artifactId>xom</artifactId> -->
+		<!-- <groupId>xom</groupId> -->
+		<!-- </exclusion> -->
+		<!-- </exclusions> -->
+		<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.hsqldb</groupId> -->
+		<!-- <artifactId>hsqldb</artifactId> -->
+		<!-- <version>2.3.2</version> -->
+		<!-- </dependency> -->
 
 		<dependency>
 			<groupId>mysql</groupId>
@@ -127,11 +126,11 @@
 			<artifactId>hibernate-jpa-2.1-api</artifactId>
 			<version>1.0.0.Final</version>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.hibernate</groupId> -->
-<!-- 			<artifactId>hibernate-c3p0</artifactId> -->
-<!-- 			<version>4.3.6.Final</version> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.hibernate</groupId> -->
+		<!-- <artifactId>hibernate-c3p0</artifactId> -->
+		<!-- <version>4.3.6.Final</version> -->
+		<!-- </dependency> -->
 		<!-- -->
 		<dependency>
 			<groupId>javax</groupId>
@@ -189,6 +188,18 @@
 			<version>1.5.2</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.glassfish.jersey.ext</groupId>
+			<artifactId>jersey-mvc</artifactId>
+			<version>2.10</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.8.1</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -242,10 +253,8 @@
 			<!-- </executions> -->
 			<!-- </plugin> -->
 
-			<!-- copy dependencies into lib directory <plugin> <groupId>org.apache.maven.plugins</groupId> 
-				<artifactId>maven-dependency-plugin</artifactId> <version>2.5.1</version> 
-				<executions> <execution> <id>copy</id> <phase>compile</phase> <goals> <goal>copy-dependencies</goal> 
-				</goals> <configuration> <outputDirectory>WebContent/WEB-INF/lib</outputDirectory> 
+			<!-- copy dependencies into lib directory <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-dependency-plugin</artifactId> <version>2.5.1</version> 
+				<executions> <execution> <id>copy</id> <phase>compile</phase> <goals> <goal>copy-dependencies</goal> </goals> <configuration> <outputDirectory>WebContent/WEB-INF/lib</outputDirectory> 
 				</configuration> </execution> </executions> </plugin> -->
 
 
