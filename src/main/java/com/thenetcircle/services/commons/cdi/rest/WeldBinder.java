@@ -14,6 +14,7 @@ public class WeldBinder extends AbstractBinder {
 	
 	private static Log log = LogFactory.getLog(WeldBinder.class);
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	protected void configure() {
 		try {

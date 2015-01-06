@@ -8,8 +8,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 
@@ -19,7 +17,7 @@ public class PageScriptExecutionContext extends ScriptExecutionContext {
 	
 	private String scriptStr = StringUtils.EMPTY;
 	
-	private static Log log = LogFactory.getLog(PageScriptExecutionContext.class);
+//	private static Log log = LogFactory.getLog(PageScriptExecutionContext.class);
 	
 	public String getScriptStr() {
 		if (StringUtils.isBlank(scriptStr) && scriptElement != null) {

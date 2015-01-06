@@ -108,6 +108,7 @@ public class MiscUtils {
 	}
 
 	public static class LoopingArrayIterator<E> extends ObjectArrayIterator<E> {
+		@SafeVarargs
 		public LoopingArrayIterator(final E... array) {
 			super(array, 0, array.length);
 		}
@@ -131,7 +132,8 @@ public class MiscUtils {
 		return MapUtils.putAll(new HashMap(), keyAndVals);
 	}
 
-	private static long HOST_HASH = System.currentTimeMillis(); 
+	public static long HOST_HASH = System.currentTimeMillis(); 
+	
 	static {
 		try {
 			HOST_HASH = InetAddress.getLocalHost().getHostAddress().hashCode();
@@ -140,7 +142,7 @@ public class MiscUtils {
 		}
 	}
 	
-	private static long IDX = 0;
+//	private static long IDX = 0;
 	
 	public static long uniqueLong() {
 		return Math.abs(UUID.randomUUID().hashCode());

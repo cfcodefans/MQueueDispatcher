@@ -46,7 +46,7 @@ public class JSExecutor extends ScriptExecutor {
 			if (isRhino) {
 				se = sem.getEngineByName("rhino");
 				if (se instanceof RhinoScriptEngine) {
-					final RhinoScriptEngine rse = (RhinoScriptEngine)se;
+//					final RhinoScriptEngine rse = (RhinoScriptEngine)se;
 					Context.enter();
 					WrapFactory wf = new WrapFactory();
 					wf.setJavaPrimitiveWrap(false);
