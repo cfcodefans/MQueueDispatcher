@@ -199,11 +199,11 @@
 			<artifactId>jsoup</artifactId>
 			<version>1.8.1</version>
 		</dependency>
-<dependency>
-    <groupId>net.sf.ehcache</groupId>
-    <artifactId>ehcache</artifactId>
-    <version>2.9.0</version>
-</dependency>
+<!-- <dependency> -->
+<!--     <groupId>net.sf.ehcache</groupId> -->
+<!--     <artifactId>ehcache</artifactId> -->
+<!--     <version>2.9.0</version> -->
+<!-- </dependency> -->
 	</dependencies>
 
 	<build>
@@ -223,43 +223,16 @@
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
+					
+					<compilerArguments>
+						<endorseddirs>${endorsed.dir}</endorseddirs>
+					</compilerArguments>
+					<compilerArgument>-XDignore.symbol.file=true</compilerArgument>
+<!-- 					<executable>${env.JAVA_HOME_7}/bin/javac</executable> -->
+					<bootclasspath>${env.JAVA_HOME}/lib/rt.jar</bootclasspath>
 				</configuration>
 			</plugin>
 
-			<!-- <plugin> -->
-			<!-- <groupId>org.apache.maven.plugins</groupId> -->
-			<!-- <artifactId>maven-jar-plugin</artifactId> -->
-			<!-- <version>2.4</version> -->
-			<!-- </plugin> -->
-
-
-			<!-- <plugin> -->
-			<!-- <groupId>org.apache.maven.plugins</groupId> -->
-			<!-- <artifactId>maven-assembly-plugin</artifactId> -->
-			<!-- <version>2.2-beta-4</version> -->
-			<!-- <configuration> -->
-			<!-- <descriptorRefs> -->
-			<!-- <descriptorRef>jar-with-dependencies</descriptorRef> -->
-			<!-- </descriptorRefs> -->
-			<!-- <archive> -->
-			<!-- <manifest> -->
-			<!-- <mainClass>com.thenetcircle.comsumerdispatcher.Bootstrap</mainClass> -->
-			<!-- </manifest> -->
-			<!-- </archive> -->
-			<!-- </configuration> -->
-			<!-- <executions> -->
-			<!-- <execution> -->
-			<!-- <phase>package</phase> -->
-			<!-- <goals> -->
-			<!-- <goal>single</goal> -->
-			<!-- </goals> -->
-			<!-- </execution> -->
-			<!-- </executions> -->
-			<!-- </plugin> -->
-
-			<!-- copy dependencies into lib directory <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-dependency-plugin</artifactId> <version>2.5.1</version> 
-				<executions> <execution> <id>copy</id> <phase>compile</phase> <goals> <goal>copy-dependencies</goal> </goals> <configuration> <outputDirectory>WebContent/WEB-INF/lib</outputDirectory> 
-				</configuration> </execution> </executions> </plugin> -->
 
 
 			<plugin>

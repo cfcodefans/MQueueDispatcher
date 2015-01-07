@@ -1,4 +1,4 @@
-package com.thenetcircle.services.commons.web.joint.joint.script;
+package com.thenetcircle.services.commons.web.joint.script;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -14,8 +14,6 @@ import org.jsoup.parser.Tag;
 public class PageScriptExecutionContext extends ScriptExecutionContext {
 	public Element document;
 	public Element scriptElement;
-	
-	private String scriptStr = StringUtils.EMPTY;
 	
 //	private static Log log = LogFactory.getLog(PageScriptExecutionContext.class);
 	

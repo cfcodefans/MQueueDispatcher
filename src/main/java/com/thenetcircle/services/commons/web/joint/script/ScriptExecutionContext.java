@@ -1,10 +1,11 @@
-package com.thenetcircle.services.commons.web.joint.joint.script;
+package com.thenetcircle.services.commons.web.joint.script;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
 import javax.script.Bindings;
+import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.SimpleScriptContext;
@@ -25,13 +26,20 @@ public class ScriptExecutionContext {
 	public String basePathStr;
 	public ScriptContext sc;
 	
-	private String scriptStr = StringUtils.EMPTY;
+	protected String scriptStr = StringUtils.EMPTY;
+	
+	protected CompiledScript compiledScript = null;
+	
 	private static Log log = LogFactory.getLog(ScriptExecutionContext.class);
 	
 	public String getScriptStr() {
 		return scriptStr;
 	}
 	
+	public CompiledScript getCompiledScript() {
+		return compiledScript;
+	}
+
 	public ScriptExecutionContext(final String scriptScript,
 								 final HttpServletRequest req, 
 								 final HttpServletResponse resp, 

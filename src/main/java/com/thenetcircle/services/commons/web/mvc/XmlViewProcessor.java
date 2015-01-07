@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,10 +20,11 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 
-import com.thenetcircle.services.commons.web.joint.joint.script.PageScriptExecutionContext;
-import com.thenetcircle.services.commons.web.joint.joint.script.ScriptExecutionContext;
-import com.thenetcircle.services.commons.web.joint.joint.script.ScriptExecutor;
-import com.thenetcircle.services.commons.web.joint.joint.script.javascript.JSExecutor;
+import com.thenetcircle.services.commons.web.joint.script.PageScriptExecutionContext;
+import com.thenetcircle.services.commons.web.joint.script.ScriptExecutor;
+import com.thenetcircle.services.commons.web.joint.script.javascript.JSExecutor;
+import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ScriptCtxModel;
+import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ViewFacade;
 
 public class XmlViewProcessor extends ResViewProcessor {
 
@@ -49,29 +49,44 @@ public class XmlViewProcessor extends ResViewProcessor {
 		
 		super.resp.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML);
 		
-		final InputStream resIS = getResAsInputStream(currentPathStr);
+		Object entry = ResCacheMgr.cacheMap.get(currentPathStr);
 		
-		final Document doc = Jsoup.parse(resIS, "UTF-8", baseUriStr, Parser.xmlParser());
-		final OutputSettings outputSettings = new OutputSettings();
-		outputSettings.syntax(Syntax.xml);
-		outputSettings.prettyPrint(false);
-		doc.outputSettings(outputSettings);
-		final Elements els =  doc.select("script[data-runat=server]");
-		
-		ScriptContext sc = new SimpleScriptContext();
-		if (CollectionUtils.isNotEmpty(els)) {
+		if (entry == null) {
+			final InputStream resIS = getResAsInputStream(currentPathStr);
+			
+			final Document doc = Jsoup.parse(resIS, "UTF-8", baseUriStr, Parser.xmlParser());
+			final OutputSettings outputSettings = new OutputSettings();
+			outputSettings.syntax(Syntax.xml);
+			outputSettings.prettyPrint(false);
+			doc.outputSettings(outputSettings);
+			
+			final Elements els = doc.select("script[data-runat=server]");
+			
+			ViewProcModel vpm = new ViewProcModel(doc);
+			
 			for (final Element el : els) {
-				final ScriptExecutionContext scriptCtx = new PageScriptExecutionContext(doc,
-																					el, 
-																					req, 
-																					resp, 
-																					currentPathStr, 
-																					sc);
-				final ScriptExecutor se = new JSExecutor(scriptCtx);
-				sc = se.execute();
+				vpm.getScriptCtxModelList().add(new ScriptCtxModel(doc, el));
 			}
+			
+			ResCacheMgr.cacheMap.put(currentPathStr, vpm);
+			entry = vpm;
 		}
 		
-		return doc.html().getBytes();
+		if (entry instanceof ViewProcModel) {
+			ViewProcModel vpm = (ViewProcModel) entry;
+			ViewFacade vf = vpm.getViewFacade();
+			Element doc = vf._doc;
+			ScriptContext sc = new SimpleScriptContext();
+
+			for (final Element scriptElement : vf.scriptElementList) {
+				final ScriptExecutor se = new JSExecutor(new PageScriptExecutionContext(doc, scriptElement, req, resp, currentPathStr, sc));
+				sc = se.execute();
+			}
+
+			return doc.html().getBytes();
+		}
+		
+		
+		return String.format("can't render this as xml: \n%s", String.valueOf(entry)).getBytes();
 	}
 }

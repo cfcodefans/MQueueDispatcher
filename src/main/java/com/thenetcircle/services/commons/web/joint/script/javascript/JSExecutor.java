@@ -1,6 +1,7 @@
-package com.thenetcircle.services.commons.web.joint.joint.script.javascript;
+package com.thenetcircle.services.commons.web.joint.script.javascript;
 
 
+import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -19,9 +20,9 @@ import sun.org.mozilla.javascript.internal.WrapFactory;
 
 import com.sun.script.javascript.RhinoScriptEngine;
 import com.thenetcircle.services.commons.MiscUtils;
-import com.thenetcircle.services.commons.web.joint.joint.script.PageScriptExecutionContext;
-import com.thenetcircle.services.commons.web.joint.joint.script.ScriptExecutionContext;
-import com.thenetcircle.services.commons.web.joint.joint.script.ScriptExecutor;
+import com.thenetcircle.services.commons.web.joint.script.PageScriptExecutionContext;
+import com.thenetcircle.services.commons.web.joint.script.ScriptExecutionContext;
+import com.thenetcircle.services.commons.web.joint.script.ScriptExecutor;
 
 @SuppressWarnings("restriction")
 public class JSExecutor extends ScriptExecutor {
@@ -66,21 +67,27 @@ public class JSExecutor extends ScriptExecutor {
 			log.error("script is blank string");
 			return scriptCtx.sc;
 		}
-		
-		final ScriptEngine se = pool.get().getValue();
-		
+
 		try {
+			CompiledScript compiledScript = scriptCtx.getCompiledScript();
+			if (compiledScript != null) {
+				compiledScript.eval(scriptCtx.inflateScriptContext(compiledScript.getEngine()));
+				return scriptCtx.sc;
+			}
+
+			log.warn(String.format("the script isn't compiled \n\n%s", scriptStr));
+			
+			final ScriptEngine se = pool.get().getValue();
 			se.eval(scriptStr, scriptCtx.inflateScriptContext(se));
 		} catch (ScriptException e) {
 			log.info(MiscUtils.lineNumber(scriptStr));
-			log.error(String.format("failed to execute script: \n\t %s \n\t", MiscUtils.lineNumber(scriptStr)), e); 
+			log.error(String.format("failed to execute script: \n\t %s \n\t", MiscUtils.lineNumber(scriptStr)), e);
+		} finally {
+			if (scriptCtx instanceof PageScriptExecutionContext) {
+				PageScriptExecutionContext psc = (PageScriptExecutionContext) scriptCtx;
+				psc.scriptElement.remove();
+			}
 		}
-		
-		if (scriptCtx instanceof PageScriptExecutionContext) {
-			PageScriptExecutionContext psc = (PageScriptExecutionContext) scriptCtx;
-			psc.scriptElement.remove();
-		}
-		
 		return scriptCtx.sc;
 	}
 }

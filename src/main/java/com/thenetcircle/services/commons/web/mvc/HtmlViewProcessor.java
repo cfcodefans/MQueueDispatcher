@@ -20,54 +20,64 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.thenetcircle.services.commons.web.joint.joint.script.PageScriptExecutionContext;
-import com.thenetcircle.services.commons.web.joint.joint.script.ScriptExecutionContext;
-import com.thenetcircle.services.commons.web.joint.joint.script.ScriptExecutor;
-import com.thenetcircle.services.commons.web.joint.joint.script.javascript.JSExecutor;
+import com.thenetcircle.services.commons.web.joint.script.PageScriptExecutionContext;
+import com.thenetcircle.services.commons.web.joint.script.ScriptExecutor;
+import com.thenetcircle.services.commons.web.joint.script.javascript.JSExecutor;
+import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ScriptCtxModel;
+import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ViewFacade;
 
 public class HtmlViewProcessor extends ResViewProcessor {
 
 	private static Log log = LogFactory.getLog(HtmlViewProcessor.class);
-	
-	public HtmlViewProcessor(final HttpServletRequest _req, 
-							 final HttpServletResponse _resp, 
-							 final String _basePathStr) {//, final BeanManager _beanMgr) {
+
+	public HtmlViewProcessor(final HttpServletRequest _req, final HttpServletResponse _resp, final String _basePathStr) {
 		super(_req, _resp, StringUtils.defaultIfBlank(_basePathStr, "/"));
 	}
-	
-	public HtmlViewProcessor(final HttpServletRequest _req, 
-							 final HttpServletResponse _resp) {//, final BeanManager _beanMgr) {
+
+	public HtmlViewProcessor(final HttpServletRequest _req, final HttpServletResponse _resp) {
 		super(_req, _resp);
 	}
-	
+
 	public byte[] process(final String currentPathStr, final String baseUriStr) throws Exception {
 		if (StringUtils.isEmpty(currentPathStr)) {
 			log.error("illegalArguement: currentPathStr is empty: " + currentPathStr);
 			return new byte[0];
 		}
-		
+
 		super.resp.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML);
-		
-		final InputStream resIS = getResAsInputStream(currentPathStr);
-		
-		final Document doc = Jsoup.parse(resIS, "UTF-8", baseUriStr);
-		final Elements els =  doc.select("script[data-runat=server]");
-		
-		ScriptContext sc = new SimpleScriptContext();
-		if (CollectionUtils.isNotEmpty(els)) {
+		Object entry = ResCacheMgr.cacheMap.get(currentPathStr);
+
+		if (entry == null) {
+			final InputStream resIS = getResAsInputStream(currentPathStr);
+
+			final Document doc = Jsoup.parse(resIS, "UTF-8", baseUriStr);
+			final Elements els = doc.select("script[data-runat=server]");
+
+			ViewProcModel vpm = new ViewProcModel(doc);
+
 			for (final Element el : els) {
-				final ScriptExecutionContext scriptCtx = new PageScriptExecutionContext(doc,
-																					el, 
-																					req, 
-																					resp, 
-																					currentPathStr, 
-																					sc);
-				final ScriptExecutor se = new JSExecutor(scriptCtx);
+				vpm.getScriptCtxModelList().add(new ScriptCtxModel(doc, el));
+			}
+
+			ResCacheMgr.cacheMap.put(currentPathStr, vpm);
+			entry = vpm;
+		}
+
+		if (entry instanceof ViewProcModel) {
+			ViewProcModel vpm = (ViewProcModel) entry;
+			ViewFacade vf = vpm.getViewFacade();
+			Element doc = vf._doc;
+			ScriptContext sc = new SimpleScriptContext();
+
+			for (final Element scriptElement : vf.scriptElementList) {
+				final ScriptExecutor se = new JSExecutor(new PageScriptExecutionContext(doc, scriptElement, req, resp, currentPathStr, sc));
 				sc = se.execute();
 			}
+
+			return doc.html().getBytes();
 		}
-		
-		return doc.html().getBytes();
+
+		return String.format("can't render this as html: \n%s", String.valueOf(entry)).getBytes();
 	}
 
 	public void bindValuesToFormFields(final Element form) {
@@ -77,12 +87,12 @@ public class HtmlViewProcessor extends ResViewProcessor {
 			if (CollectionUtils.isEmpty(fields)) {
 				continue;
 			}
-			
+
 			final String[] values = params.get(fieldName);
 			if (ArrayUtils.isEmpty(values)) {
 				continue;
 			}
-			
+
 			for (int i = 0, j = fields.size(), k = values.length; i < j && i < k; i++) {
 				fields.get(i).val(values[i]);
 			}

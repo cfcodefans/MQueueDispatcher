@@ -1,4 +1,4 @@
-package com.thenetcircle.services.commons.web.joint.joint.script;
+package com.thenetcircle.services.commons.web.joint.script;
 
 import javax.script.ScriptContext;
 

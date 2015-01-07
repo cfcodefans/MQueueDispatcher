@@ -93,4 +93,5 @@ public class ResViewProcessor implements TemplateProcessor<String> {
 		final InputStream resIS = resUrl.openStream();
 		return resIS;
 	}
+	
 }

@@ -12,22 +12,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.commons.web.joint.joint.script.ScriptExecutionContext;
-import com.thenetcircle.services.commons.web.joint.joint.script.ScriptExecutor;
-import com.thenetcircle.services.commons.web.joint.joint.script.javascript.JSExecutor;
+import com.thenetcircle.services.commons.web.joint.script.ScriptExecutionContext;
+import com.thenetcircle.services.commons.web.joint.script.ScriptExecutor;
+import com.thenetcircle.services.commons.web.joint.script.javascript.JSExecutor;
 
 public class JSProcessor extends ResViewProcessor {
 
 	private static Log log = LogFactory.getLog(JSProcessor.class);
 	
 	public JSProcessor(final HttpServletRequest _req, 
-							final HttpServletResponse _resp, 
-							final String _basePathStr) {//, final BeanManager _beanMgr) {
+					   final HttpServletResponse _resp, 
+					   final String _basePathStr) {//, final BeanManager _beanMgr) {
 		super(_req, _resp, StringUtils.defaultIfBlank(_basePathStr, "/"));
 	}
 	
 	public JSProcessor(final HttpServletRequest _req, 
-							final HttpServletResponse _resp) {//, final BeanManager _beanMgr) {
+					   final HttpServletResponse _resp) {//, final BeanManager _beanMgr) {
 		super(_req, _resp);
 	}
 	
