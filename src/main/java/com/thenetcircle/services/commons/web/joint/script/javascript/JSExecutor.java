@@ -15,10 +15,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import sun.org.mozilla.javascript.internal.Context;
-import sun.org.mozilla.javascript.internal.WrapFactory;
+//import sun.org.mozilla.javascript.internal.Context;
+//import sun.org.mozilla.javascript.internal.WrapFactory;
 
-import com.sun.script.javascript.RhinoScriptEngine;
+//import com.sun.script.javascript.RhinoScriptEngine;
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.web.joint.script.PageScriptExecutionContext;
 import com.thenetcircle.services.commons.web.joint.script.ScriptExecutionContext;
@@ -46,13 +46,13 @@ public class JSExecutor extends ScriptExecutor {
 			ScriptEngine se = null;
 			if (isRhino) {
 				se = sem.getEngineByName("rhino");
-				if (se instanceof RhinoScriptEngine) {
-//					final RhinoScriptEngine rse = (RhinoScriptEngine)se;
-					Context.enter();
-					WrapFactory wf = new WrapFactory();
-					wf.setJavaPrimitiveWrap(false);
-					Context.getCurrentContext().setWrapFactory(wf);
-				}
+//				if (se instanceof RhinoScriptEngine) {
+////					final RhinoScriptEngine rse = (RhinoScriptEngine)se;
+//					Context.enter();
+//					WrapFactory wf = new WrapFactory();
+//					wf.setJavaPrimitiveWrap(false);
+//					Context.getCurrentContext().setWrapFactory(wf);
+//				}
 			} else if (isNashorn) {
 				se = sem.getEngineByName("Nashorn");
 			}

@@ -291,14 +291,14 @@ public class MQueueMgr {
 	}
 
 	private void initActors() {
-		reconnActorThread.scheduleAtFixedRate(reconnActor, 30, 30, TimeUnit.SECONDS);
+		//reconnActorThread.scheduleAtFixedRate(reconnActor, 30, 30, TimeUnit.SECONDS);
 		Responder.instance();
 		HttpDispatcherActor.instance();
 		FailedMessageSqlStorage.instance();
 	}
 
 	private void shutdownActors() {
-		reconnActorThread.shutdownNow();
+		//reconnActorThread.shutdownNow();
 		Responder.stopAll();
 		HttpDispatcherActor.instance().stop();
 		FailedMessageSqlStorage.instance().stop();

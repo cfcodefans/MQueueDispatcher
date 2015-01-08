@@ -1,6 +1,8 @@
 package com.thenetcircle.services.commons.persistence.jpa;
 
 import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,14 +52,17 @@ public class JpaModule {
 			return Collections.EMPTY_MAP;
 		}
 		
+		if (Files.isReadable(Paths.get(pathStr))) {
+			log.warn(String.format("can't read %s", EXTERNAL_JPA_PROPERTIES));
+			return Collections.EMPTY_MAP;
+		}
+		
 		try {
 			final Properties p = new Properties();
 			p.load(new FileInputStream(pathStr));
 			
 			final HashMap settings = new HashMap(p);
-			
 			log.info("\nhave loaded data source\n" + settings + "\n\n");
-			
 			return settings;
 		} catch (Exception e) {
 			log.error("failed to load EXTERNAL_JPA_PROPERTIES: " + pathStr, e);

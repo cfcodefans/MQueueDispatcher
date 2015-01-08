@@ -50,5 +50,24 @@
 		<url-pattern>/rest/v1/*</url-pattern>
 	</servlet-mapping>
 
+	<servlet>
+		<servlet-name>JerseyController</servlet-name>
+		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>com.thenetcircle.services.web.mvc;com.thenetcircle.services.commons.web.mvc</param-value>
+		</init-param>
+		<init-param>
+			<param-name>joint.jersey.mvc.base</param-name>
+			<param-value>pages</param-value>
+		</init-param>
+		<load-on-startup>2</load-on-startup>
+		<async-supported>true</async-supported>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>JerseyController</servlet-name>
+		<url-pattern>/mvc/*</url-pattern>
+	</servlet-mapping>
 	
 </web-app>

@@ -40,11 +40,6 @@
 			<version>3.5.0.CR2</version>
 		</dependency>
 
-		<!-- <dependency> -->
-		<!-- <groupId>org.apache.httpcomponents</groupId> -->
-		<!-- <artifactId>httpclient</artifactId> -->
-		<!-- <version>4.3.3</version> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpasyncclient</artifactId>
@@ -80,34 +75,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>jaxen</groupId> -->
-		<!-- <artifactId>jaxen</artifactId> -->
-		<!-- <version>1.1</version> -->
-		<!-- <exclusions> -->
-		<!-- <exclusion> -->
-		<!-- <artifactId>xml-apis</artifactId> -->
-		<!-- <groupId>xml-apis</groupId> -->
-		<!-- </exclusion> -->
-		<!-- <exclusion> -->
-		<!-- <artifactId>jdom</artifactId> -->
-		<!-- <groupId>jdom</groupId> -->
-		<!-- </exclusion> -->
-		<!-- <exclusion> -->
-		<!-- <artifactId>xercesImpl</artifactId> -->
-		<!-- <groupId>xerces</groupId> -->
-		<!-- </exclusion> -->
-		<!-- <exclusion> -->
-		<!-- <artifactId>xom</artifactId> -->
-		<!-- <groupId>xom</groupId> -->
-		<!-- </exclusion> -->
-		<!-- </exclusions> -->
-		<!-- </dependency> -->
-		<!-- <dependency> -->
-		<!-- <groupId>org.hsqldb</groupId> -->
-		<!-- <artifactId>hsqldb</artifactId> -->
-		<!-- <version>2.3.2</version> -->
-		<!-- </dependency> -->
 
 		<dependency>
 			<groupId>mysql</groupId>
@@ -199,11 +166,16 @@
 			<artifactId>jsoup</artifactId>
 			<version>1.8.1</version>
 		</dependency>
-<!-- <dependency> -->
-<!--     <groupId>net.sf.ehcache</groupId> -->
-<!--     <artifactId>ehcache</artifactId> -->
-<!--     <version>2.9.0</version> -->
-<!-- </dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>net.sf.ehcache</groupId> -->
+		<!-- <artifactId>ehcache</artifactId> -->
+		<!-- <version>2.9.0</version> -->
+		<!-- </dependency> -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>18.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -223,13 +195,13 @@
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
-					
+
 					<compilerArguments>
 						<endorseddirs>${endorsed.dir}</endorseddirs>
 					</compilerArguments>
 					<compilerArgument>-XDignore.symbol.file=true</compilerArgument>
-<!-- 					<executable>${env.JAVA_HOME_7}/bin/javac</executable> -->
-					<bootclasspath>${env.JAVA_HOME}/lib/rt.jar</bootclasspath>
+					<!-- <executable>${env.JAVA_HOME_7}/bin/javac</executable> -->
+					<!-- <bootclasspath>${env.JAVA_HOME}/lib/rt.jar</bootclasspath> -->
 				</configuration>
 			</plugin>
 
@@ -263,9 +235,9 @@
 						<configuration>
 							<tasks>
 								<!-- dir="target/dispatcher-0.0.1" -->
-								<copy file="target/dispatcher-0.0.1.war" todir="D:\server\jetty-distribution-9\webapps">
-									<!-- <fileset dir="target/dispatcher-0.0.1" /> -->
-								</copy>
+								<!-- <copy file="target/dispatcher-0.0.1.war" todir="D:\server\jetty-distribution-9\webapps"> -->
+								<!-- <fileset dir="target/dispatcher-0.0.1" /> -->
+								<!-- </copy> -->
 							</tasks>
 						</configuration>
 					</execution>

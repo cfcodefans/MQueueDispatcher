@@ -33,7 +33,7 @@ public class WeldBinder extends AbstractBinder {
 					Object _ref = bm.getReference(bean, bean.getBeanClass(), bm.createCreationalContext(bean));
 					bind(_ref).to(bean.getBeanClass());
 				} catch (Exception e) {
-					log.error("failed to bind", e);
+					log.info("failed to bind: " + e.getMessage());
 				}
 			}
 		} catch (Exception e) {
@@ -41,7 +41,7 @@ public class WeldBinder extends AbstractBinder {
 		}
 	}
 
-	private <T> T getBean(Class<T> cls) {
+	public static <T> T getBean(Class<T> cls) {
 		return CDI.current().select(cls).get();
 	}
 
