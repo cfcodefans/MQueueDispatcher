@@ -3,10 +3,10 @@ package com.thenetcircle.services.dispatcher.ampq;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,7 +25,7 @@ import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
 public class Responder implements IMessageActor, Runnable {
 
 	protected static final Log log = LogFactory.getLog(Responder.class.getSimpleName());
-	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
+	private Queue<MessageContext> buf = new ConcurrentLinkedQueue<MessageContext>();
 	
 	private IFailsafe failsafe = FailedMessageSqlStorage.instance(); //DefaultFailedMessageHandler.instance();
 
@@ -34,7 +34,12 @@ public class Responder implements IMessageActor, Runnable {
 		try {
 			while (!Thread.interrupted()) {
 //				handle(buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT));
-				handle(buf.take());
+				MessageContext polled = buf.poll();
+				if (polled != null) {
+					handle(polled);
+				} else {
+					Thread.sleep(1);
+				}
 //				log.info(MiscUtils.invocationInfo());
 			}
 		} catch (Exception e) {

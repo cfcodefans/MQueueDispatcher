@@ -160,7 +160,11 @@ public class HttpDispatcherActor implements IMessageActor {
 		final HttpClientContext httpClientCtx = HttpClientContext.create();
 		// if (destCfg.getTimeout() != DEFAULT_TIMEOUT) {
 		final int timeout = (int) Math.max(destCfg.getTimeout(), DEFAULT_TIMEOUT);
-		httpClientCtx.setRequestConfig(RequestConfig.custom().setSocketTimeout(timeout).setConnectTimeout(timeout).build());
+		httpClientCtx.setRequestConfig(RequestConfig.custom()
+										.setConnectionRequestTimeout(timeout)
+										.setSocketTimeout(timeout)
+										.setConnectTimeout(timeout)
+										.build());
 		// }
 
 		final CloseableHttpAsyncClient[] clientArray = httpClientIterator.getArray();
@@ -200,6 +204,7 @@ public class HttpDispatcherActor implements IMessageActor {
 		hacs = new CloseableHttpAsyncClient[CLIENT_NUM];
 		for (int i = 0; i < CLIENT_NUM; i++) {
 			final RequestConfig reqCfg = RequestConfig.custom()
+											.setConnectTimeout(DEFAULT_TIMEOUT)
 											.setSocketTimeout(DEFAULT_TIMEOUT)
 											.setConnectTimeout(DEFAULT_TIMEOUT)
 											.build();

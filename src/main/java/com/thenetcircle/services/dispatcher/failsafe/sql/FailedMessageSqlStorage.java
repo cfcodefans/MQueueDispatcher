@@ -2,10 +2,10 @@ package com.thenetcircle.services.dispatcher.failsafe.sql;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.BlockingQueue;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
@@ -28,7 +28,7 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 	protected static final Log log = LogFactory.getLog(FailedMessageSqlStorage.class.getSimpleName());
 	private static FailedMessageSqlStorage instance = new FailedMessageSqlStorage();
 
-	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
+	private Queue<MessageContext> buf = new ConcurrentLinkedQueue<MessageContext>();
 	final ExecutorService executor = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory(FailedMessageSqlStorage.class.getSimpleName()));
 	
 	private EntityManager em = null;
@@ -61,9 +61,8 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 				if (resp != null) {
 					q.setParameter("statusCode", resp.getStatusCode());
 					q.setParameter("responseStr", resp.getResponseStr());
-				} else {
-					
-				}
+				} 
+				
 				q.setParameter("_timestamp", Long.valueOf(mc.getTimestamp()));
 				q.setParameter("id", Long.valueOf(mc.getId()));
 				
@@ -118,7 +117,12 @@ public class FailedMessageSqlStorage implements Runnable, IFailsafe {
 //				handle(Utils.pull(buf, 100));
 //				log.info(String.format("polled %d failed messages......", mcList.size()));
 //				handle(mcList);
-				handle(Arrays.asList(buf.take()));
+				MessageContext polled = buf.poll();
+				if (polled != null) {
+					handle(Arrays.asList(polled));
+				} else {
+					Thread.sleep(1);
+				}
 			}
 		} 
 		catch (InterruptedException e) {

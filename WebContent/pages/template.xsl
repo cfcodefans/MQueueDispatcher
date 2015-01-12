@@ -13,7 +13,7 @@
 <meta name="author" content=""/>
 <link rel="icon" href="../../favicon.ico"/>
 
-<title>Payment System 2.1</title>
+<title>MQueue Dispatcher 1.0</title>
 
 <!-- Bootstrap core CSS -->
 <link href="/dispatcher/res/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
@@ -33,8 +33,8 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<img class="nav navbar-nav navbar-left" src="/dispatcher/res/images/payment.png" height="50px"/>
-				<a class="navbar-brand" href="/dispatcher/mvc/mgr/dashboard.xml">Payment System 2.1</a>
+<!-- 				<img class="nav navbar-nav navbar-left" src="/dispatcher/res/images/payment.png" height="50px"/> -->
+				<a class="navbar-brand" href="/dispatcher/mvc/mgr/dashboard.xml">MQueue Dispatcher 1.0</a>
 			</div>
 			<ui class="nav navbar-nav navbar-right">
 				<li role="presentation" class="active">
@@ -53,7 +53,7 @@
 			<div class="navbar-default sidebar" role="navigation">
 				<div class="sidebar-nav navbar-collapse">
 					<ul class="nav" id="side-menu">
-						<li id="dashboard_entry"><a href="/dispatcher/mvc/mgr/dashboard.xml">Dashboard</a></li>
+						<li id="dashboard_entry"><a href="/dispatcher/mvc/dashboard.xml">Dashboard</a></li>
 						<!--  
 						<li>
 							<a href="#">

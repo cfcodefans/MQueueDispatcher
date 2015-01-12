@@ -3,11 +3,11 @@ package com.thenetcircle.services.dispatcher.failsafe;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
 import java.util.TreeMap;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,7 +19,7 @@ import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 public class DefaultFailedMessageHandler implements Runnable, IFailsafe {
 	protected static final Log log = LogFactory.getLog(DefaultFailedMessageHandler.class.getSimpleName());
 	private static DefaultFailedMessageHandler instance = new DefaultFailedMessageHandler();
-	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
+	private Queue<MessageContext> buf = new ConcurrentLinkedQueue<MessageContext>();
 	
 	private Map<QueueCfg, TreeMap<Long, MessageContext>> storage = new HashMap<QueueCfg, TreeMap<Long, MessageContext>>();
 
@@ -68,7 +68,12 @@ public class DefaultFailedMessageHandler implements Runnable, IFailsafe {
 	public void run() {
 		try {
 			while (!Thread.interrupted()) {
-				handle(buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT));
+				MessageContext polled = buf.poll();
+				if (polled != null) {
+					handle(polled);
+				} else {
+					Thread.sleep(1);
+				}
 			}
 		} catch (InterruptedException e) {
 			log.error("interrupted", e);

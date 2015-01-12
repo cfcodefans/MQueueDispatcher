@@ -115,6 +115,12 @@
 			<version>1.2.0.Final</version>
 		</dependency>
 
+
+		<dependency>
+			<groupId>org.glassfish.jersey.ext</groupId>
+			<artifactId>jersey-mvc</artifactId>
+			<version>2.10</version>
+		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet</artifactId>
@@ -153,12 +159,6 @@
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
 			<version>1.5.2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.glassfish.jersey.ext</groupId>
-			<artifactId>jersey-mvc</artifactId>
-			<version>2.10</version>
 		</dependency>
 
 		<dependency>

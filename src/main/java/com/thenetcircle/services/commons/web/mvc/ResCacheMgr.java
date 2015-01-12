@@ -1,14 +1,21 @@
 package com.thenetcircle.services.commons.web.mvc;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -21,6 +28,10 @@ public class ResCacheMgr implements ServletContextListener, Runnable {
 
 	private static Log log = LogFactory.getLog(ResCacheMgr.class);
 	
+	private String realPathStr = null;
+	
+	private ServletContext servletCtx = null;
+	
 	private ScheduledExecutorService worker = null;
 
 	@Override
@@ -30,8 +41,9 @@ public class ResCacheMgr implements ServletContextListener, Runnable {
 
 	@Override
 	public void contextInitialized(ServletContextEvent ce) {
-		String realPath = ce.getServletContext().getRealPath(".");
-		log.info("getRealPath(): " + realPath);
+		servletCtx = ce.getServletContext();
+		realPathStr = servletCtx.getRealPath(".");
+		log.info("getRealPath(): " + realPathStr);
 		
 		log.info("start a thread to validate the cache entry");
 		
@@ -43,5 +55,37 @@ public class ResCacheMgr implements ServletContextListener, Runnable {
 	public void run() {
 		//valid the cache entry
 		log.info("validate the cache entry");
+		if (StringUtils.isBlank(realPathStr)) {
+			log.error("path of web application is blank");
+			return;
+		}
+		
+		if (MapUtils.isEmpty(cacheMap)) {
+			log.info("cacheMap is empty now!");
+			return;
+		}
+
+		final List<String> invalidPathList  = new LinkedList<String>();
+		
+		for (final String pathStr : cacheMap.keySet()) {
+			if (StringUtils.isBlank(pathStr)) {
+				invalidPathList.add(pathStr);
+			}
+			
+			try {
+				URL resUrl = servletCtx.getResource(pathStr);
+				if (resUrl == null) {
+					invalidPathList.add(pathStr);
+				}
+			} catch (MalformedURLException e) {
+				log.error("invalid resource path", e);
+				invalidPathList.add(pathStr);
+			}
+		}
+		
+		for (final String invalidPathStr : invalidPathList) {
+			cacheMap.remove(invalidPathStr);
+			log.warn(String.format("resource path: %s is invalid, evicted from %s", invalidPathStr, this.getClass().getSimpleName()));
+		}
 	}
 }

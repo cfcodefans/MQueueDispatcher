@@ -12,8 +12,6 @@ public class ControllerHelper {
 		return StringUtils.defaultIfBlank(basePathParam, "/"); 
 	}
 	
-//	public static String getErrorPage
-	
 	public static String joinPaths(final String...paths) {
 		if (ArrayUtils.isEmpty(paths)) {
 			return StringUtils.EMPTY;

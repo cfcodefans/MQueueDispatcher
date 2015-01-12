@@ -15,6 +15,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.glassfish.jersey.server.mvc.spi.ResolvedViewable;
 
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.web.mvc.ControllerHelper;
@@ -24,6 +25,7 @@ import com.thenetcircle.services.commons.web.mvc.ProcessorFactory;
 public class ManagementRes {// implements Constants {
 	private static final String RES_PATH = "mgr";
 	private @Context HttpServletRequest req;
+	private @Context HttpServletResponse resp;
 	protected static final Log log = LogFactory.getLog(ManagementRes.class);
 	
 	protected @Context ThreadLocal<HttpServletRequest> reqInvoker;
@@ -35,26 +37,28 @@ public class ManagementRes {// implements Constants {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response post(final @Context UriInfo ui, final @PathParam("sub_path") String subPathStr, MultivaluedMap<String, String> paramsMap) {
 		log.info(String.format("path: %s, subPathStr: %s", ui.getPath(), subPathStr));
-		final HttpServletRequest _req = reqInvoker.get();
-		final HttpServletResponse _resp = respInvoker.get(); 
+		final HttpServletRequest _req = req; //reqInvoker.get();
+		final HttpServletResponse _resp = resp; //respInvoker.get(); 
 		final String basePath = ControllerHelper.joinPaths(ControllerHelper.getBasePath(_req), RES_PATH);
 		
 		_req.setAttribute("paramsMap", MiscUtils.extractParams(paramsMap));
 		
-		return Response.ok(ProcessorFactory.getViewable(_resp, _req, basePath, subPathStr, this), ProcessorFactory.getMediaTypeByPath(subPathStr)).build();
+		ResolvedViewable<String> viewable = ProcessorFactory.getViewable(_resp, _req, basePath, subPathStr, this);
+		return Response.ok(viewable).type(viewable.getMediaType()).build();
 	}
 
 	@Path("{sub_path: .*}")
 	@GET
 	public Response get(final @Context UriInfo ui, final @PathParam("sub_path") String subPathStr) {
 		log.info(String.format("path: %s, subPathStr: %s", ui.getPath(), subPathStr));
-		final HttpServletRequest _req = reqInvoker.get();
-		final HttpServletResponse _resp = respInvoker.get();
+		final HttpServletRequest _req = req; //reqInvoker.get();
+		final HttpServletResponse _resp = resp; //respInvoker.get(); 
 		final String basePath = ControllerHelper.joinPaths(ControllerHelper.getBasePath(_req), RES_PATH);
 		
 		_req.setAttribute("paramsMap", MiscUtils.extractParams(ui.getQueryParameters()));
 		
-		return Response.ok(ProcessorFactory.getViewable(_resp, _req, basePath, subPathStr, this), ProcessorFactory.getMediaTypeByPath(subPathStr)).build();
+		ResolvedViewable<String> viewable = ProcessorFactory.getViewable(_resp, _req, basePath, subPathStr, this);
+		return Response.ok(viewable).type(viewable.getMediaType()).build();
 	}
 
 }
