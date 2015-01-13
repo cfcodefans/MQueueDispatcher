@@ -23,6 +23,7 @@ import org.jsoup.select.Elements;
 import com.thenetcircle.services.commons.web.joint.script.PageScriptExecutionContext;
 import com.thenetcircle.services.commons.web.joint.script.ScriptExecutor;
 import com.thenetcircle.services.commons.web.joint.script.javascript.JSExecutor;
+import com.thenetcircle.services.commons.web.mvc.ResCacheMgr.CachedEntry;
 import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ScriptCtxModel;
 import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ViewFacade;
 
@@ -45,9 +46,9 @@ public class HtmlViewProcessor extends ResViewProcessor {
 		}
 
 		super.resp.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML);
-		Object entry = ResCacheMgr.cacheMap.get(currentPathStr);
+		CachedEntry<?> cachedEntry = ResCacheMgr.cacheMap.get(currentPathStr);
 
-		if (entry == null) {
+		if (cachedEntry == null) {
 			final InputStream resIS = getResAsInputStream(currentPathStr);
 
 			final Document doc = Jsoup.parse(resIS, "UTF-8", baseUriStr);
@@ -59,12 +60,13 @@ public class HtmlViewProcessor extends ResViewProcessor {
 				vpm.getScriptCtxModelList().add(new ScriptCtxModel(doc, el));
 			}
 
-			ResCacheMgr.cacheMap.put(currentPathStr, vpm);
-			entry = vpm;
+			CachedEntry<ViewProcModel> newEntry = new CachedEntry<ViewProcModel>(vpm);
+			ResCacheMgr.cacheMap.put(currentPathStr, newEntry);
+			cachedEntry = newEntry;
 		}
 
-		if (entry instanceof ViewProcModel) {
-			ViewProcModel vpm = (ViewProcModel) entry;
+		if (cachedEntry.content instanceof ViewProcModel) {
+			ViewProcModel vpm = (ViewProcModel) cachedEntry.content;
 			ViewFacade vf = vpm.getViewFacade();
 			Element doc = vf._doc;
 			ScriptContext sc = new SimpleScriptContext();
@@ -77,7 +79,7 @@ public class HtmlViewProcessor extends ResViewProcessor {
 			return doc.html().getBytes();
 		}
 
-		return String.format("can't render this as html: \n%s", String.valueOf(entry)).getBytes();
+		return String.format("can't render this as html: \n%s", String.valueOf(cachedEntry)).getBytes();
 	}
 
 	public void bindValuesToFormFields(final Element form) {

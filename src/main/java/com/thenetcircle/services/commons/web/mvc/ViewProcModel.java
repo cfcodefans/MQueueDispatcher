@@ -39,8 +39,8 @@ public class ViewProcModel implements Serializable {
 	}
 	
 	public ViewFacade getViewFacade() {
-		Element _doc = doc.clone();
-		List<Element> _scriptElementList = new LinkedList<Element>();
+		final Element _doc = doc.clone();
+		final List<Element> _scriptElementList = new LinkedList<Element>();
 		for (ScriptCtxModel cm : scriptCtxModelList) {
 			_scriptElementList.add(cm.getScriptElementByPath(_doc));
 		}
@@ -81,7 +81,7 @@ public class ViewProcModel implements Serializable {
 		return idxList.toArray(new Integer[0]);
 	}
 	
-	public static Element getElementByPath(Element start, Integer[] path) {
+	public static Element getElementByPath(final Element start, Integer[] path) {
 		if (start == null || ArrayUtils.isEmpty(path)) {
 			return null;
 		}

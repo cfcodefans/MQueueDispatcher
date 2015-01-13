@@ -23,6 +23,7 @@ import org.jsoup.select.Elements;
 import com.thenetcircle.services.commons.web.joint.script.PageScriptExecutionContext;
 import com.thenetcircle.services.commons.web.joint.script.ScriptExecutor;
 import com.thenetcircle.services.commons.web.joint.script.javascript.JSExecutor;
+import com.thenetcircle.services.commons.web.mvc.ResCacheMgr.CachedEntry;
 import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ScriptCtxModel;
 import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ViewFacade;
 
@@ -48,12 +49,11 @@ public class XmlViewProcessor extends ResViewProcessor {
 		}
 		
 		super.resp.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML);
-		
-		Object entry = ResCacheMgr.cacheMap.get(currentPathStr);
-		
-		if (entry == null) {
+		CachedEntry<?> cachedEntry = ResCacheMgr.cacheMap.get(currentPathStr);
+
+		if (cachedEntry == null) {
 			final InputStream resIS = getResAsInputStream(currentPathStr);
-			
+
 			final Document doc = Jsoup.parse(resIS, "UTF-8", baseUriStr, Parser.xmlParser());
 			final OutputSettings outputSettings = new OutputSettings();
 			outputSettings.syntax(Syntax.xml);
@@ -61,19 +61,20 @@ public class XmlViewProcessor extends ResViewProcessor {
 			doc.outputSettings(outputSettings);
 			
 			final Elements els = doc.select("script[data-runat=server]");
-			
+
 			ViewProcModel vpm = new ViewProcModel(doc);
-			
+
 			for (final Element el : els) {
 				vpm.getScriptCtxModelList().add(new ScriptCtxModel(doc, el));
 			}
-			
-			ResCacheMgr.cacheMap.put(currentPathStr, vpm);
-			entry = vpm;
+
+			CachedEntry<ViewProcModel> newEntry = new CachedEntry<ViewProcModel>(vpm);
+			ResCacheMgr.cacheMap.put(currentPathStr, newEntry);
+			cachedEntry = newEntry;
 		}
-		
-		if (entry instanceof ViewProcModel) {
-			ViewProcModel vpm = (ViewProcModel) entry;
+
+		if (cachedEntry.content instanceof ViewProcModel) {
+			ViewProcModel vpm = (ViewProcModel) cachedEntry.content;
 			ViewFacade vf = vpm.getViewFacade();
 			Element doc = vf._doc;
 			ScriptContext sc = new SimpleScriptContext();
@@ -86,7 +87,6 @@ public class XmlViewProcessor extends ResViewProcessor {
 			return doc.html().getBytes();
 		}
 		
-		
-		return String.format("can't render this as xml: \n%s", String.valueOf(entry)).getBytes();
+		return String.format("can't render this as xml: \n%s", String.valueOf(cachedEntry)).getBytes();
 	}
 }
