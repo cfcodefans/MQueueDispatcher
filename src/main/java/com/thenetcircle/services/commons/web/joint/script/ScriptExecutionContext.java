@@ -20,11 +20,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class ScriptExecutionContext {
-//	public BeanManager beanMgr;
+
 	public HttpServletRequest req;
 	public HttpServletResponse resp;
 	public String basePathStr;
 	public ScriptContext sc;
+	public String mimeType;
 	
 	protected String scriptStr = StringUtils.EMPTY;
 	
@@ -44,28 +45,25 @@ public class ScriptExecutionContext {
 								 final HttpServletRequest req, 
 								 final HttpServletResponse resp, 
 								 final String basePathStr,
-								 final ScriptContext sc) {
+								 final ScriptContext sc,
+								 final String mimeType) {
 		super();
 		this.req = req;
 		this.resp = resp;
 		this.basePathStr = basePathStr;
 		this.sc = sc;
 		this.scriptStr = scriptScript;
+		this.mimeType = mimeType;
 	}
 	
-	public ScriptExecutionContext(final HttpServletRequest req, 
-								 final HttpServletResponse resp, 
-								 final String basePathStr,
-								 final String currentPathStr,
-								 final ScriptContext sc) {
-		super();
-		this.req = req;
-		this.resp = resp;
-		this.basePathStr = basePathStr;
-		this.sc = sc;
-		this.scriptStr = getTextResource(currentPathStr, basePathStr);
+	public ScriptExecutionContext(HttpServletRequest req, 
+								  HttpServletResponse resp, 
+								  String baseUriStr, 
+								  String currentPathStr, 
+								  ScriptContext sc2,
+								  String mimeType) {
+		this(getTextResource(req.getServletContext(), currentPathStr, baseUriStr), req, resp, currentPathStr, sc2, mimeType);
 	}
-
 
 	public ScriptContext inflateScriptContext(final ScriptEngine se) {
 		if (sc == null) {
@@ -85,7 +83,7 @@ public class ScriptExecutionContext {
 	}
 
 
-	public String getTextResource(final String currentPathStr, final String pathStr) {
+	public static String getTextResource(final ServletContext rootCtx, final String currentPathStr, final String pathStr) {
 		if (StringUtils.isBlank(pathStr)) {
 			return StringUtils.EMPTY;
 		}
@@ -95,7 +93,7 @@ public class ScriptExecutionContext {
 			return StringUtils.EMPTY;
 		}
 		
-		final ServletContext rootCtx = req.getServletContext();
+//		final ServletContext rootCtx = req.getServletContext();
 		final String rootPath = rootCtx.getContextPath();
 		String resPath = StringUtils.EMPTY;
 		if (pathStr.startsWith(rootPath)) {
@@ -108,7 +106,7 @@ public class ScriptExecutionContext {
 		log.info("load Script: " + resPath);
 		final InputStream resIS = rootCtx.getResourceAsStream(resPath);
 		try {
-			final String scriptStr = resIS != null ? IOUtils.toString(resIS) : StringUtils.EMPTY;
+			final String scriptStr = (resIS != null) ? IOUtils.toString(resIS) : StringUtils.EMPTY;
 			return scriptStr;
 		} catch (final IOException e) {
 			log.error("failed to load script from path: " + pathStr, e);

@@ -15,9 +15,9 @@ import org.junit.Test;
 
 import com.thenetcircle.services.cluster.JGroupsActor.Command;
 import com.thenetcircle.services.cluster.JGroupsActor.CommandType;
-import com.thenetcircle.services.common.Jsons;
-import com.thenetcircle.services.common.MiscUtils;
-import com.thenetcircle.services.common.MiscUtils.LoopingArrayIterator;
+import com.thenetcircle.services.commons.Jsons;
+import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.MiscUtils.LoopingArrayIterator;
 
 
 public class MiscTests {

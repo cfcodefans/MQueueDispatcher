@@ -176,6 +176,12 @@
 			<artifactId>guava</artifactId>
 			<version>18.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.python</groupId>
+			<artifactId>jython</artifactId>
+			<version>2.7-b1</version>
+		</dependency>
 	</dependencies>
 
 	<build>

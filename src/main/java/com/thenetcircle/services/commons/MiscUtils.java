@@ -32,6 +32,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.iterators.ObjectArrayIterator;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -299,5 +300,18 @@ public class MiscUtils {
 			log.error(e, e);
 		}
 		return sb.toString();
+	}
+
+	public static String loadResAsString(final Class<?> cls, final String fileName) {
+		if (cls == null || StringUtils.isBlank(fileName)) {
+			return StringUtils.EMPTY;
+		}
+		
+		try {
+			return IOUtils.toString(cls.getResourceAsStream(fileName));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return StringUtils.EMPTY;
 	}
 }

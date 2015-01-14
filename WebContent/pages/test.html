@@ -1,0 +1,141 @@
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="" />
+<meta name="author" content="" />
+<link rel="icon" href="../../favicon.ico" />
+
+<title>Script Tests</title>
+
+<!-- Bootstrap core CSS -->
+<link href="/dispatcher/res/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+<link href="/dispatcher/res/font-awesome-4.2.0/css/font-awesome.css" rel="stylesheet" />
+<link href="/dispatcher/res/bootstrap/plugins/metisMenu/metisMenu.css" rel="stylesheet" />
+<link href="/dispatcher/res/sb-admin-2.css" rel="stylesheet" />
+<link href="/dispatcher/res/style.css" rel="stylesheet" />
+</head>
+
+<body>
+<br/>
+	<div class="row">
+		<div class="col-lg-4">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">JAVASCRIPT</h3>
+				</div>
+				<div class="panel-body">
+				
+				<pre>
+var System = java.lang.System;
+
+var now = System.currentTimeMillis();
+var then = now;
+
+var result = 0.0;
+for (var i = 0; i < 1000000; i++) {
+	result += Math.sqrt(i);
+}
+
+now = System.currentTimeMillis();
+me.after("after " + (now - then) + " ms " + result);
+				</pre>
+				
+				<script type="text/javascript" data-runat="server">
+					this.testCount = 1000000;
+				
+					var System = java.lang.System;
+				
+					var now = System.currentTimeMillis();
+					var then = now;
+					
+					var result = 0.0;
+					for (var i = 0; i < testCount; i++) {
+						result += Math.sqrt(i);
+					}
+					
+					now = System.currentTimeMillis();
+					me.after("after " + (now - then) + " ms " + result);
+				</script>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-4">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">JYTHON</h3>
+				</div>
+				<div class="panel-body">
+				<pre>
+from java.lang import *
+
+now = float(str(System.currentTimeMillis()))
+result = 0.0
+for i in range(1, 1000000):
+	result += Math.sqrt(i)
+	
+then = float(str(System.currentTimeMillis()))
+me.after("after " + str(then - now) + " ms " + str(result))				
+				</pre>
+				<script type="text/python" data-runat="server">
+from java.lang import *
+
+now = float(str(System.currentTimeMillis()))
+result = 0.0
+testCount = 1000000;
+for i in range(1, testCount):
+	result += Math.sqrt(i)
+	
+then = float(str(System.currentTimeMillis()))
+me.after("after " + str(then - now) + " ms " + str(result))
+				</script>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-4">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">PHP</h3>
+				</div>
+				<div class="panel-body">
+				<pre>
+function current_millis() {
+    list($usec, $sec) = explode(" ", microtime());
+    return round(((float)$usec + (float)$sec) * 1000);
+}
+
+$now = current_millis();
+$re = 0;
+for ($i = 0; $i <= 1000000; $i++) {
+	$re += sqrt($i);
+}
+
+$then =current_millis();
+$me->after("after ".($then - $now)." ms ".$result);
+				</pre>
+<script type="php" data-runat="server" id="php_script">
+<?php				
+function current_millis() {
+    list($usec, $sec) = explode(" ", microtime());
+    return round(((float)$usec + (float)$sec) * 1000);
+}
+
+$now = current_millis();
+$re = 0;
+$testCount = 1000000;
+for ($i = 0; $i <= $testCount; $i++) {
+	$re += sqrt($i);
+}
+
+$then =current_millis();
+print("after ".($then - $now)." ms ".$result);
+$me->after("after ".($then - $now)." ms ".$result);
+?>
+</script>				
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

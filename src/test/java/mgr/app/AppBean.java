@@ -2,12 +2,11 @@ package mgr.app;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Singleton;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.commons.MiscUtils;
 
 //@Named("AppBean")
 @ApplicationScoped

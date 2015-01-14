@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.commons.MiscUtils;
 
 public class WeldTest {
 	static Weld weld;

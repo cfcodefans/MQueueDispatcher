@@ -21,9 +21,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.thenetcircle.comsumerdispatcher.config.DispatcherConfig;
-import com.thenetcircle.services.common.Jsons;
-import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.commons.Jsons;
+import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
 import com.thenetcircle.services.dispatcher.dao.MessageContextDao;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
@@ -104,28 +103,28 @@ public class PersistenceTest {
 	}
 	
 	
-	@Test
-	public void loadCfgsIntoDatabase() throws Exception {
-		final DispatcherConfig dispatcherConfig = DispatcherConfig.getInstance();
-		dispatcherConfig.loadConfig("job.xml");
-		
-		log.info("configuration is loaded");
-		
-		Collection<QueueCfg> queueCfgs = DispatcherConfig.dispatcherJobsToQueueCfgs(dispatcherConfig.getAllJobs());
-		
-		log.info(queueCfgs.size() + " queues are loaded");
-//		startTransaction();
-		for (final QueueCfg qc : queueCfgs) {
-			em.persist(qc.getServerCfg());
-			em.persist(qc.getDestCfg());
-			for (final ExchangeCfg ec : qc.getExchanges()) {
-				em.persist(ec);
-			}
-			em.persist(qc);
-		}
-		
-		log.info(em.createQuery("select count(id) from ServerCfg sc").getSingleResult() + " server are loaded");
-	}
+//	@Test
+//	public void loadCfgsIntoDatabase() throws Exception {
+//		final DispatcherConfig dispatcherConfig = DispatcherConfig.getInstance();
+//		dispatcherConfig.loadConfig("job.xml");
+//		
+//		log.info("configuration is loaded");
+//		
+//		Collection<QueueCfg> queueCfgs = DispatcherConfig.dispatcherJobsToQueueCfgs(dispatcherConfig.getAllJobs());
+//		
+//		log.info(queueCfgs.size() + " queues are loaded");
+////		startTransaction();
+//		for (final QueueCfg qc : queueCfgs) {
+//			em.persist(qc.getServerCfg());
+//			em.persist(qc.getDestCfg());
+//			for (final ExchangeCfg ec : qc.getExchanges()) {
+//				em.persist(ec);
+//			}
+//			em.persist(qc);
+//		}
+//		
+//		log.info(em.createQuery("select count(id) from ServerCfg sc").getSingleResult() + " server are loaded");
+//	}
 	
 	@Test
 	public void convertToJSON() throws Exception {

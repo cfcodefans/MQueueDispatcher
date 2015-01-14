@@ -16,12 +16,12 @@ import org.junit.Test;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
-import com.thenetcircle.services.persistence.jpa.JpaModule;
 
 
 public class FunctionalTests {

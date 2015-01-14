@@ -7,6 +7,7 @@ import javax.script.ScriptContext;
 import javax.script.SimpleScriptContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -18,6 +19,7 @@ import com.thenetcircle.services.commons.web.joint.script.javascript.JSExecutor;
 
 public class JSProcessor extends ResViewProcessor {
 
+	public static final String MIME_APPLICATION_JAVASCRIPT = "application/javascript";
 	private static Log log = LogFactory.getLog(JSProcessor.class);
 	
 	public JSProcessor(final HttpServletRequest _req, 
@@ -40,7 +42,7 @@ public class JSProcessor extends ResViewProcessor {
 		ScriptContext sc = new SimpleScriptContext();
 		final ByteArrayOutputStream outputBuf = new ByteArrayOutputStream();
 		sc.setWriter(new OutputStreamWriter(outputBuf));
-		final ScriptExecutionContext scriptCtx = new ScriptExecutionContext(req, resp, baseUriStr, currentPathStr, sc);
+		final ScriptExecutionContext scriptCtx = new ScriptExecutionContext(req, resp, baseUriStr, currentPathStr, sc, MIME_APPLICATION_JAVASCRIPT);
 		final ScriptExecutor se = new JSExecutor(scriptCtx);
 		sc = se.execute();
 		

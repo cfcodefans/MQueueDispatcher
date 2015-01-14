@@ -23,7 +23,7 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 
-import com.thenetcircle.services.common.MiscUtils;
+import com.thenetcircle.services.commons.MiscUtils;
 
 
 public class HttpAsynClientTest {

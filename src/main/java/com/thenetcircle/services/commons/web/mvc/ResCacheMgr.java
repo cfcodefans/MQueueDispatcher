@@ -68,7 +68,7 @@ public class ResCacheMgr implements ServletContextListener, Runnable {
 		log.info("start a thread to validate the cache entry");
 
 		worker = Executors.newScheduledThreadPool(1);
-		worker.scheduleAtFixedRate(this, 10, 30, TimeUnit.SECONDS);
+		worker.scheduleAtFixedRate(this, 10, 5, TimeUnit.SECONDS);
 	}
 
 	private boolean validate(final String pathStr) {
@@ -115,7 +115,7 @@ public class ResCacheMgr implements ServletContextListener, Runnable {
 
 	public void run() {
 		// valid the cache entry
-		log.info("validate the cache entry");
+		log.debug("validate the cache entry");
 		if (StringUtils.isBlank(realPathStr)) {
 			log.error("path of web application is blank");
 			return;
