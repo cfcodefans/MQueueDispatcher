@@ -1,6 +1,7 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
-import org.apache.commons.lang3.ObjectUtils;
+import java.util.Objects;
+
 import org.apache.log4j.Logger;
 
 import com.rabbitmq.client.AMQP;
@@ -35,7 +36,7 @@ class QueueCtx implements ShutdownListener {
 		}
 		@Override
 		public int hashCode() {
-			return ObjectUtils.hashCode(qc);
+			return Objects.hashCode(qc);
 		}
 		
 		public void shutdownCompleted(final ShutdownSignalException cause) {

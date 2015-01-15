@@ -74,6 +74,7 @@ public class MessageContextDao extends BaseDao<MessageContext> {
 		
 		hql = hql + " and mc.failTimes > mc.queueCfg.retryLimit group by mc.queueCfg.id, mc.response.statusCode";
 		
+		@SuppressWarnings("unchecked")
 		final List<Object[]> resultList = queryEntity(hql, sc);
 		
 		final StringBuilder sb = new StringBuilder();

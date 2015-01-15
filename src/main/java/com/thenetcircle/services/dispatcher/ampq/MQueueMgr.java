@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +55,6 @@ public class MQueueMgr {
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	public static final void _info(final ServerCfg sc, final String infoStr) {
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
@@ -82,7 +80,7 @@ public class MQueueMgr {
 		return reconnActor;
 	}
 
-	private ScheduledExecutorService reconnActorThread = Executors.newSingleThreadScheduledExecutor();
+//	private ScheduledExecutorService reconnActorThread = Executors.newSingleThreadScheduledExecutor();
 	
 	private Map<ServerCfg, Set<NamedConnection>> serverCfgAndConns = new ConcurrentHashMap<ServerCfg, Set<NamedConnection>>();
 	

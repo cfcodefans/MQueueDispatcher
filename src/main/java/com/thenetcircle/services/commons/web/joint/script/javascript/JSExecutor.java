@@ -24,7 +24,6 @@ import com.thenetcircle.services.commons.web.joint.script.PageScriptExecutionCon
 import com.thenetcircle.services.commons.web.joint.script.ScriptExecutionContext;
 import com.thenetcircle.services.commons.web.joint.script.ScriptExecutor;
 
-@SuppressWarnings("restriction")
 public class JSExecutor extends ScriptExecutor {
 	private static Log log = LogFactory.getLog(JSExecutor.class);
 
