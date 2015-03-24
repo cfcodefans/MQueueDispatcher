@@ -33,7 +33,6 @@ public class PageScriptExecutionContext extends ScriptExecutionContext {
 			} else {
 				scriptStr = scriptElement.data();
 			}
-
 		}
 
 		return scriptStr;

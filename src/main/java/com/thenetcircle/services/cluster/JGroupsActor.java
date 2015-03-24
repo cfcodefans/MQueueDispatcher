@@ -3,9 +3,13 @@ package com.thenetcircle.services.cluster;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -15,6 +19,8 @@ import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
+
+import scala.actors.threadpool.Arrays;
 
 import com.thenetcircle.services.commons.Jsons;
 import com.thenetcircle.services.commons.MiscUtils;
@@ -30,17 +36,13 @@ public class JGroupsActor extends ReceiverAdapter {
 		stop {
 			@Override
 			public void execute(Set<QueueCfg> qcs) {
-				for (final QueueCfg qc : qcs) {
-					MQueueMgr.instance().stopQueue(qc);
-				}
+				qcs.forEach(qc->MQueueMgr.instance().stopQueue(qc));
 			}
 		},
 		restart {
 			@Override
 			public void execute(Set<QueueCfg> qcs) {
-				for (final QueueCfg qc : qcs) {
-					MQueueMgr.instance().updateQueueCfg(qc);
-				}
+				qcs.forEach(qc->MQueueMgr.instance().updateQueueCfg(qc));
 			}
 		};
 
@@ -50,6 +52,15 @@ public class JGroupsActor extends ReceiverAdapter {
 	public static class Command {
 		public Set<Integer> qcIds = new HashSet<Integer>();
 		public CommandType commandType;
+		
+		public Command(Collection<Integer> _qcIds, CommandType cmdType) {
+			qcIds.addAll(_qcIds);
+			commandType = cmdType;
+		}
+		
+		public Command() {
+			
+		}
 		
 		public void execute(Set<QueueCfg> qcs) {
 			commandType.execute(qcs);
@@ -71,14 +82,10 @@ public class JGroupsActor extends ReceiverAdapter {
 			}
 			
 			ch = createChannel();
-			
 			ch.setReceiver(this);
 			ch.connect(CLUSTER_NAME);
 			log.info("join the jgroup cluster...");
 
-//			Message msg = new Message();
-//			msg.setBuffer(String.format("%s joined the %s", ch.getAddress(), CLUSTER_NAME).getBytes());
-//			ch.send(msg);
 		} catch (Exception e) {
 			log.error("can't initiate JGroups!!", e);
 		}
@@ -121,11 +128,7 @@ public class JGroupsActor extends ReceiverAdapter {
 			return;
 		}
 		
-		final Command stopCmd = new Command();
-		for (final QueueCfg qc : qcs) {
-			stopCmd.qcIds.add(qc.getId());
-		}
-		stopCmd.commandType = CommandType.stop;
+		final Command stopCmd = new Command(Stream.of(qcs).map(qc->qc.getId()).collect(Collectors.toList()), CommandType.stop);
 		send(stopCmd);
 	}
 	
@@ -134,11 +137,7 @@ public class JGroupsActor extends ReceiverAdapter {
 			return;
 		}
 		
-		final Command stopCmd = new Command();
-		for (final QueueCfg qc : qcs) {
-			stopCmd.qcIds.add(qc.getId());
-		}
-		stopCmd.commandType = CommandType.restart;
+		final Command stopCmd = new Command(Stream.of(qcs).map(qc->qc.getId()).collect(Collectors.toList()), CommandType.restart);
 		send(stopCmd);
 	}
 
@@ -183,20 +182,13 @@ public class JGroupsActor extends ReceiverAdapter {
 		log.info(msgStr);
 		
 		Command cmd = Jsons.read(msgStr, Command.class);
-		if (cmd == null) {
+		if (cmd == null || CollectionUtils.isEmpty(cmd.qcIds)) {
 			log.error("can't execute command: " + msgStr);
 			return;
 		}
 		
 		final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
-		final Set<QueueCfg> qcs = new HashSet<QueueCfg>();
-		for (final Integer id : cmd.qcIds) {
-			final QueueCfg qc = qcDao.find(id);
-			if (qc == null)
-				continue;
-			qcs.add(qc);
-		}
-		
+		final Set<QueueCfg> qcs = cmd.qcIds.stream().map(id->qcDao.find(id)).filter(qc->qc != null).collect(Collectors.toSet());
 		cmd.execute(qcs);
 		qcDao.close();
 	}

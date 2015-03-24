@@ -102,9 +102,7 @@ public class ProcTrace {
 		
 		final StringBuilder sb = new StringBuilder();
 		sb.append("\n").append(prefix).append(System.currentTimeMillis() - te.startTime).append(" ms:\t").append(te.steps.poll().stepInfo);
-		for (TraceStep ts : te.steps) {
-			sb.append('\n').append(prefix).append(INDENT).append(ts.toString());
-		}
+		te.steps.stream().forEach((ts) -> sb.append('\n').append(prefix).append(INDENT).append(ts.toString()));
 		sb.append('\n');
 //		pt.buf.append(sb);
 		if (pt.stack.isEmpty()) {

@@ -22,7 +22,6 @@ import org.jsoup.select.Elements;
 
 import com.thenetcircle.services.commons.web.joint.script.PageScriptExecutionContext;
 import com.thenetcircle.services.commons.web.joint.script.ScriptExecutor;
-import com.thenetcircle.services.commons.web.joint.script.javascript.JSExecutor;
 import com.thenetcircle.services.commons.web.mvc.ResCacheMgr.CachedEntry;
 import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ScriptCtxModel;
 import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ViewFacade;
@@ -64,9 +63,7 @@ public class XmlViewProcessor extends ResViewProcessor {
 
 			ViewProcModel vpm = new ViewProcModel(doc);
 
-			for (final Element el : els) {
-				vpm.getScriptCtxModelList().add(new ScriptCtxModel(doc, el));
-			}
+			els.forEach(el->vpm.getScriptCtxModelList().add(new ScriptCtxModel(doc, el)));
 
 			CachedEntry<ViewProcModel> newEntry = new CachedEntry<ViewProcModel>(vpm);
 			ResCacheMgr.cacheMap.put(currentPathStr, newEntry);

@@ -7,6 +7,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -61,9 +62,7 @@ public class Responder implements IMessageActor, Runnable {
 
 	@Override
 	public void handle(Collection<MessageContext> mcs) {
-		for (final MessageContext mc : mcs) {
-			handle(mc);
-		}
+		mcs.forEach(this::handle);
 	}
 
 	
@@ -129,9 +128,7 @@ public class Responder implements IMessageActor, Runnable {
 	static {
 		final List<Responder> list = new ArrayList<Responder>();
 		final int RESPOND_NUMBER = (int)MiscUtils.getPropertyNumber("respond.number", MiscUtils.AVAILABLE_PROCESSORS * 4);
-		for (int i = 0, j = RESPOND_NUMBER; i < j; i++) {
-			list.add(new Responder());
-		}
+		IntStream.range(0, RESPOND_NUMBER).forEach(i->list.add(new Responder()));
 		instances = new LoopingArrayIterator<Responder>(list.toArray(new Responder[0]));
 	};
 	

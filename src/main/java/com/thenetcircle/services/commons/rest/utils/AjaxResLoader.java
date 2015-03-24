@@ -63,10 +63,7 @@ public class AjaxResLoader extends ResourceConfig {
 		register(EncodingFilter.class);
 		register(GZipEncoder.class);
 		register(DeflateEncoder.class);
-
-		// this.packages("com.thenetcircle.services.rest");
 		register(new ResLoaderListener());
-
 		register(new WeldBinder());
 
 		ProcTrace.end();
@@ -106,28 +103,20 @@ public class AjaxResLoader extends ResourceConfig {
 			log.info("\nfound resources classes: \n" + StringUtils.join(resClss, '\n'));
 			log.info("\nfound singleton instances: \n" + StringUtils.join(appCfg.getSingletons(), '\n'));
 			
-			for (final Resource res : resources) {
+			resources.forEach(res -> {
 				AjaxResMetaData resMd = AjaxResMetaData.build(res);
 				Collection<Class<?>> _clss = CollectionUtils.intersection(resClss, res.getHandlerClasses());
-				for (Class _cls : _clss) {
-					if (isSingleton(_cls)) {
-						continue;
-					}
-					
-					for (Parameter p : getClassSetters(true, _cls)) {
-						resMd.injectedParams.add(ParamMetaData.build(p));
-					}
-					
-					for (Parameter p : getClassFields(true, _cls)) {
-						resMd.injectedParams.add(ParamMetaData.build(p));
-					}
-				}
+				
+				_clss.stream().filter(_cls -> !isSingleton(_cls)).forEach(_cls->{
+					getClassSetters(true, _cls).stream().map(ParamMetaData::build).forEach(resMd.injectedParams::add);
+					getClassFields(true, _cls).stream().map(ParamMetaData::build).forEach(resMd.injectedParams::add);
+				});
 				
 				log.info("\n injected Params: \n\t" + StringUtils.join(resMd.injectedParams, "\n\t"));
 				
 				resMd.appendInjectedParams(resMd.injectedParams);
 				proxyList.add(resMd);
-			}
+			});
 		}
 
 		@SuppressWarnings("rawtypes")

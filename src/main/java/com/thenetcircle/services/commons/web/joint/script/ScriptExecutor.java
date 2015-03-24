@@ -38,13 +38,9 @@ public class ScriptExecutor {
 					+ ", \n\tlanguage_version: " + sef.getLanguageVersion() + "\n}\n";
 			
 			log.info(_str);
-			
-			for (String mimeType : sef.getMimeTypes()) {
-				sem.registerEngineMimeType(mimeType, sef);
-			}
-			for (String extension : sef.getExtensions()) {
-				sem.registerEngineMimeType(extension, sef);
-			}
+
+			sef.getMimeTypes().forEach(mimeType -> sem.registerEngineMimeType(mimeType, sef));
+			sef.getExtensions().forEach(extension -> sem.registerEngineMimeType(extension, sef));
 		}
 	}
 	

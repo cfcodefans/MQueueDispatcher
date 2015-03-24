@@ -82,9 +82,8 @@ public class QueueCfgDao extends BaseDao<QueueCfg> {
 		if (_qc != null) {
 			final Collection<ExchangeCfg> ecs = new HashSet<ExchangeCfg>(_qc.getExchanges());
 			_qc.getExchanges().clear();
-			for (ExchangeCfg ec : ecs) {
-				ec.getQueues().remove(_qc);
-			}
+			
+			ecs.forEach(ec -> ec.getQueues().remove(_qc));
 		}
 		
 		if (CollectionUtils.isEmpty(qc.getExchanges())) {
@@ -94,10 +93,8 @@ public class QueueCfgDao extends BaseDao<QueueCfg> {
 		} else {
 			final Collection<ExchangeCfg> ecs = new HashSet<ExchangeCfg>(qc.getExchanges());
 			qc.getExchanges().clear();
-			for (ExchangeCfg ec : ecs) {
-				if (ec == null) {
-					continue;
-				}
+			
+			ecs.stream().filter(ec->ec != null).forEach(ec->{
 				if (ec.getId() < 0) {
 					ec = ecDao.create(ec);
 				} else {
@@ -106,7 +103,7 @@ public class QueueCfgDao extends BaseDao<QueueCfg> {
 				ec.getQueues().add(qc);
 				em.merge(ec);
 				qc.getExchanges().add(ec);
-			}
+			});
 		}
 	}
 

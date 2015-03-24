@@ -28,9 +28,7 @@ public class AjaxRes {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getJSProxy(@Context UriInfo uriInfo, @QueryParam("appName") String name) {
 		List<AjaxResMetaData> proxyList = AjaxResContext.getInstance(name).getProxyList();
-		for (AjaxResMetaData armd : proxyList) {
-			armd.setBaseUrl(StringUtils.removeEnd(uriInfo.getAbsolutePath().getPath(), "ajax"));
-		}
+		proxyList.forEach(armd -> armd.setBaseUrl(StringUtils.removeEnd(uriInfo.getAbsolutePath().getPath(), "ajax")));
 		return Response.ok(Jsons.toString(proxyList.toArray(new AjaxResMetaData[0]))).build();
 	}
 

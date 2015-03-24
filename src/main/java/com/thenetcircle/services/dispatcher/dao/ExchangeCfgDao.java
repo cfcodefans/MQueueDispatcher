@@ -52,11 +52,11 @@ public class ExchangeCfgDao extends BaseDao<ExchangeCfg> {
 
 		_ec.getQueues().clear();
 		
-		for (final QueueCfg qc : qcs) {
+		qcs.forEach(qc -> {
 			qc.getExchanges().remove(_ec);
 			qc.getExchanges().add(ec);
 			em.merge(qc);
-		}
+		});
 		ec.getQueues().addAll(qcs);
 		
 //		_ec.setAutoDelete(ec.isAutoDelete());

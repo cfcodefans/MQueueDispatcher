@@ -1,108 +1,84 @@
 package com.thenetcircle.services.commons.persistence.jpa;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
+import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.commons.MiscUtils;
-import com.thenetcircle.services.commons.persistence.jpa.cdi.Transactional;
 
-
-//implements IBaseDao<T> {
 /**
  * abstraction for most of JPA operations
+ * 
  * @author fan
  * @param <T>
  */
+
 @SuppressWarnings("unchecked")
-public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<T> {
-	private static final Log log = LogFactory.getLog(BaseDao.class.getSimpleName());
-	private static final long serialVersionUID = 1L;
-	
-	@Inject 
-//	@PersistenceContext//requires JTA
+@TransactionManagement(TransactionManagementType.CONTAINER)
+public abstract class BaseDao<T> {
+	private static final Log log = LogFactory.getLog(BaseDao.class.getName());
+
+	@PersistenceContext(unitName = "PaymentSystemUnit")
 	protected EntityManager em;
-	
+
 	public BaseDao() {
-		
+
 	}
-	
+
+	public void setEm(EntityManager em) {
+		this.em = em;
+	}
+
+	public EntityManager getEm() {
+		return em;
+	}
+
 	public BaseDao(final EntityManager _em) {
 		this.em = _em;
 	}
-	
-	public void beginTransaction() {
-		final EntityTransaction transaction = em.getTransaction();
-		if (transaction.isActive()) {
-			return;
-		}
-		
-		transaction.begin();
-	}
-	
-	public void close() {
-		log.info(MiscUtils.invocationInfo());
-		try {
-			if (em != null && em.isOpen()) {
-				final EntityTransaction transaction = em.getTransaction();
-				if (transaction != null && transaction.isActive()) {
-					em.flush();
-				}
-				em.close();
-			}
-		} catch (Exception e) {
-			log.error("failed to close em: " + e.getMessage());
-		}
-	}
 
-	public long countAll() {
-		return queryCount(String.format("select count(1) from %s as o", getEntityClass().getSimpleName()));
-	}
+	protected abstract Class<T> getEntityClass();
 
-	@Transactional
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public T create(final T entity) {
 		em.persist(entity);
 		return entity;
 	}
 
-	@Transactional
-	public T destroy(final T entity) {
-		em.remove(em.merge(entity));
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public T edit(final T entity) {
+		T n = em.merge(entity);
+		em.flush();
+		return n;// em.merge(entity);
+	}
+
+	public T refresh(final T entity) {
+		em.refresh(entity);
 		return entity;
 	}
 
-	@Transactional
-	public T edit(final T entity) {
-		return em.merge(entity);
-	}
-
-	public void endTransaction() {
-		final EntityTransaction transaction = em.getTransaction();
-		if (!transaction.isActive()) {
-			log.error("transaction isn't active, not commit");
-			return;
-		}
-		
-		if (transaction.getRollbackOnly()) {
-			transaction.rollback();
-			return;
-		}
-		
-		transaction.commit();
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public T destroy(final T entity) {
+		em.remove(em.merge(entity));
+		return entity;
 	}
 
 	public T find(Object pk) {
@@ -111,43 +87,15 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		return getEntityClass().cast(em.find(getEntityClass(), pk));
 	}
 
-	public List<T> findAll() {
-		return em.createQuery(String.format("select object(o) from %s as o", getEntityClass().getSimpleName())).getResultList();
-	}
-
 	public <E> E findEntity(Class<E> cls, Object pk) {
 		if (pk == null || cls == null) {
 			return null;
 		}
 		return cls.cast(em.find(cls, pk));
 	}
-	
-	public T findOne(String hql, Object... params) {
-		final List<T> result  = queryEntityPage(hql, 0, 1, params);
-		return getEntityClass().cast(CollectionUtils.isEmpty(result) ? null : result.get(0));
-	}
 
-	@SuppressWarnings("rawtypes")
-	public Object findOneEntity(String hql, Object... params) {
-		final List result  = queryEntityPage(hql, 0, 1, params);
-		return CollectionUtils.isEmpty(result) ? null : result.get(0);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.netcircle.paymentsystem.dao.impl.IBaseDao#queryPage(java.lang.String,
-	 * int, int, java.lang.Object)
-	 */
-	
-	public List<T> page(int pageIdx, int pageSize) {
-		return queryPage(String.format("select object(o) from %s as o", getEntityClass().getSimpleName()), pageIdx, pageSize);
-	}
-
-	@PreDestroy
-	public void preDestroy() {
-		close();
+	public List<T> findAll() {
+		return em.createQuery(String.format("select object(o) from %s as o", getEntityClass().getSimpleName())).getResultList();
 	}
 
 	/*
@@ -157,21 +105,75 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 	 * com.netcircle.paymentsystem.dao.impl.IBaseDao#queryCount(java.lang.String
 	 * , java.lang.Object)
 	 */
-	
+
+	@SuppressWarnings("rawtypes")
+	public Object findOneEntity(String hql, Object... params) {
+		final List result = queryEntityPage(hql, 0, 1, params);
+		return CollectionUtils.isEmpty(result) ? null : result.get(0);
+	}
+
+	public T findOne(String hql, Object... params) {
+		final List<?> result = queryEntityPage(hql, 0, 1, params);
+		return CollectionUtils.isEmpty(result) ? null : getEntityClass().cast(result.get(0));
+	}
+
+	public void beginTransaction() {
+		final EntityTransaction transaction = em.getTransaction();
+		if (transaction.isActive()) {
+			return;
+		}
+
+		transaction.begin();
+	}
+
+	public void endTransaction() {
+		final EntityTransaction transaction = em.getTransaction();
+		if (!transaction.isActive()) {
+			log.error("\nInactive Tranaction, No Commit");
+			return;
+		}
+
+		if (transaction.getRollbackOnly()) {
+			transaction.rollback();
+			return;
+		}
+
+		transaction.commit();
+	}
+
+	public int executeUpdateQuery(String hql, Object... params) {
+		return SimpleQueryBuilder.byHQL(hql, em).build().executeUpdate();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.netcircle.paymentsystem.dao.impl.IBaseDao#queryCount(java.lang.String
+	 * , java.lang.Object)
+	 */
+
 	public List<T> query(String hql, Object... params) {
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
 		}
-		Query q = em.createQuery(hql);
-	
-		if (ArrayUtils.isNotEmpty(params)) {
-			for (int i = 0; i < params.length; i++) {
-				q.setParameter(1 + i, params[i]);
+		return SimpleQueryBuilder.byHQL(hql, em).withPositionedParams(params).doQuery();
+	}
+
+	protected long getCountFromResult(final List<?> resultList) {
+		if (CollectionUtils.isEmpty(resultList)) {
+			return 0;
+		}
+		if (resultList.size() == 1) {
+			Object first = resultList.get(0);
+			if (first instanceof Long) {
+				return (Long) resultList.get(0);
+			}
+			if (first.getClass().isArray()) {
+				return (Long) ((Object[]) first)[0];
 			}
 		}
-	
-		final List<T> resultList = q.getResultList();
-		return resultList == null ? Collections.EMPTY_LIST : resultList; 
+		return resultList.size();
 	}
 
 	public long queryCount(String hql, Object... params) {
@@ -179,13 +181,28 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 			return 0;
 		}
 		final List<?> resultList = query(hql, params);
-		if (CollectionUtils.isEmpty(resultList)) {
+		return getCountFromResult(resultList);
+	}
+
+	public long queryCountByNativeSql(String sql, Object... params) {
+		if (StringUtils.isBlank(sql)) {
 			return 0;
 		}
-		if (resultList.size() == 1 && resultList.get(0) instanceof Long) {
-			return (Long) resultList.get(0);
+		return getCountFromResult(SimpleQueryBuilder.byNativeSQL(sql, em).withPositionedParams(params).doQuery());
+	}
+
+	public long countByNativeSqlWithIndexedParams(String sql, Map<Integer, Object> namedParams) {
+		if (StringUtils.isBlank(sql)) {
+			return 0;
 		}
-		return resultList.size();
+		return getCountFromResult(SimpleQueryBuilder.byNativeSQL(sql, em).withPositionedParams(namedParams).doQuery());
+	}
+
+	public long countByNativeSqlWithIndexedParams(String sql, Object... params) {
+		if (StringUtils.isBlank(sql)) {
+			return 0;
+		}
+		return getCountFromResult(SimpleQueryBuilder.byNativeSQL(sql, em).withPositionedParams(params).doQuery());
 	}
 
 	public long queryCountWithNamedParams(String hql, Map<String, Object> namedParams) {
@@ -193,13 +210,7 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 			return 0;
 		}
 		final List<?> resultList = queryPageByNamedParams(hql, -1, -1, namedParams);
-		if (CollectionUtils.isEmpty(resultList)) {
-			return 0;
-		}
-		if (resultList.size() == 1 && resultList.get(0) instanceof Long) {
-			return (Long) resultList.get(0);
-		}
-		return resultList.size();
+		return getCountFromResult(resultList);
 	}
 
 	public long queryCountWithPositionalParams(String hql, Map<Integer, Object> positionalParams) {
@@ -207,13 +218,7 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 			return 0;
 		}
 		final List<?> resultList = queryPageByPositionalParams(hql, -1, -1, positionalParams);
-		if (CollectionUtils.isEmpty(resultList)) {
-			return 0;
-		}
-		if (resultList.size() == 1 && resultList.get(0) instanceof Long) {
-			return (Long) resultList.get(0);
-		}
-		return resultList.size();
+		return getCountFromResult(SimpleQueryBuilder.byHQL(hql, em).withPositionedParams(positionalParams).doQuery());
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -221,9 +226,7 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
 		}
-		final Query q = jpql(hql, params);
-	
-		return q.getResultList();
+		return SimpleQueryBuilder.byHQL(hql, em).withPositionedParams(params).doQuery();
 	}
 
 	/*
@@ -238,8 +241,7 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
 		}
-		Query q = jpqlWithPage(hql, pageIdx, pageSize, params);
-		return q.getResultList();
+		return SimpleQueryBuilder.byHQL(hql, em).page(pageIdx, pageSize).withPositionedParams(params).doQuery();
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -247,8 +249,13 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
 		}
-	
-		return jpqlWithNamedParams(hql, pageIdx, pageSize, namedParams).getResultList();
+
+		return SimpleQueryBuilder.byHQL(hql, em).page(pageIdx, pageSize).withNamedParams(namedParams).doQuery();
+	}
+
+	@SuppressWarnings("rawtypes")
+	public List queryEntityByNamedParams(String hql, Map<String, Object> namedParams) {
+		return SimpleQueryBuilder.byHQL(hql, em).withNamedParams(namedParams).doQuery();
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -256,99 +263,126 @@ public abstract class BaseDao<T> implements Serializable {//implements IBaseDao<
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
 		}
-	
-		return jpqlWithPositionalParams(hql, pageIdx, pageSize, positionalParams).getResultList();
+		return SimpleQueryBuilder.byHQL(hql, em).page(pageIdx, pageSize).withPositionedParams(positionalParams).doQuery();
+	}
+
+	@SuppressWarnings("rawtypes")
+	public List queryEntityByPositionalParams(String hql, Map<Integer, Object> positionalParams) {
+		return SimpleQueryBuilder.byHQL(hql, em).withPositionedParams(positionalParams).doQuery();
 	}
 
 	public List<T> queryPage(String hql, int pageIdx, int pageSize, Object... params) {
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
 		}
-		Query q = jpqlWithPage(hql, pageIdx, pageSize, params);
-		return q.getResultList();
+		return SimpleQueryBuilder.byHQL(hql, em).page(pageIdx, pageSize).withPositionedParams(params).doQuery();
 	}
 
 	public List<T> queryPageByNamedParams(String hql, int pageIdx, int pageSize, Map<String, Object> namedParams) {
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
 		}
-		final Query q = jpqlWithNamedParams(hql, pageIdx, pageSize, namedParams);
-	
-		return q.getResultList();
+		return SimpleQueryBuilder.byHQL(hql, em).page(pageIdx, pageSize).withNamedParams(namedParams).doQuery();
 	}
 
 	public List<T> queryPageByPositionalParams(String hql, int pageIdx, int pageSize, Map<Integer, Object> positionalParams) {
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
 		}
-		final Query q = jpqlWithPositionalParams(hql, pageIdx, pageSize, positionalParams);
-		return q.getResultList();
+		return SimpleQueryBuilder.byHQL(hql, em).page(pageIdx, pageSize).withPositionedParams(positionalParams).doQuery();
 	}
 
-	public T refresh(final T entity) {
-		em.refresh(entity);
-		return entity;
+	public List queryByNativeSqlWithIndexedParams(String sql, int pageIdx, int pageSize, Object... params) {
+		if (StringUtils.isBlank(sql)) {
+			return Collections.EMPTY_LIST;
+		}
+		return SimpleQueryBuilder.byNativeSQL(sql, em).withPositionedParams(params).page(pageIdx, pageSize).doQuery();
 	}
 
-	protected abstract Class<T> getEntityClass();
+	public List queryByNativeSqlWithIndexedParams(String sql, int pageIdx, int pageSize, Map<Integer, Object> positionalParams) {
+		if (StringUtils.isBlank(sql)) {
+			return Collections.EMPTY_LIST;
+		}
+		return SimpleQueryBuilder.byNativeSQL(sql, em).withPositionedParams(positionalParams).page(pageIdx, pageSize).doQuery();
+	}
 
-	protected Query jpql(String hql, Object... params) {
-		final Query q = em.createQuery(hql);
-	
-		if (ArrayUtils.isNotEmpty(params)) {
-			for (int i = 0; i < params.length; i++) {
-				q.setParameter(1 + i, params[i]);
+	public static class SimpleQueryBuilder {
+		private final Query q;
+
+		public SimpleQueryBuilder(Query q) {
+			super();
+			if (q == null)
+				throw new IllegalArgumentException("Query is null!");
+			this.q = q;
+		}
+
+		public static SimpleQueryBuilder byHQL(final String hql, final EntityManager em) {
+			if (StringUtils.isBlank(hql))
+				throw new IllegalArgumentException("hql is null!");
+			if (em == null)
+				throw new IllegalArgumentException("EntityManager em is null!");
+			return new SimpleQueryBuilder(em.createQuery(hql));
+		}
+
+		public static SimpleQueryBuilder byNativeSQL(final String sql, final EntityManager em) {
+			if (StringUtils.isBlank(sql))
+				throw new IllegalArgumentException("sql is null!");
+			if (em == null)
+				throw new IllegalArgumentException("EntityManager em is null!");
+			return new SimpleQueryBuilder(em.createNativeQuery(sql));
+		}
+
+		public Query build() {
+			return q;
+		}
+
+		public SimpleQueryBuilder withNamedParams(Map<String, Object> namedParams) {
+			if (MapUtils.isEmpty(namedParams))
+				return this;
+			namedParams.forEach((key, value) -> q.setParameter(key, value));
+			return this;
+		}
+
+		public SimpleQueryBuilder withPositionedParams(Map<Integer, Object> positionedParams) {
+			Object[] params = new Object[positionedParams.size()];
+			IntStream.range(0, positionedParams.size()).forEach((i) -> params[i] = positionedParams.get(Integer.valueOf(i)));
+			return withPositionedParams(params);
+		}
+
+		public SimpleQueryBuilder withPositionedParams(Object... params) {
+			if (ArrayUtils.isNotEmpty(params)) {
+				IntStream.range(0, params.length).forEachOrdered((i) -> q.setParameter(1 + i, params[i]));
 			}
+			return this;
 		}
-		return q;
+
+		public SimpleQueryBuilder page(int pageIdx, int pageSize) {
+			if (pageIdx >= 0 && pageSize > 0) {
+				q.setFirstResult(pageIdx * pageSize);
+				q.setMaxResults(pageSize);
+			}
+			return this;
+		}
+
+		public List doQuery() {
+			if (q == null)
+				return Collections.EMPTY_LIST;
+			return ObjectUtils.defaultIfNull(q.getResultList(), Collections.EMPTY_LIST);
+		}
 	}
 
-	protected Query jpqlWithNamedParams(String hql, int pageIdx, int pageSize, Map<String, Object> namedParams) {
-		final Query q = em.createQuery(hql);
-		if (pageIdx > 0 && pageSize > 0) {
-			q.setFirstResult(pageIdx * pageSize);
-			q.setMaxResults(pageSize);
-		}
-	
-		if (MapUtils.isNotEmpty(namedParams)) {
-			for (Map.Entry<String, Object> namedParam : namedParams.entrySet()) {
-				q.setParameter(namedParam.getKey(), namedParam.getValue());
+	public void close() {
+		log.info(MiscUtils.invocationInfo());
+		try {
+			if (em != null && em.isOpen()) {
+				final EntityTransaction transaction = em.getTransaction();
+				if (transaction != null && transaction.isActive()) {
+					em.flush();
+				}
+				em.close();
 			}
+		} catch (Exception e) {
+			log.error("failed to close em: " + e.getMessage());
 		}
-		return q;
-	}
-
-	protected Query jpqlWithPage(String hql, int pageIdx, int pageSize, Object... params) {
-		Query q = em.createQuery(hql);
-	
-		if (ArrayUtils.isNotEmpty(params)) {
-			for (int i = 0; i < params.length; i++) {
-				q.setParameter(1 + i, params[i]);
-			}
-		}
-		if (pageIdx >= 0 && pageSize > 0) {
-			q.setFirstResult(pageIdx * pageSize);
-			q.setMaxResults(pageSize);
-		}
-		return q;
-	}
-	
-	protected Query jpqlWithPositionalParams(String hql, int pageIdx, int pageSize, Map<Integer, Object> positionalParams) {
-		final Query q = em.createQuery(hql);
-		if (pageIdx >= 0 && pageSize > 0) {
-			q.setFirstResult(pageIdx * pageSize);
-			q.setMaxResults(pageSize);
-		}
-	
-		if (MapUtils.isNotEmpty(positionalParams)) {
-			for (Map.Entry<Integer, Object> positionalParam : positionalParams.entrySet()) {
-				q.setParameter(positionalParam.getKey(), positionalParam.getValue());
-			}
-		}
-		return q;
-	}
-	
-	public int executeUpdateQuery(String jpql, Object...params) {
-		return jpql(jpql, params).executeUpdate();
 	}
 }

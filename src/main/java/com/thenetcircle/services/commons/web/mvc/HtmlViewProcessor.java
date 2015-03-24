@@ -22,7 +22,6 @@ import org.jsoup.select.Elements;
 
 import com.thenetcircle.services.commons.web.joint.script.PageScriptExecutionContext;
 import com.thenetcircle.services.commons.web.joint.script.ScriptExecutor;
-import com.thenetcircle.services.commons.web.joint.script.javascript.JSExecutor;
 import com.thenetcircle.services.commons.web.mvc.ResCacheMgr.CachedEntry;
 import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ScriptCtxModel;
 import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ViewFacade;
@@ -56,9 +55,7 @@ public class HtmlViewProcessor extends ResViewProcessor {
 
 			ViewProcModel vpm = new ViewProcModel(doc);
 
-			for (final Element el : els) {
-				vpm.getScriptCtxModelList().add(new ScriptCtxModel(doc, el));
-			}
+			els.forEach(el->vpm.getScriptCtxModelList().add(new ScriptCtxModel(doc, el)));
 
 			CachedEntry<ViewProcModel> newEntry = new CachedEntry<ViewProcModel>(vpm);
 			ResCacheMgr.cacheMap.put(currentPathStr, newEntry);
@@ -84,20 +81,15 @@ public class HtmlViewProcessor extends ResViewProcessor {
 
 	public void bindValuesToFormFields(final Element form) {
 		final Map<String, String[]> params = req.getParameterMap();
-		for (final String fieldName : params.keySet()) {
+		
+		params.forEach((fieldName, values)->{
 			final Elements fields = form.select(String.format("input[name=%s]", fieldName));
-			if (CollectionUtils.isEmpty(fields)) {
-				continue;
+			if (CollectionUtils.isEmpty(fields) || ArrayUtils.isEmpty(values)) {
+				return;
 			}
-
-			final String[] values = params.get(fieldName);
-			if (ArrayUtils.isEmpty(values)) {
-				continue;
-			}
-
 			for (int i = 0, j = fields.size(), k = values.length; i < j && i < k; i++) {
 				fields.get(i).val(values[i]);
 			}
-		}
+		});
 	}
 }

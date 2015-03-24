@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -125,18 +126,12 @@ public class ResCacheMgr implements ServletContextListener, Runnable {
 			log.info("cacheMap is empty now!");
 			return;
 		}
+		
+		final List<String> invalidPathList = cacheMap.keySet().stream().filter(pathStr -> !validate(pathStr)).collect(Collectors.toList());
 
-		final List<String> invalidPathList = new LinkedList<String>();
-
-		for (final String pathStr : cacheMap.keySet()) {
-			if (validate(pathStr))
-				continue;
-			invalidPathList.add(pathStr);
-		}
-
-		for (final String invalidPathStr : invalidPathList) {
+		invalidPathList.forEach(invalidPathStr -> {
 			cacheMap.remove(invalidPathStr);
 			log.warn(String.format("resource path: %s is invalid, evicted from %s", invalidPathStr, this.getClass().getSimpleName()));
-		}
+		});
 	}
 }

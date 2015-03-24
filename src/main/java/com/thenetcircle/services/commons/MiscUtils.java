@@ -17,6 +17,8 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.mail.Message;
 import javax.mail.Session;
@@ -202,13 +204,7 @@ public class MiscUtils {
 
 
 	public static NameValuePair[] getParamPairs(Map<String, ?> paramMap) {
-		List<NameValuePair> pairList = new ArrayList<NameValuePair>();
-	
-		for (Map.Entry<String, ?> en : paramMap.entrySet()) {
-			pairList.add(new BasicNameValuePair(en.getKey(), String.valueOf(en.getValue())));
-		}
-	
-		return pairList.toArray(new NameValuePair[0]);
+		return paramMap.entrySet().stream().map(en->new BasicNameValuePair(en.getKey(), String.valueOf(en.getValue()))).toArray(NameValuePair[]::new);
 	}
 
 	public static String mapToJson(Map<String, String> paramMap) {
@@ -259,27 +255,27 @@ public class MiscUtils {
 
 	public static Map<String, String> extractParams(MultivaluedMap<String, String> params) {
 		Map<String, String> paramsMap = new HashMap<String, String>();
-		for (String key : params.keySet()) {
+		params.keySet().forEach(key -> {
 			paramsMap.put(key, params.getFirst(key));
-		}
+		});
 		return paramsMap;
 	}
 
 	public static Map<String, String[]> toParamMap(MultivaluedMap<String, String> params) {
 		Map<String, String[]> paramsMap = new HashMap<String, String[]>();
-		for (String key : params.keySet()) {
+		params.keySet().forEach(key -> {
 			final List<String> valList = params.get(key);
 			paramsMap.put(key, valList.toArray(new String[0]));
-		}
+		});
 		return paramsMap;
 	}
 
 	public static Map<String, String> extractParams(Map<String, String[]> params) {
 		Map<String, String> paramsMap = new HashMap<String, String>();
-		for (String key : params.keySet()) {
+		params.keySet().forEach(key -> {
 			final String[] vals = params.get(key);
 			paramsMap.put(key, ArrayUtils.isEmpty(vals) ? null : vals[0]);
-		}
+		});
 		return paramsMap;
 	}
 

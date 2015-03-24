@@ -28,16 +28,19 @@ public class WeldBinder extends AbstractBinder {
 //			}
 			
 			BeanManager bm = CDI.current().getBeanManager();
-			for (final Bean bean : bm.getBeans(Object.class, DefaultLiteral.INSTANCE, AnyLiteral.INSTANCE)) {
-				try {
-					Object _ref = bm.getReference(bean, bean.getBeanClass(), bm.createCreationalContext(bean));
-					bind(_ref).to(bean.getBeanClass());
-				} catch (Exception e) {
-					log.info("failed to bind: " + e.getMessage());
-				}
-			}
+			
+			bm.getBeans(Object.class, DefaultLiteral.INSTANCE, AnyLiteral.INSTANCE).forEach(bean->bindToJerseyContext(bm, bean));
 		} catch (Exception e) {
 			log.error("failed to bind", e);
+		}
+	}
+
+	private void bindToJerseyContext(BeanManager bm, final Bean bean) {
+		try {
+			Object _ref = bm.getReference(bean, bean.getBeanClass(), bm.createCreationalContext(bean));
+			bind(_ref).to(bean.getBeanClass());
+		} catch (Exception e) {
+			log.info("failed to bind: " + e.getMessage());
 		}
 	}
 

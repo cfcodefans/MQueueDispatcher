@@ -1,7 +1,6 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -10,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -348,9 +348,7 @@ public class MQueueMgr {
 	}
 
 	public List<QueueCfg> startQueues(final List<QueueCfg> qcList) {
-		for (final QueueCfg qc : qcList) {
-			startQueue(qc);
-		}
+		qcList.forEach(this::startQueue);
 		return qcList;
 	}
 	
@@ -372,17 +370,8 @@ public class MQueueMgr {
 			return;
 		}
 		
-		final List<QueueCfg> qcs = new ArrayList<QueueCfg>();
-		
-		for (final QueueCfg qc : cfgAndCtxs.keySet()) {
-			if (edited.equals(qc.getServerCfg())) {
-				qcs.add(qc);
-			}
-		}
-		
-		for (final QueueCfg qc : qcs) {
-			updateQueueCfg(qc);
-		}
+		final List<QueueCfg> qcs = cfgAndCtxs.keySet().stream().filter(qc->edited.equals(qc.getServerCfg())).collect(Collectors.toList());
+		qcs.forEach(this::updateQueueCfg);
 		
 		JGroupsActor.instance().restartQueues(qcs.toArray(new QueueCfg[0]));
 	}
