@@ -177,23 +177,23 @@
 			<version>18.0</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.python</groupId>
-			<artifactId>jython</artifactId>
-			<version>2.7-b1</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.python</groupId> -->
+<!-- 			<artifactId>jython</artifactId> -->
+<!-- 			<version>2.7-b1</version> -->
+<!-- 		</dependency> -->
 
-		<dependency>
-			<groupId>org.clojure</groupId>
-			<artifactId>clojure</artifactId>
-			<version>1.7.0-alpha5</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.clojure</groupId> -->
+<!-- 			<artifactId>clojure</artifactId> -->
+<!-- 			<version>1.7.0-alpha5</version> -->
+<!-- 		</dependency> -->
 
-		<dependency>
-			<groupId>org.apache.clerezza.scala</groupId>
-			<artifactId>script-engine</artifactId>
-			<version>0.3</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.apache.clerezza.scala</groupId> -->
+<!-- 			<artifactId>script-engine</artifactId> -->
+<!-- 			<version>0.3</version> -->
+<!-- 		</dependency> -->
 	</dependencies>
 
 	<build>

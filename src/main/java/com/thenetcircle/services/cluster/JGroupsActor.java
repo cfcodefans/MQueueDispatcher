@@ -20,8 +20,6 @@ import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 
-import scala.actors.threadpool.Arrays;
-
 import com.thenetcircle.services.commons.Jsons;
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.persistence.jpa.JpaModule;

@@ -6,6 +6,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -117,9 +118,7 @@ public class HttpDispatcherActor implements IMessageActor {
 	}
 
 	public void handle(Collection<MessageContext> mcs) {
-		for (final MessageContext mc : mcs) {
-			handle(mc);
-		}
+		mcs.forEach(this::handle);
 	}
 
 	@SuppressWarnings({ "deprecation" })
@@ -184,9 +183,7 @@ public class HttpDispatcherActor implements IMessageActor {
 	public void stop() {
 		if (ArrayUtils.isEmpty(hacs))
 			return;
-		for (final CloseableHttpAsyncClient hac : hacs) {
-			close(hac);
-		}
+		Stream.of(hacs).forEach(this::close);
 	}
 
 	private void close(final CloseableHttpAsyncClient hac) {

@@ -64,9 +64,7 @@ public interface IMessageActor extends IActor<MessageContext> {
 
 		@Override
 		public void handle(final Collection<MessageContext> mcs) {
-			for (final MessageContext mc : mcs) {
-				handle(mc);
-			}
+			mcs.forEach(this::handle);
 		}
 
 		@Override

@@ -105,7 +105,7 @@ public class FailedJobRes {
 	@GET
 	@Path("/page_{page_idx}")
 	public List<MessageContext> getFailedMessages(@PathParam("page_idx") int pageIdx, @QueryParam("size") int pageSize) {
-		return mcDao.page(pageIdx, pageSize);
+		return mcDao.query("select mc from MessageContext mc", pageIdx, pageSize);
 	}
 	
 	@GET
@@ -135,13 +135,7 @@ public class FailedJobRes {
 			throw new WebApplicationException(
 					Response.status(Status.BAD_REQUEST).entity("invalid request: " + qcId).build());
 		}
-		
 		log.info("retrying messages for queue: " + qcId);
-		
-		final List<MessageContext> failedMsgs = getFailedJobs();
-		for (final MessageContext mc : failedMsgs) {
-			log.info("retrying message: \n\t" + mc);
-			HttpDispatcherActor.instance().handover(mc);
-		}
+		getFailedJobs().forEach(HttpDispatcherActor.instance()::handover);
 	}
 }
