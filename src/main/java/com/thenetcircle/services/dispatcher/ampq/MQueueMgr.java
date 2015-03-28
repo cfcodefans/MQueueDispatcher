@@ -129,13 +129,13 @@ public class MQueueMgr {
 			serverCfgAndConns.put(sc, connSet);
 		}
 
-		NamedConnection nc = null;
-		for (final NamedConnection _nc : connSet) {
-			if (_nc.qcSet.size() < NUM_CHANNEL_PER_CONN) {
-				nc = _nc;
-				break;
-			}
-		}
+		NamedConnection nc = connSet.stream().filter(_nc->_nc.qcSet.size() < NUM_CHANNEL_PER_CONN).findFirst().get();
+//		for (final NamedConnection _nc : connSet) {
+//			if (_nc.qcSet.size() < NUM_CHANNEL_PER_CONN) {
+//				nc = _nc;
+//				break;
+//			}
+//		}
 
 		try {
 			if (nc == null) {

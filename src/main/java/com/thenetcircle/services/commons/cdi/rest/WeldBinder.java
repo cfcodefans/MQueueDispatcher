@@ -14,7 +14,6 @@ public class WeldBinder extends AbstractBinder {
 	
 	private static Log log = LogFactory.getLog(WeldBinder.class);
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	protected void configure() {
 		try {
@@ -35,6 +34,7 @@ public class WeldBinder extends AbstractBinder {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	private void bindToJerseyContext(BeanManager bm, final Bean bean) {
 		try {
 			Object _ref = bm.getReference(bean, bean.getBeanClass(), bm.createCreationalContext(bean));

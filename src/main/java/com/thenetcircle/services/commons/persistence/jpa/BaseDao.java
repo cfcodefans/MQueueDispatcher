@@ -1,5 +1,6 @@
 package com.thenetcircle.services.commons.persistence.jpa;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +32,11 @@ import com.thenetcircle.services.commons.MiscUtils;
  * @param <T>
  */
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"rawtypes", "unchecked"})
 @TransactionManagement(TransactionManagementType.CONTAINER)
-public abstract class BaseDao<T> {
+public abstract class BaseDao<T> implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private static final Log log = LogFactory.getLog(BaseDao.class.getName());
 
 	@PersistenceContext(unitName = "PaymentSystemUnit")
@@ -106,7 +109,6 @@ public abstract class BaseDao<T> {
 	 * , java.lang.Object)
 	 */
 
-	@SuppressWarnings("rawtypes")
 	public Object findOneEntity(String hql, Object... params) {
 		final List result = queryEntityPage(hql, 0, 1, params);
 		return CollectionUtils.isEmpty(result) ? null : result.get(0);
@@ -217,11 +219,10 @@ public abstract class BaseDao<T> {
 		if (StringUtils.isBlank(hql)) {
 			return 0;
 		}
-		final List<?> resultList = queryPageByPositionalParams(hql, -1, -1, positionalParams);
 		return getCountFromResult(SimpleQueryBuilder.byHQL(hql, em).withPositionedParams(positionalParams).doQuery());
 	}
 
-	@SuppressWarnings("rawtypes")
+	
 	public List queryEntity(String hql, Object... params) {
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
@@ -236,7 +237,7 @@ public abstract class BaseDao<T> {
 	 * com.netcircle.paymentsystem.dao.impl.IBaseDao#queryPage(java.lang.String,
 	 * int, int, java.lang.Object)
 	 */
-	@SuppressWarnings("rawtypes")
+	
 	public List queryEntityPage(String hql, int pageIdx, int pageSize, Object... params) {
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
@@ -244,21 +245,20 @@ public abstract class BaseDao<T> {
 		return SimpleQueryBuilder.byHQL(hql, em).page(pageIdx, pageSize).withPositionedParams(params).doQuery();
 	}
 
-	@SuppressWarnings("rawtypes")
+	
 	public List queryEntityPageByNamedParams(String hql, int pageIdx, int pageSize, Map<String, Object> namedParams) {
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
 		}
-
 		return SimpleQueryBuilder.byHQL(hql, em).page(pageIdx, pageSize).withNamedParams(namedParams).doQuery();
 	}
 
-	@SuppressWarnings("rawtypes")
+	
 	public List queryEntityByNamedParams(String hql, Map<String, Object> namedParams) {
 		return SimpleQueryBuilder.byHQL(hql, em).withNamedParams(namedParams).doQuery();
 	}
 
-	@SuppressWarnings("rawtypes")
+	
 	public List queryEntityPageByPositionalParams(String hql, int pageIdx, int pageSize, Map<Integer, Object> positionalParams) {
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
@@ -266,7 +266,7 @@ public abstract class BaseDao<T> {
 		return SimpleQueryBuilder.byHQL(hql, em).page(pageIdx, pageSize).withPositionedParams(positionalParams).doQuery();
 	}
 
-	@SuppressWarnings("rawtypes")
+	
 	public List queryEntityByPositionalParams(String hql, Map<Integer, Object> positionalParams) {
 		return SimpleQueryBuilder.byHQL(hql, em).withPositionedParams(positionalParams).doQuery();
 	}

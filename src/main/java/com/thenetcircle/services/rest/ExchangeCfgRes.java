@@ -1,6 +1,7 @@
 package com.thenetcircle.services.rest;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.ws.rs.FormParam;
@@ -132,9 +133,7 @@ public class ExchangeCfgRes {
 			final ExchangeCfg edited = ecDao.update(prepare(ec));
 			
 			final QueueCfg[] qcs = edited.getQueues().toArray(new QueueCfg[0]);
-			for (final QueueCfg qc : qcs) {
-				MQueueMgr.instance().updateQueueCfg(qc);
-			}
+			Stream.of(qcs).forEach(qc->MQueueMgr.instance().updateQueueCfg(qc));
 			JGroupsActor.instance().restartQueues(qcs);
 			
 			return edited;

@@ -33,16 +33,26 @@ public class JpaModule {
 	protected static final Log log = LogFactory.getLog(JpaModule.class.getName());
 	private static JpaModule instance; 
 	
-	private static ThreadLocal<EntityManager> ems = new ThreadLocal<EntityManager>();
+	private static ThreadLocal<EntityManager> ems = new ThreadLocal<EntityManager>() {
+		protected EntityManager initialValue() {
+			log.info(MiscUtils.invocationInfo());
+			initEmf();			
+			return emf.createEntityManager();
+		};
+	};
+	
+	private static synchronized void initEmf() {
+		if (emf == null || !emf.isOpen()) {
+			log.info("loading EntityManagerFactory......\n");
+			emf = Persistence.createEntityManagerFactory(UN, getExternalPersistenceCfgs());
+			log.info("\nEntityManagerFactory is loaded......\n");
+		}
+	}
 	
 	@PostConstruct
 	public void init() {
 		log.info(MiscUtils.invocationInfo());
-		log.info("loading EntityManagerFactory......\n");
-		
-		emf = Persistence.createEntityManagerFactory(UN, getExternalPersistenceCfgs());
-		
-		log.info("\nEntityManagerFactory is loaded......\n");
+		initEmf();
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -82,17 +92,19 @@ public class JpaModule {
 		log.info("creating EntityManager for Thread: " + Thread.currentThread().getName());
 		ems.remove();
 		
-		log.info(MiscUtils.invocationInfo());
-		if (emf == null || !emf.isOpen()) {
-			emf = Persistence.createEntityManagerFactory(UN, getExternalPersistenceCfgs());
-		}
+		return ems.get();
 		
-		final EntityManager newEM = emf.createEntityManager();
-		ems.set(newEM);
-		
-		log.info("created new EntityManager for Thread: " + Thread.currentThread().getName());
-		
-		return newEM;
+//		log.info(MiscUtils.invocationInfo());
+//		if (emf == null || !emf.isOpen()) {
+//			emf = Persistence.createEntityManagerFactory(UN, getExternalPersistenceCfgs());
+//		}
+//		
+//		final EntityManager newEM = emf.createEntityManager();
+//		ems.set(newEM);
+//		
+//		log.info("created new EntityManager for Thread: " + Thread.currentThread().getName());
+//		
+//		return newEM;
 	}
 	
 	@PreDestroy

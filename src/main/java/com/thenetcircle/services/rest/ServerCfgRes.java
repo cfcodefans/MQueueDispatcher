@@ -21,12 +21,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.commons.Jsons;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
-import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
-import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Path("server_cfgs")
@@ -37,8 +34,8 @@ public class ServerCfgRes {
 	@Inject
 	private ServerCfgDao scDao;
 	
-	@Inject
-	private QueueCfgDao qcDao;
+//	@Inject
+//	private QueueCfgDao qcDao;
 
 	@PUT
 	public ServerCfg create(@FormParam("entity") final String reqStr) {

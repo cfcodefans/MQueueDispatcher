@@ -13,8 +13,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.commons.Jsons;
 import com.thenetcircle.services.commons.rest.ajax.AjaxResMetaData;
@@ -32,5 +30,5 @@ public class AjaxRes {
 		return Response.ok(Jsons.toString(proxyList.toArray(new AjaxResMetaData[0]))).build();
 	}
 
-	private static Log log = LogFactory.getLog(AjaxRes.class);
+//	private static Log log = LogFactory.getLog(AjaxRes.class);
 }

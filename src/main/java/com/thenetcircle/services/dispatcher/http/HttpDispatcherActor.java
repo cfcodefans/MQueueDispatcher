@@ -6,6 +6,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -199,7 +200,7 @@ public class HttpDispatcherActor implements IMessageActor {
 
 	private void initHttpAsyncClients() {
 		hacs = new CloseableHttpAsyncClient[CLIENT_NUM];
-		for (int i = 0; i < CLIENT_NUM; i++) {
+		IntStream.range(0, CLIENT_NUM).forEach(i-> {
 			final RequestConfig reqCfg = RequestConfig.custom()
 											.setConnectTimeout(DEFAULT_TIMEOUT)
 											.setSocketTimeout(DEFAULT_TIMEOUT)
@@ -216,7 +217,7 @@ public class HttpDispatcherActor implements IMessageActor {
 													.build();
 			hac.start();
 			hacs[i] = hac;
-		}
+		});
 		httpClientIterator = new LoopingArrayIterator<CloseableHttpAsyncClient>(hacs);
 	}
 }

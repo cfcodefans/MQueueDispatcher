@@ -89,7 +89,6 @@ public class AjaxResLoader extends ResourceConfig {
 			return proxyList;
 		}
 
-		@SuppressWarnings("rawtypes")
 		public void build(final ResourceModel _resModel, final ResourceConfig _app) {
 			resModel = _resModel;
 			appCfg = _app;

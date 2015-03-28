@@ -158,9 +158,7 @@ public class MQueueCfgRes {
 		final List<QueueCfg> qcList = qcDao.findAll();
 		final Collection<QueueCfg> queueCfgs = MQueueMgr.instance().getQueueCfgs();
 		final Collection<QueueCfg> nonStartedQueueCfgs = CollectionUtils.subtract(qcList, queueCfgs);
-		for (final QueueCfg qc : nonStartedQueueCfgs) {
-			qc.setEnabled(false);
-		}
+		nonStartedQueueCfgs.forEach(qc->qc.setEnabled(false));
 		return Response.ok(qcList.toArray(new QueueCfg[0]), MediaType.APPLICATION_XML_TYPE).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
 	}
 

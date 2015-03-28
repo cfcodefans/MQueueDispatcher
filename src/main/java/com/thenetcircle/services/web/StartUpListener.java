@@ -52,7 +52,7 @@ public class StartUpListener implements ServletContextListener {
 			log.info(MiscUtils.invocationInfo());
 			log.info("\n\tloading QueueCfg from database\n");
 
-			final List<QueueCfg> qcList = null;// qcDao.findEnabled();
+			final List<QueueCfg> qcList = qcDao.findEnabled();
 
 			if (CollectionUtils.isEmpty(qcList)) {
 				log.warn("\n\tnot QueueCfg found!\n");
@@ -64,16 +64,14 @@ public class StartUpListener implements ServletContextListener {
 			final ExecutorService threadPool = Executors.newFixedThreadPool(MiscUtils.AVAILABLE_PROCESSORS, MiscUtils.namedThreadFactory("MQueueLoader"));
 			final MQueueMgr mqueueMgr = MQueueMgr.instance();
 			
-			for (final QueueCfg qc : qcList) {
-				threadPool.submit(new Runnable() {
-					@Override
-					public void run() {
-						final QueueCfg startedQueue = mqueueMgr.startQueue(qc);
-						if (startedQueue.isEnabled() && Status.running.equals(startedQueue.getStatus())) return;
-						mqueueMgr.getReconnActor().reconnect(qc);
-					}
+			qcList.forEach(qc->{
+				threadPool.submit(()->{
+					final QueueCfg startedQueue = mqueueMgr.startQueue(qc);
+					if (startedQueue.isEnabled() && Status.running.equals(startedQueue.getStatus())) return;
+					mqueueMgr.getReconnActor().reconnect(qc);
 				});
-			}
+			});
+			
 			threadPool.shutdown();
 			
 			log.info("\n\nWait for queues initialization");

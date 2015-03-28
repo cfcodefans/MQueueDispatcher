@@ -45,11 +45,9 @@ public class NotificationActor implements Runnable {
 		scDao.close();
 		
 		final String mailStr = StringUtils.join(new String[] {
-				
 				"Dear Admins",
 				String.format("from %s to %s", start, end),
 				"there are :"
-				
 		}, "\n");
 		
 		
