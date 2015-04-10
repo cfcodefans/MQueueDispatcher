@@ -93,10 +93,7 @@ public class DefaultFailedMessageHandler implements Runnable, IFailsafe {
 	}
 
 	public void handle(Collection<MessageContext> mcs) {
-		for (final MessageContext mc : mcs) {
-			handle(mc);
-		}
-		return;
+		mcs.forEach(this::handle);
 	}
 
 	public void handover(Collection<MessageContext> mcs) {
