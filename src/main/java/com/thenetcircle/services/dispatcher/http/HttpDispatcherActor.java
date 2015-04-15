@@ -102,10 +102,14 @@ public class HttpDispatcherActor implements IMessageActor {
 		if (ArrayUtils.isEmpty(nameAndValues)) {
 			return null;
 		}
+		
 		final List<NameValuePair> params = new ArrayList<NameValuePair>();
-		for (int i = 0, j = nameAndValues.length - 1; i < j; i += 2) {
-			params.add(new BasicNameValuePair(nameAndValues[i], nameAndValues[i + 1]));
-		}
+		IntStream.range(0, nameAndValues.length - 1).filter(i -> (i % 2 == 0))
+				.forEach(i -> params.add(new BasicNameValuePair(nameAndValues[i], nameAndValues[i + 1])));
+		
+//		for (int i = 0, j = nameAndValues.length - 1; i < j; i += 2) {
+//			params.add(new BasicNameValuePair(nameAndValues[i], nameAndValues[i + 1]));
+//		}
 		return params;
 	}
 

@@ -76,16 +76,24 @@ public class NotificationActor implements Runnable {
 			content.append(contentStr).append('\n');
 		}
 		
-		for (final Map.Entry<String, StringBuilder> entry : mailsAndContents.entrySet()) {
-			if (StringUtils.isBlank(entry.getKey()) || entry.getValue() == null) {
-				continue;
-			}
+		mailsAndContents.entrySet().stream().sorted().filter(en->!(StringUtils.isBlank(en.getKey()) || en.getValue() == null)).forEach(en->{
 			try {
-				MiscUtils.sendMail("localhost", 25, "dispatcher@thenetcircle.com", entry.getKey(), "failed message report", entry.getValue().toString());
+				MiscUtils.sendMail("localhost", 25, "dispatcher@thenetcircle.com", en.getKey(), "failed message report", en.getValue().toString());
 			} catch (Exception e) {
 				log.error("failed to send report by " + end, e);
 			}
-		}
+		});
+//		
+//		for (final Map.Entry<String, StringBuilder> entry : mailsAndContents.entrySet()) {
+//			if (StringUtils.isBlank(entry.getKey()) || entry.getValue() == null) {
+//				continue;
+//			}
+//			try {
+//				MiscUtils.sendMail("localhost", 25, "dispatcher@thenetcircle.com", entry.getKey(), "failed message report", entry.getValue().toString());
+//			} catch (Exception e) {
+//				log.error("failed to send report by " + end, e);
+//			}
+//		}
 	}
 	
 	private NotificationActor() {

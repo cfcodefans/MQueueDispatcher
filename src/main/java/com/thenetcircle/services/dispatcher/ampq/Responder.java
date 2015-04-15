@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -64,7 +65,6 @@ public class Responder implements IMessageActor, Runnable {
 	public void handle(Collection<MessageContext> mcs) {
 		mcs.forEach(this::handle);
 	}
-
 	
 	@Override
 	public MessageContext handle(final MessageContext mc) {
@@ -117,9 +117,7 @@ public class Responder implements IMessageActor, Runnable {
 	}
 	
 	public static void stopAll() {
-		for (Responder instance : instances.getArray()) {
-			instance.stop();
-		}
+		Stream.of(instances.getArray()).forEach(instance->instance.stop());
 	}
 
 	private ExecutorService executor = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory(Responder.class.getSimpleName()));

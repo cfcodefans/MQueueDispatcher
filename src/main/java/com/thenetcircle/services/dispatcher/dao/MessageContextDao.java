@@ -2,6 +2,7 @@ package com.thenetcircle.services.dispatcher.dao;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Default;
@@ -13,6 +14,7 @@ import com.thenetcircle.services.commons.persistence.jpa.BaseDao;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+
 
 @Default
 @RequestScoped //for java se, only applicatoin scope available
@@ -79,15 +81,12 @@ public class MessageContextDao extends BaseDao<MessageContext> {
 		
 		final StringBuilder sb = new StringBuilder();
 		
-		for (final Object[] row : resultList) {
-			for (int i = 0; i < row.length; i++) {
-				if (i == row.length - 1) {
-					sb.append(StringUtils.substring(String.valueOf(row[i]), 0, 20)).append("......\n");
-				} else {
-					sb.append(row[i]).append('\t');
-				}
-			}
-		}
+		resultList.forEach(row -> {
+			IntStream.range(0, row.length - 1).forEach(i->{
+				sb.append(StringUtils.substring(String.valueOf(row[i]), 0, 20)).append("......\n");
+			});
+			sb.append(row[row.length - 1]).append('\t');
+		});
 		
 		return sb.toString();
 	}
