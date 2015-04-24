@@ -1,6 +1,5 @@
 package com.thenetcircle.services.commons.rest.utils;
 
-import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Singleton;
 import javax.ws.rs.CookieParam;
@@ -33,7 +34,6 @@ import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
-import org.glassfish.jersey.server.model.AnnotatedMethod;
 import org.glassfish.jersey.server.model.MethodList;
 import org.glassfish.jersey.server.model.Parameter;
 import org.glassfish.jersey.server.model.Resource;
@@ -120,56 +120,42 @@ public class AjaxResLoader extends ResourceConfig {
 
 		@SuppressWarnings("rawtypes")
 			private static List<Parameter> getClassSetters(final boolean encodedFlag, final Class handlerClass) {
-		    	final MethodList methodList = new MethodList(handlerClass, true);
-		    	List<Parameter> params = new ArrayList<Parameter>();
-		        for (AnnotatedMethod method : methodList.withoutMetaAnnotation(HttpMethod.class).
-		                withoutAnnotation(Path.class).
-		                withoutAnnotation(Context.class).
-		                hasNumParams(1).
-		                hasReturnType(void.class).
-		                nameStartsWith("set")) {
-		            Parameter p = Parameter.create(
-		                    handlerClass,
-		                    method.getMethod().getDeclaringClass(),
-		                    encodedFlag || method.isAnnotationPresent(Encoded.class),
-		                    method.getParameterTypes()[0],
-		                    method.getGenericParameterTypes()[0],
-		                    method.getAnnotations());
-		            if (null != p) {
-		//                ResourceMethodValidator.validateParameter(p, method.getMethod(), method.getMethod().toGenericString(), "1",
-		//                        isSingleton(handlerClass));
-		            	params.add(p);
-		            }
-		        }
-		        return params;
+		    	MethodList methodList = new MethodList(handlerClass, true);
+		    	
+		    	methodList = methodList.withoutMetaAnnotation(HttpMethod.class).
+                withoutAnnotation(Path.class).
+                withoutAnnotation(Context.class).
+                hasNumParams(1).
+                hasReturnType(void.class).
+                nameStartsWith("set");
+		    	
+		    	//AnnotatedMethod
+		    	return Stream.generate(methodList.iterator()::next).map(method->Parameter.create(
+	                    handlerClass,
+	                    method.getMethod().getDeclaringClass(),
+	                    encodedFlag || method.isAnnotationPresent(Encoded.class),
+	                    method.getParameterTypes()[0],
+	                    method.getGenericParameterTypes()[0],
+	                    method.getAnnotations())).filter(param->param != null).collect(Collectors.toList());
+		    	
 		    }
 
 		@SuppressWarnings("rawtypes")
 		    private static List<Parameter> getClassFields(final boolean encodedFlag, Class handlerClass) {
-		    	List<Parameter> params = new ArrayList<Parameter>();
-		        for (Field field : AccessController.doPrivileged(ReflectionHelper.getDeclaredFieldsPA(handlerClass))) {
-		            if (field.getDeclaredAnnotations().length > 0 
+				return Stream.of(AccessController.doPrivileged(ReflectionHelper.getDeclaredFieldsPA(handlerClass))).filter(field->(field.getDeclaredAnnotations().length > 0 
 		            		&& (field.isAnnotationPresent(QueryParam.class)
 		            		|| field.isAnnotationPresent(PathParam.class)
 		            		|| field.isAnnotationPresent(CookieParam.class)
 		            		|| field.isAnnotationPresent(MatrixParam.class)
 		            		|| field.isAnnotationPresent(FormParam.class)
-		            		|| field.isAnnotationPresent(HeaderParam.class))) {
-		                Parameter p = Parameter.create(
+		            		|| field.isAnnotationPresent(HeaderParam.class)))).map(field->Parameter.create(
 		                        handlerClass,
 		                        field.getDeclaringClass(),
 		                        encodedFlag || field.isAnnotationPresent(Encoded.class),
 		                        field.getType(),
 		                        field.getGenericType(),
-		                        field.getAnnotations());
-		                if (null != p) {
-		//                    ResourceMethodValidator.validateParameter(p, field, field.toGenericString(), field.getName(),
-		//                            isInSingleton);
-		                	params.add(p);
-		                }
-		            }
-		        }
-		        return params;
+		                        field.getAnnotations())).collect(Collectors.toList());
+			
 		    }
 
 		/**

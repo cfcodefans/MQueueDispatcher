@@ -67,7 +67,7 @@ public class HtmlViewProcessor extends ResViewProcessor {
 			ViewFacade vf = vpm.getViewFacade();
 			Element doc = vf._doc;
 			ScriptContext sc = new SimpleScriptContext();
-
+			
 			for (final Element scriptElement : vf.scriptElementList) {
 				final ScriptExecutor se = new ScriptExecutor(new PageScriptExecutionContext(doc, scriptElement, req, resp, currentPathStr, sc));
 				sc = se.execute();

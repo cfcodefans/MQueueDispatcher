@@ -319,15 +319,8 @@ public class MQueueMgr {
 			}
 			
 			final Channel ch = queueCtx.ch;
-//			if (!ch.isOpen()) {
-//				final String infoStr = "can't acknowledge the message as channel is closed!\n\t" + qc;
-//				log.error(infoStr);
-//				_error(qc.getServerCfg(), infoStr);
-//				return mc;
-//			}
 			ch.basicAck(deliveryTag, false);
 			_info(qc.getServerCfg(), "the result of job: " + deliveryTag + " for q " + qc.getName() + " on server " + qc.getServerCfg().getVirtualHost() + "\nresponse: " + mc.getResponse());
-			// MsgMonitor.prefLog(mc, log);
 		} catch (final IOException e) {
 			final String infoStr = "failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse();
 			log.error(infoStr, e);
@@ -372,7 +365,6 @@ public class MQueueMgr {
 		
 		final List<QueueCfg> qcs = cfgAndCtxs.keySet().stream().filter(qc->edited.equals(qc.getServerCfg())).collect(Collectors.toList());
 		qcs.forEach(this::updateQueueCfg);
-		
 		JGroupsActor.instance().restartQueues(qcs.toArray(new QueueCfg[0]));
 	}
 }
