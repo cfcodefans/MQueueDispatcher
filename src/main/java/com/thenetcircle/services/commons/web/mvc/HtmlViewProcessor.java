@@ -55,7 +55,7 @@ public class HtmlViewProcessor extends ResViewProcessor {
 
 			ViewProcModel vpm = new ViewProcModel(doc);
 
-			els.forEach(el->vpm.getScriptCtxModelList().add(new ScriptCtxModel(doc, el)));
+			els.stream().map(el->new ScriptCtxModel(doc, el)).forEach(vpm.getScriptCtxModelList()::add);
 
 			CachedEntry<ViewProcModel> newEntry = new CachedEntry<ViewProcModel>(vpm);
 			ResCacheMgr.cacheMap.put(currentPathStr, newEntry);

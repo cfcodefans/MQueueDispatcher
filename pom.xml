@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>cf.jee</groupId>
-	<artifactId>dispatcher</artifactId>
+	<artifactId>RabbitMQ-Dispatcher</artifactId>
 	<version>0.0.1</version>
 	<packaging>war</packaging>
 
-	<name>dispatcher</name>
+	<name>RabbitMQ-Dispatcher</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

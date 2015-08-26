@@ -78,7 +78,7 @@ public class AjaxResMetaData implements Serializable {
 		resMD.name = StringUtils.substringAfterLast(resMD.name, ".");
 		resMD.path = res.getPath();
 
-		res.getChildResources().stream().map(subRes -> build(subRes)).filter(subResMD -> subResMD != null).forEach(subResMD -> {
+		res.getChildResources().stream().map(AjaxResMetaData::build).filter(subResMD -> subResMD != null).forEach(subResMD -> {
 			subResMD.parent = resMD;
 			resMD.children.add(subResMD);
 		});

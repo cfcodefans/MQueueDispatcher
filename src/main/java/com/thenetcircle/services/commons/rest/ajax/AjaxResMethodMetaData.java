@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.core.MediaType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -51,8 +52,8 @@ public class AjaxResMethodMetaData implements Serializable {
 		aResMd.returnType = resMd.getInvocable().getRawResponseType();
 		aResMd.jaxrsType = resMd.getType();
 
-		resMd.getProducedTypes().stream().map(mt -> mt.toString()).forEach(aResMd.produceMediaTypes::add);
-		resMd.getConsumedTypes().stream().map(mt -> mt.toString()).forEach(aResMd.consumedMediaTypes::add);
+		resMd.getProducedTypes().stream().map(MediaType::toString).forEach(aResMd.produceMediaTypes::add);
+		resMd.getConsumedTypes().stream().map(MediaType::toString).forEach(aResMd.consumedMediaTypes::add);
 		resMd.getInvocable().getParameters().stream().map(ParamMetaData::build).forEach(aResMd.params::add);
 
 		return aResMd;

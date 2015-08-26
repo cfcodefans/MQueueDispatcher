@@ -104,7 +104,7 @@ public class ProcTrace {
 		sb.append("\n").append(prefix).append(System.currentTimeMillis() - te.startTime).append(" ms:\t").append(te.steps.poll().stepInfo);
 		te.steps.stream().forEach((ts) -> sb.append('\n').append(prefix).append(INDENT).append(ts.toString()));
 		sb.append('\n');
-//		pt.buf.append(sb);
+
 		if (pt.stack.isEmpty()) {
 			pt.buf.append(sb);
 		} else {

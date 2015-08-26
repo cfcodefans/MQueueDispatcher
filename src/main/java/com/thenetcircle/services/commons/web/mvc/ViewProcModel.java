@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.jsoup.nodes.Element;
@@ -40,10 +41,11 @@ public class ViewProcModel implements Serializable {
 	
 	public ViewFacade getViewFacade() {
 		final Element _doc = doc.clone();
-		final List<Element> _scriptElementList = new LinkedList<Element>();
-		for (ScriptCtxModel cm : scriptCtxModelList) {
-			_scriptElementList.add(cm.getScriptElementByPath(_doc));
-		}
+		List<Element> _scriptElementList = scriptCtxModelList.stream().map(cm->cm.getScriptElementByPath(_doc)).collect(Collectors.toList());
+//		final List<Element> _scriptElementList = new LinkedList<Element>();
+//		for (ScriptCtxModel cm : scriptCtxModelList) {
+//			_scriptElementList.add(cm.getScriptElementByPath(_doc));
+//		}
 		return new ViewFacade(_doc, _scriptElementList);
 	}
 	

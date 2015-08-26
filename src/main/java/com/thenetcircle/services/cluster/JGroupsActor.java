@@ -34,13 +34,13 @@ public class JGroupsActor extends ReceiverAdapter {
 		stop {
 			@Override
 			public void execute(Set<QueueCfg> qcs) {
-				qcs.forEach(qc->MQueueMgr.instance().stopQueue(qc));
+				qcs.forEach(MQueueMgr.instance()::stopQueue);
 			}
 		},
 		restart {
 			@Override
 			public void execute(Set<QueueCfg> qcs) {
-				qcs.forEach(qc->MQueueMgr.instance().updateQueueCfg(qc));
+				qcs.forEach(MQueueMgr.instance()::updateQueueCfg);
 			}
 		};
 
@@ -126,7 +126,7 @@ public class JGroupsActor extends ReceiverAdapter {
 			return;
 		}
 		
-		final Command stopCmd = new Command(Stream.of(qcs).map(qc->qc.getId()).collect(Collectors.toList()), CommandType.stop);
+		final Command stopCmd = new Command(Stream.of(qcs).map(QueueCfg::getId).collect(Collectors.toList()), CommandType.stop);
 		send(stopCmd);
 	}
 	
@@ -135,7 +135,7 @@ public class JGroupsActor extends ReceiverAdapter {
 			return;
 		}
 		
-		final Command stopCmd = new Command(Stream.of(qcs).map(qc->qc.getId()).collect(Collectors.toList()), CommandType.restart);
+		final Command stopCmd = new Command(Stream.of(qcs).map(QueueCfg::getId).collect(Collectors.toList()), CommandType.restart);
 		send(stopCmd);
 	}
 
@@ -186,7 +186,7 @@ public class JGroupsActor extends ReceiverAdapter {
 		}
 		
 		final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
-		final Set<QueueCfg> qcs = cmd.qcIds.stream().map(id->qcDao.find(id)).filter(qc->qc != null).collect(Collectors.toSet());
+		final Set<QueueCfg> qcs = cmd.qcIds.stream().map(qcDao::find).filter(qc->qc != null).collect(Collectors.toSet());
 		cmd.execute(qcs);
 		qcDao.close();
 	}
