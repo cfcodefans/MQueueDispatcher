@@ -206,7 +206,7 @@ public class ThreadsTest {
 		try {
 			publisher.close();
 			publisher.getConnection().close();
-		} catch (final IOException e) {
+		} catch (final Exception e) {
 			log.log(Level.SEVERE, "fail to shutdown publisher", e);
 		}
 		md.shutdown();

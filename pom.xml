@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -11,6 +12,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<jersey.version>2.21</jersey.version>
+		<weld.version>2.2.0.SP1</weld.version>
 	</properties>
 
 	<dependencies>
@@ -22,7 +25,7 @@
 		<dependency>
 			<groupId>com.rabbitmq</groupId>
 			<artifactId>amqp-client</artifactId>
-			<version>3.4.2</version>
+			<version>3.5.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -37,7 +40,7 @@
 		<dependency>
 			<groupId>org.jgroups</groupId>
 			<artifactId>jgroups</artifactId>
-			<version>3.5.0.CR2</version>
+			<version>3.6.6.Final</version>
 		</dependency>
 
 		<dependency>
@@ -85,7 +88,7 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
-			<version>4.3.5.Final</version>
+			<version>5.0.2.Final</version>
 		</dependency>
 
 		<dependency>
@@ -102,7 +105,7 @@
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-web-api</artifactId>
-			<version>6.0-RC2</version>
+			<version>7.0</version>
 			<optional>true</optional>
 			<scope>compile</scope>
 		</dependency>
@@ -119,22 +122,22 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.ext</groupId>
 			<artifactId>jersey-mvc</artifactId>
-			<version>2.10</version>
+			<version>${jersey.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet</artifactId>
-			<version>2.10</version>
+			<version>${jersey.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-json-jackson</artifactId>
-			<version>2.10</version>
+			<version>${jersey.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-sse</artifactId>
-			<version>2.10</version>
+			<version>${jersey.version}</version>
 		</dependency>
 
 		<dependency>
@@ -145,14 +148,14 @@
 		<dependency>
 			<groupId>org.jboss.weld.se</groupId>
 			<artifactId>weld-se</artifactId>
-			<version>2.2.0.SP1</version>
+			<version>${weld.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- -->
 		<dependency>
 			<groupId>org.jboss.weld.servlet</groupId>
 			<artifactId>weld-servlet</artifactId>
-			<version>2.2.0.SP1</version>
+			<version>${weld.version}</version>
 		</dependency>
 
 		<dependency>
@@ -164,7 +167,7 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.8.1</version>
+			<version>1.8.3</version>
 		</dependency>
 		<!-- <dependency> -->
 		<!-- <groupId>net.sf.ehcache</groupId> -->
@@ -174,26 +177,26 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>18.0</version>
+			<version>19.0-rc2</version>
 		</dependency>
 
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.python</groupId> -->
-<!-- 			<artifactId>jython</artifactId> -->
-<!-- 			<version>2.7-b1</version> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.python</groupId> -->
+		<!-- <artifactId>jython</artifactId> -->
+		<!-- <version>2.7-b1</version> -->
+		<!-- </dependency> -->
 
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.clojure</groupId> -->
-<!-- 			<artifactId>clojure</artifactId> -->
-<!-- 			<version>1.7.0-alpha5</version> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.clojure</groupId> -->
+		<!-- <artifactId>clojure</artifactId> -->
+		<!-- <version>1.7.0-alpha5</version> -->
+		<!-- </dependency> -->
 
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.apache.clerezza.scala</groupId> -->
-<!-- 			<artifactId>script-engine</artifactId> -->
-<!-- 			<version>0.3</version> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.clerezza.scala</groupId> -->
+		<!-- <artifactId>script-engine</artifactId> -->
+		<!-- <version>0.3</version> -->
+		<!-- </dependency> -->
 	</dependencies>
 
 	<build>

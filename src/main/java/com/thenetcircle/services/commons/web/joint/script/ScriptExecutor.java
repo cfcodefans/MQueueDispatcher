@@ -12,7 +12,6 @@ import javax.script.ScriptException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.weld.exceptions.IllegalArgumentException;
 
 import com.thenetcircle.services.commons.MiscUtils;
 

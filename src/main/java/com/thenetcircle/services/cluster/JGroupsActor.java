@@ -98,7 +98,7 @@ public class JGroupsActor extends ReceiverAdapter {
 		
 		final File cfgFile = new File(cfgPathStr);
 		if (!(cfgFile.exists() && cfgFile.isFile())) {
-			log.error("JGroup cluster Configuration file is invalide: " + cfgPathStr);
+			log.error("JGroup cluster Configuration file is invalid: " + cfgPathStr);
 			return new JChannel();
 		}
 		
