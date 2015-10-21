@@ -1,10 +1,7 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
@@ -16,7 +13,7 @@ import org.apache.log4j.Logger;
 
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.MiscUtils.LoopingArrayIterator;
-import com.thenetcircle.services.dispatcher.IMessageActor;
+import com.thenetcircle.services.commons.actor.ConcurrentAsynActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
@@ -24,48 +21,11 @@ import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
 
-public class Responder implements IMessageActor, Runnable {
+public class Responder extends ConcurrentAsynActor<MessageContext> { // implements IMessageActor, Runnable {
 
 	protected static final Log log = LogFactory.getLog(Responder.class.getSimpleName());
-	private Queue<MessageContext> buf = new ConcurrentLinkedQueue<MessageContext>();
-	
 	private IFailsafe failsafe = FailedMessageSqlStorage.instance(); //DefaultFailedMessageHandler.instance();
 
-	@Override
-	public void run() {
-		try {
-			while (!Thread.interrupted()) {
-//				handle(buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT));
-				MessageContext polled = buf.poll();
-				if (polled != null) {
-					handle(polled);
-				} else {
-					Thread.sleep(1);
-				}
-//				log.info(MiscUtils.invocationInfo());
-			}
-		} catch (Exception e) {
-			log.error("Responder is interrupted");
-		}
-		log.info("Responder quits");
-	}
-
-	@Override
-	public MessageContext handover(final MessageContext mc) {
-		buf.offer(mc); 
-		return mc;
-	}
-
-	@Override
-	public void handover(Collection<MessageContext> mcs) {
-		buf.addAll(mcs);
-	}
-
-	@Override
-	public void handle(Collection<MessageContext> mcs) {
-		mcs.forEach(this::handle);
-	}
-	
 	@Override
 	public MessageContext handle(final MessageContext mc) {
 		if (mc == null) {
@@ -113,6 +73,7 @@ public class Responder implements IMessageActor, Runnable {
 
 	@Override
 	public void stop() {
+		super.stop();
 		executor.shutdownNow();
 	}
 	

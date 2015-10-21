@@ -38,6 +38,7 @@ public class ReconnectActor implements Runnable {
 			}
 			try {
 				final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
+				
 				final Set<QueueCfg> _queuesForReconnect = new LinkedHashSet<QueueCfg>(queuesForReconnect);
 				final Set<QueueCfg> tempSet = new LinkedHashSet<QueueCfg>(queuesForReconnect);
 				for (QueueCfg qc : _queuesForReconnect) {
@@ -47,6 +48,7 @@ public class ReconnectActor implements Runnable {
 						// TODO: handle exception
 						log.error("what is up?", e);
 					}
+					
 					log.info("reconnecting queue: " + qc.getName());
 					final QueueCfg _qc = MQueueMgr.instance.startQueue(qc);
 					if (qc.isEnabled()) {

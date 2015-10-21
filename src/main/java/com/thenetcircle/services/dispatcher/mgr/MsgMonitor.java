@@ -1,26 +1,25 @@
 package com.thenetcircle.services.dispatcher.mgr;
 
-import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.commons.MiscUtils;
-import com.thenetcircle.services.dispatcher.IMessageActor;
+import com.thenetcircle.services.commons.actor.BlockingAsynActor;
+import com.thenetcircle.services.commons.actor.IActor;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 
-public class MsgMonitor implements IMessageActor, Runnable {
+public class MsgMonitor extends BlockingAsynActor<MessageContext> {
 
-	private static MsgMonitor instance = new MsgMonitor();
+	private static MsgMonitor	instance	= new MsgMonitor();
 
 	public MsgMonitor() {
+		super();
 		executor.submit(this);
 	}
 
@@ -28,39 +27,8 @@ public class MsgMonitor implements IMessageActor, Runnable {
 		return instance;
 	}
 
-	protected static final Log log = LogFactory.getLog(MsgMonitor.class.getName());
-	private BlockingQueue<MessageContext> buf = new LinkedBlockingQueue<MessageContext>();
-	private ExecutorService executor = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory("Monitor"));
-
-	@Override
-	public void run() {
-		try {
-			while (!Thread.interrupted()) {
-				handle(buf.poll(WAIT_FACTOR, WAIT_FACTOR_UNIT));
-			}
-		} catch (Exception e) {
-			log.error("Responder is interrupted", e);
-		}
-		log.info("Responder quits");
-	}
-
-	@Override
-	public MessageContext handover(final MessageContext mc) {
-		buf.offer(mc);
-		return mc;
-	}
-
-	@Override
-	public void handover(final Collection<MessageContext> mcs) {
-		buf.addAll(mcs);
-	}
-
-	@Override
-	public void handle(final Collection<MessageContext> mcs) {
-		for (final MessageContext mc : mcs) {
-			handle(mc);
-		}
-	}
+	protected static final Log				log			= LogFactory.getLog(MsgMonitor.class.getName());
+	private ExecutorService					executor	= Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory("Monitor"));
 
 	@Override
 	public MessageContext handle(final MessageContext mc) {
@@ -68,7 +36,7 @@ public class MsgMonitor implements IMessageActor, Runnable {
 			return mc;
 		}
 
-		final IMessageActor monitor = queueAndMonitors.get(mc.getQueueCfg());
+		final IActor<MessageContext> monitor = queueAndMonitors.get(mc.getQueueCfg());
 		if (monitor != null) {
 			monitor.handover(mc);
 		}
@@ -78,12 +46,13 @@ public class MsgMonitor implements IMessageActor, Runnable {
 
 	@Override
 	public void stop() {
+		super.stop();
 		executor.shutdownNow();
 	}
 
-	private Map<QueueCfg, IMessageActor> queueAndMonitors = new ConcurrentHashMap<QueueCfg, IMessageActor>();
+	private Map<QueueCfg, IActor<MessageContext>>	queueAndMonitors	= new ConcurrentHashMap<QueueCfg, IActor<MessageContext>>();
 
-	public IMessageActor register(final QueueCfg qc, final IMessageActor monitor) {
+	public IActor<MessageContext> register(final QueueCfg qc, final IActor<MessageContext> monitor) {
 		if (qc == null || monitor == null) {
 			return null;
 		}
@@ -91,19 +60,19 @@ public class MsgMonitor implements IMessageActor, Runnable {
 		return queueAndMonitors.put(qc, monitor);
 	}
 
-	public IMessageActor getQueueMonitor(final QueueCfg qc) {
+	public IActor<MessageContext> getQueueMonitor(final QueueCfg qc) {
 		return queueAndMonitors.get(qc);
 	}
 
-	public IMessageActor unregister(final QueueCfg qc) {
-		IMessageActor removed = queueAndMonitors.remove(qc);
+	public IActor<MessageContext> unregister(final QueueCfg qc) {
+		IActor<MessageContext> removed = queueAndMonitors.remove(qc);
 		if (removed != null) {
 			removed.stop();
 		}
 		return removed;
 	}
 
-	public static void prefLog(final MessageContext mc, final Log _log, String...infos) {
+	public static void prefLog(final MessageContext mc, final Log _log, String... infos) {
 		final long dt = mc.getId();
 		if (dt % 100 == 11) {
 			_log.info("http performance: \t" + dt + " at \t" + System.currentTimeMillis());

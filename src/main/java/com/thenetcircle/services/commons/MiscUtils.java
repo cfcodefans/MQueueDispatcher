@@ -127,6 +127,31 @@ public class MiscUtils {
 		private AtomicInteger loopIdx = new AtomicInteger();
 	}
 	
+	public static interface ExSupplier<T> {
+		T get() throws Exception;
+	}
+
+	public static interface ExConsumer<T> {
+		void accept(T t) throws Exception;
+	}
+
+	public static interface ExFunc<T, R> {
+		R apply(T t) throws Exception;
+	}
+
+	public static interface ExBiFunc<T, U, R> {
+		R apply(T t, U u) throws Exception;
+	}
+
+	public static interface ExBiConsumer<T, U> {
+		void accept(T t, U u) throws Exception;
+	}
+
+	public static interface ExVarArgConsumer<T> {
+		@SuppressWarnings("unchecked")
+		void accept(T...args) throws Exception;
+	}
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Map map(Object...keyAndVals) {
 		return MapUtils.putAll(new HashMap(), keyAndVals);

@@ -12,15 +12,12 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg.Status;
-import com.thenetcircle.services.dispatcher.mgr.NotificationActor;
-import com.thenetcircle.services.rest.MonitorRes;
 
 
 @WebListener

@@ -19,7 +19,7 @@ import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
 public class ConsumerActor extends DefaultConsumer {
 
 	private QueueCfg queueCfg;
-	protected static final Log log = LogFactory.getLog(ConsumerActor.class.getName());
+	protected static final Log log = LogFactory.getLog(ConsumerActor.class);
 
 	public ConsumerActor(final Channel ch, final QueueCfg queueCfg) {
 		super(ch);

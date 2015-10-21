@@ -6,6 +6,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -32,7 +33,7 @@ import org.apache.http.util.EntityUtils;
 
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.MiscUtils.LoopingArrayIterator;
-import com.thenetcircle.services.dispatcher.IMessageActor;
+import com.thenetcircle.services.commons.actor.IActor;
 import com.thenetcircle.services.dispatcher.ampq.Responder;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
@@ -40,7 +41,7 @@ import com.thenetcircle.services.dispatcher.entity.MsgResp;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
 
-public class HttpDispatcherActor implements IMessageActor {
+public class HttpDispatcherActor implements IActor<MessageContext> {
 
 	private static class RespHandler implements FutureCallback<HttpResponse> {
 		private MessageContext mc;
@@ -118,7 +119,7 @@ public class HttpDispatcherActor implements IMessageActor {
 	private LoopingArrayIterator<CloseableHttpAsyncClient> httpClientIterator = null;
 
 	private HttpDispatcherActor() {
-		CLIENT_NUM = (int)MiscUtils.getPropertyNumber("httpclient.number", CLIENT_NUM);
+		CLIENT_NUM = (int) MiscUtils.getPropertyNumber("httpclient.number", CLIENT_NUM);
 		initHttpAsyncClients();
 	}
 
@@ -188,7 +189,9 @@ public class HttpDispatcherActor implements IMessageActor {
 	public void stop() {
 		if (ArrayUtils.isEmpty(hacs))
 			return;
-		Stream.of(hacs).forEach(this::close);
+		
+		if (stopped.compareAndSet(false, true))
+			Stream.of(hacs).forEach(this::close);
 	}
 
 	private void close(final CloseableHttpAsyncClient hac) {
@@ -224,4 +227,11 @@ public class HttpDispatcherActor implements IMessageActor {
 		});
 		httpClientIterator = new LoopingArrayIterator<CloseableHttpAsyncClient>(hacs);
 	}
+
+	@Override
+	public boolean isStopped() {
+		return stopped.get();
+	}
+	
+	private AtomicBoolean stopped;
 }

@@ -32,15 +32,15 @@ import com.thenetcircle.services.commons.MiscUtils;
  * @param <T>
  */
 
-@SuppressWarnings({"rawtypes", "unchecked"})
+@SuppressWarnings({ "rawtypes", "unchecked" })
 @TransactionManagement(TransactionManagementType.CONTAINER)
 public abstract class BaseDao<T> implements Serializable {
-	private static final long serialVersionUID = 1L;
+	private static final long	serialVersionUID	= 1L;
 
-	private static final Log log = LogFactory.getLog(BaseDao.class.getName());
+	private static final Log	log					= LogFactory.getLog(BaseDao.class.getName());
 
-	@PersistenceContext(unitName = "PaymentSystemUnit")
-	protected EntityManager em;
+	@PersistenceContext(unitName = "mqueue-dispatcher")
+	protected EntityManager		em;
 
 	public BaseDao() {
 
@@ -104,9 +104,7 @@ public abstract class BaseDao<T> implements Serializable {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.netcircle.paymentsystem.dao.impl.IBaseDao#queryCount(java.lang.String
-	 * , java.lang.Object)
+	 * @see com.netcircle.paymentsystem.dao.impl.IBaseDao#queryCount(java.lang.String , java.lang.Object)
 	 */
 
 	public Object findOneEntity(String hql, Object... params) {
@@ -120,27 +118,37 @@ public abstract class BaseDao<T> implements Serializable {
 	}
 
 	public void beginTransaction() {
+		beginTransaction(em);
+	}
+
+	public static EntityTransaction beginTransaction(EntityManager em) {
 		final EntityTransaction transaction = em.getTransaction();
 		if (transaction.isActive()) {
-			return;
+			return transaction;
 		}
 
 		transaction.begin();
+		return transaction;
 	}
 
-	public void endTransaction() {
+	public static EntityTransaction endTransaction(EntityManager em) {
 		final EntityTransaction transaction = em.getTransaction();
 		if (!transaction.isActive()) {
 			log.error("\nInactive Tranaction, No Commit");
-			return;
+			return transaction;
 		}
 
 		if (transaction.getRollbackOnly()) {
 			transaction.rollback();
-			return;
+			return transaction;
 		}
 
 		transaction.commit();
+		return transaction;
+	}
+
+	public void endTransaction() {
+		endTransaction(em);
 	}
 
 	public int executeUpdateQuery(String hql, Object... params) {
@@ -150,9 +158,7 @@ public abstract class BaseDao<T> implements Serializable {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.netcircle.paymentsystem.dao.impl.IBaseDao#queryCount(java.lang.String
-	 * , java.lang.Object)
+	 * @see com.netcircle.paymentsystem.dao.impl.IBaseDao#queryCount(java.lang.String , java.lang.Object)
 	 */
 
 	public List<T> query(String hql, Object... params) {
@@ -222,7 +228,6 @@ public abstract class BaseDao<T> implements Serializable {
 		return getCountFromResult(SimpleQueryBuilder.byHQL(hql, em).withPositionedParams(positionalParams).doQuery());
 	}
 
-	
 	public List queryEntity(String hql, Object... params) {
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
@@ -233,11 +238,9 @@ public abstract class BaseDao<T> implements Serializable {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.netcircle.paymentsystem.dao.impl.IBaseDao#queryPage(java.lang.String,
-	 * int, int, java.lang.Object)
+	 * @see com.netcircle.paymentsystem.dao.impl.IBaseDao#queryPage(java.lang.String, int, int, java.lang.Object)
 	 */
-	
+
 	public List queryEntityPage(String hql, int pageIdx, int pageSize, Object... params) {
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
@@ -245,7 +248,6 @@ public abstract class BaseDao<T> implements Serializable {
 		return SimpleQueryBuilder.byHQL(hql, em).page(pageIdx, pageSize).withPositionedParams(params).doQuery();
 	}
 
-	
 	public List queryEntityPageByNamedParams(String hql, int pageIdx, int pageSize, Map<String, Object> namedParams) {
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
@@ -253,12 +255,10 @@ public abstract class BaseDao<T> implements Serializable {
 		return SimpleQueryBuilder.byHQL(hql, em).page(pageIdx, pageSize).withNamedParams(namedParams).doQuery();
 	}
 
-	
 	public List queryEntityByNamedParams(String hql, Map<String, Object> namedParams) {
 		return SimpleQueryBuilder.byHQL(hql, em).withNamedParams(namedParams).doQuery();
 	}
 
-	
 	public List queryEntityPageByPositionalParams(String hql, int pageIdx, int pageSize, Map<Integer, Object> positionalParams) {
 		if (StringUtils.isBlank(hql)) {
 			return Collections.EMPTY_LIST;
@@ -266,7 +266,6 @@ public abstract class BaseDao<T> implements Serializable {
 		return SimpleQueryBuilder.byHQL(hql, em).page(pageIdx, pageSize).withPositionedParams(positionalParams).doQuery();
 	}
 
-	
 	public List queryEntityByPositionalParams(String hql, Map<Integer, Object> positionalParams) {
 		return SimpleQueryBuilder.byHQL(hql, em).withPositionedParams(positionalParams).doQuery();
 	}
@@ -307,7 +306,7 @@ public abstract class BaseDao<T> implements Serializable {
 	}
 
 	public static class SimpleQueryBuilder {
-		private final Query q;
+		private final Query	q;
 
 		public SimpleQueryBuilder(Query q) {
 			super();
