@@ -6,6 +6,7 @@ target/*
 *.war
 *.ear
 .classpath
+.project
 
 # svn #
 .svn/*

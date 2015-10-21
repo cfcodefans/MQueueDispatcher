@@ -22,25 +22,24 @@ import org.apache.commons.logging.LogFactory;
 
 import com.thenetcircle.services.commons.MiscUtils;
 
-
 @ApplicationScoped
 public class JpaModule {
-	
+
 	private static final String EXTERNAL_JPA_PROPERTIES = "external_jpa_properties";
-	
+
 	static EntityManagerFactory emf = null;
 	final static String UN = "mqueue-dispatcher";
 	protected static final Log log = LogFactory.getLog(JpaModule.class.getName());
-	private static JpaModule instance; 
-	
-	private static ThreadLocal<EntityManager> ems = new ThreadLocal<EntityManager>() {
-		protected EntityManager initialValue() {
-			log.info(MiscUtils.invocationInfo());
-			initEmf();			
-			return emf.createEntityManager();
-		};
+	private static JpaModule instance;
+
+	protected EntityManager initialValue() {
+		log.info(MiscUtils.invocationInfo());
+		initEmf();
+		return emf.createEntityManager();
 	};
-	
+
+	private static ThreadLocal<EntityManager> ems = ThreadLocal.withInitial(instance::initialValue);
+
 	private static synchronized void initEmf() {
 		if (emf == null || !emf.isOpen()) {
 			log.info("loading EntityManagerFactory......\n");
@@ -48,65 +47,52 @@ public class JpaModule {
 			log.info("\nEntityManagerFactory is loaded......\n");
 		}
 	}
-	
+
 	@PostConstruct
 	public void init() {
 		log.info(MiscUtils.invocationInfo());
 		initEmf();
 	}
-	
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static Map getExternalPersistenceCfgs() {
 		final String pathStr = System.getProperty(EXTERNAL_JPA_PROPERTIES);
 		if (StringUtils.isBlank(pathStr)) {
 			return Collections.EMPTY_MAP;
 		}
-		
+
 		if (Files.isReadable(Paths.get(pathStr))) {
 			log.warn(String.format("can't read %s", EXTERNAL_JPA_PROPERTIES));
 			return Collections.EMPTY_MAP;
 		}
-		
+
 		try {
 			final Properties p = new Properties();
 			p.load(new FileInputStream(pathStr));
-			
+
 			final HashMap settings = new HashMap(p);
 			log.info("\nhave loaded data source\n" + settings + "\n\n");
 			return settings;
 		} catch (Exception e) {
 			log.error("failed to load EXTERNAL_JPA_PROPERTIES: " + pathStr, e);
 		}
-		
+
 		return Collections.EMPTY_MAP;
 	}
-	
-	@Produces 
-//	@PersistenceContext
+
+	@Produces
 	public static EntityManager getEntityManager() {
 		final EntityManager em = ems.get();
 		if (em != null && em.isOpen()) {
 			return em;
 		}
-		
+
 		log.info("creating EntityManager for Thread: " + Thread.currentThread().getName());
 		ems.remove();
-		
+
 		return ems.get();
-		
-//		log.info(MiscUtils.invocationInfo());
-//		if (emf == null || !emf.isOpen()) {
-//			emf = Persistence.createEntityManagerFactory(UN, getExternalPersistenceCfgs());
-//		}
-//		
-//		final EntityManager newEM = emf.createEntityManager();
-//		ems.set(newEM);
-//		
-//		log.info("created new EntityManager for Thread: " + Thread.currentThread().getName());
-//		
-//		return newEM;
 	}
-	
+
 	@PreDestroy
 	public void destory() {
 		log.info(MiscUtils.invocationInfo());
@@ -117,7 +103,7 @@ public class JpaModule {
 		emf = null;
 		log.info("\n\nEntityManagerFactory is closed......\n");
 	}
-	
+
 	@Produces
 	public static JpaModule instance() {
 		if (instance == null) {
