@@ -12,14 +12,14 @@ import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg.Status;
 
 public class ReconnectActor implements Runnable {
-	private Set<QueueCfg> queuesForReconnect = new LinkedHashSet<QueueCfg>();
-	protected static final Logger log = Logger.getLogger(ReconnectActor.class);
+	private Set<QueueCfg>			queuesForReconnect	= new LinkedHashSet<QueueCfg>();
+	protected static final Logger	log					= Logger.getLogger(ReconnectActor.class);
 
 	public void reconnect(final QueueCfg qc) {
 		if (qc == null) {
 			return;
 		}
-		
+
 		final String infoStr = "going to reconnect queue: \n\t" + qc;
 		log.info(infoStr);
 		MQueueMgr._info(qc.getServerCfg(), infoStr);
@@ -31,14 +31,14 @@ public class ReconnectActor implements Runnable {
 	public void run() {
 		synchronized (queuesForReconnect) {
 			log.info(MiscUtils.invocationInfo() + "\n\n\n");
-			
+
 			if (queuesForReconnect.isEmpty()) {
 				log.info("no queue needs to be reconnected");
 				return;
 			}
 			try {
 				final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
-				
+
 				final Set<QueueCfg> _queuesForReconnect = new LinkedHashSet<QueueCfg>(queuesForReconnect);
 				final Set<QueueCfg> tempSet = new LinkedHashSet<QueueCfg>(queuesForReconnect);
 				for (QueueCfg qc : _queuesForReconnect) {
@@ -48,7 +48,7 @@ public class ReconnectActor implements Runnable {
 						// TODO: handle exception
 						log.error("what is up?", e);
 					}
-					
+
 					log.info("reconnecting queue: " + qc.getName());
 					final QueueCfg _qc = MQueueMgr.instance.startQueue(qc);
 					if (qc.isEnabled()) {

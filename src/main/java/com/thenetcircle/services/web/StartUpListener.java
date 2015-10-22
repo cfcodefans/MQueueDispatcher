@@ -75,7 +75,7 @@ public class StartUpListener implements ServletContextListener {
 			while (!threadPool.isTerminated());
 			log.info("\n\nDone for queues initialization");
 			
-			Runtime.getRuntime().addShutdownHook(MQueueMgr.cleaner);
+//			Runtime.getRuntime().addShutdownHook(MQueueMgr.cleaner);
 
 		} catch (Exception e) {
 			log.error("failed to load queues", e);

@@ -86,7 +86,7 @@ public class FunctionalTests {
 		qc.setExclusive(false);
 		qc.setRetryLimit(3);
 		
-		Runtime.getRuntime().addShutdownHook(MQueueMgr.cleaner);
+//		Runtime.getRuntime().addShutdownHook(MQueueMgr.cleaner);
 		
 		em.persist(qc);
 		

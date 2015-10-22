@@ -209,7 +209,7 @@ public class ThreadsTest {
 		} catch (final Exception e) {
 			log.log(Level.SEVERE, "fail to shutdown publisher", e);
 		}
-		md.shutdown();
+//		md.shutdown();
 	}
 
 	

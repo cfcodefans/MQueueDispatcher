@@ -37,16 +37,16 @@
 			</div>
 		</div>
 	</header>
-	
+
 	<article>
-	<div class="panel panel-default">
-		<div class="panel-heading">
-			<button type="button" id="createBtn" class="btn btn-default btn-sm">create</button>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<button type="button" id="createBtn" class="btn btn-default btn-sm">create</button>
+			</div>
+			<div class="panel-body" id="tbl_container"></div>
 		</div>
-		<div class="panel-body" id="tbl_container"></div>
-	</div>
 	</article>
-	
+
 	<div class="modal fade" id="edit_modal_div">
 		<div class="modal-dialog">
 			<form class="form-horizontal" role="form" id="edit_form">
@@ -104,7 +104,7 @@
 		<!-- /.modal-dialog -->
 	</div>
 	<!-- /.modal -->
-	
+
 	<script type="text/javascript" src="../res/jquery-2.1.1.js"></script>
 	<script type="text/javascript" src="../res/jquery.xslt.js"></script>
 	<script src="../res/bootstrap/js/bootstrap.min.js"></script>
@@ -113,135 +113,144 @@
 	<script type="text/javascript" src="../rest/v1/ajax" id="ajax_metadata"></script>
 	<script type="text/javascript" src="../res/rest.js"></script>
 	<script type="text/javascript">
-	function newServerCfg(original) {
-		var serverCfg = null;
-		if (original) {
-			serverCfg = $.extend({}, original);
-			serverCfg.id = -1;
-		} else {
-			serverCfg = {
-				version : 0,
-				host : "localhost",
-				id : -1,
-				maxFileSize : "2GB",
-				password : "guest",
-				port : 5672,
-				userName : "guest",
-				virtualHost : "/"
-			};
-		}
-		return serverCfg;
-	}
-
-	function getServerCfg(idx) {
-		if (!idx || idx < 0) {
-			return newServerCfg();
+		function newServerCfg(original) {
+			var serverCfg = null;
+			if (original) {
+				serverCfg = $.extend({}, original);
+				serverCfg.id = -1;
+			} else {
+				serverCfg = {
+					version : 0,
+					host : "localhost",
+					id : -1,
+					maxFileSize : "2GB",
+					password : "guest",
+					port : 5672,
+					userName : "guest",
+					virtualHost : "/"
+				};
+			}
+			return serverCfg;
 		}
 
-		var serverCfg = null;
-		var xhr = RS.ctx.ServerCfgRes.getJson.with_id(idx).call();
-		if (xhr.statusCode().status != 200) {
-			console.log(xhr);
-			return;
+		function getServerCfg(idx) {
+			if (!idx || idx < 0) {
+				return newServerCfg();
+			}
+
+			var serverCfg = null;
+			var xhr = RS.ctx.ServerCfgRes.getJson.with_id(idx).call();
+			if (xhr.statusCode().status != 200) {
+				console.log(xhr);
+				return;
+			}
+			serverCfg = xhr.responseJSON;
+			return serverCfg;
 		}
-		serverCfg = xhr.responseJSON;
-		return serverCfg;
-	}
 
-	function createServerCfg() {
-		window.serverCfg = null;
-		window.serverCfg = newServerCfg();
-		fillForm(window.serverCfg);
-		$('#edit_modal_div').modal();
-	}
-	
-	function editServerCfg(idx) {
-		window.serverCfg = null;
-		window.serverCfg = getServerCfg(idx);
-		fillForm(window.serverCfg);
-		$('#edit_modal_div').modal();
-	}
+		function createServerCfg() {
+			window.serverCfg = null;
+			window.serverCfg = newServerCfg();
+			fillForm(window.serverCfg);
+			$('#edit_modal_div').modal();
+		}
 
-	function copyServerCfg(idx) {
-		window.serverCfg = null;
-		window.serverCfg = newServerCfg(getServerCfg(idx));
-		fillForm(window.serverCfg);
-		$('#edit_modal_div').modal();
-	}
+		function editServerCfg(idx) {
+			window.serverCfg = null;
+			window.serverCfg = getServerCfg(idx);
+			fillForm(window.serverCfg);
+			$('#edit_modal_div').modal();
+		}
 
-	function fillForm(sc) {
-		if (!sc)
-			return;
-		var ef = $("#edit_form");
+		function copyServerCfg(idx) {
+			window.serverCfg = null;
+			window.serverCfg = newServerCfg(getServerCfg(idx));
+			fillForm(window.serverCfg);
+			$('#edit_modal_div').modal();
+		}
 
-		ef.find("#host").val(sc.host);
-		ef.find("#virtualHost").val(sc.virtualHost);
-		ef.find("#port").val(sc.port);
-		ef.find("#userName").val(sc.userName);
-		ef.find("#password").val(sc.password);
-		ef.find("#logFilePath").val(sc.logFilePath);
-		ef.find("#maxFileSize").val(sc.maxFileSize);
-	}
-	
-	function toEntity(sc) {
-		var ef = $("#edit_form");
+		function fillForm(sc) {
+			if (!sc)
+				return;
+			var ef = $("#edit_form");
 
-		sc.host = ef.find("#host").val();
-		sc.virtualHost = ef.find("#virtualHost").val();
-		sc.port = ef.find("#port").val();
-		sc.userName = ef.find("#userName").val();
-		sc.password = ef.find("#password").val();
-		sc.logFilePath = ef.find("#logFilePath").val();
-		sc.maxFileSize = ef.find("#maxFileSize").val();
-		
-		return sc;
-	}
+			ef.find("#host").val(sc.host);
+			ef.find("#virtualHost").val(sc.virtualHost);
+			ef.find("#port").val(sc.port);
+			ef.find("#userName").val(sc.userName);
+			ef.find("#password").val(sc.password);
+			ef.find("#logFilePath").val(sc.logFilePath);
+			ef.find("#maxFileSize").val(sc.maxFileSize);
+		}
+
+		function toEntity(sc) {
+			var ef = $("#edit_form");
+
+			sc.host = ef.find("#host").val();
+			sc.virtualHost = ef.find("#virtualHost").val();
+			sc.port = ef.find("#port").val();
+			sc.userName = ef.find("#userName").val();
+			sc.password = ef.find("#password").val();
+			sc.logFilePath = ef.find("#logFilePath").val();
+			sc.maxFileSize = ef.find("#maxFileSize").val();
+
+			return sc;
+		}
 
 		function save(serverCfg) {
 			serverCfg = toEntity(serverCfg);
-			var xhr = null; 
-						
+			var xhr = null;
+
 			if (serverCfg.id < 0) {
-				xhr = RS.ctx.ServerCfgRes.create.with_entity(JSON.stringify(serverCfg)).call({async:false});	
+				xhr = RS.ctx.ServerCfgRes.create.with_entity(
+						JSON.stringify(serverCfg)).call({
+					async : false
+				});
 			} else {
-				xhr = RS.ctx.ServerCfgRes.update.with_entity(JSON.stringify(serverCfg)).call({async:false});	
-			}			
+				xhr = RS.ctx.ServerCfgRes.update.with_entity(
+						JSON.stringify(serverCfg)).call({
+					async : false
+				});
+			}
 
 			if (xhr.statusCode().status != 200) {
 				console.log(xhr);
 				return;
 			}
-			
+
 			var newServerCfg = xhr.responseJSON;
 			updateTable();
-			
+
 			$('#edit_modal_div').modal('hide');
 		}
-		
+
 		function updateTable() {
 			loadData();
 		}
-		
+
 		function loadData() {
 			var tx = $("#template_xslt")[0];
 			var cd = $("#tbl_container");
 
-			var xslt_xhr = $.ajax({url:"server_cfg_table.xsl", async:false});
+			var xslt_xhr = $.ajax({
+				url : "server_cfg_table.xsl",
+				async : false
+			});
 			var xslt = xslt_xhr.responseText;
-			var xhr = RS.ctx.ServerCfgRes.getAll.call({async:false});
+			var xhr = RS.ctx.ServerCfgRes.getAll.call({
+				async : false
+			});
 			var data = xhr.responseText;
 			cd.xslt(data, xslt);
 			$('#server_cfg_tbl').dataTable();
 		}
-		
+
 		loadData();
-		
+
 		$(document).ready(function() {
-			$("#createBtn").click(
-				function() {
-					createServerCfg();
-				}
-			);
+			$("#createBtn").click(function() {
+				createServerCfg();
+			});
 		});
 	</script>
 	<footer> </footer>

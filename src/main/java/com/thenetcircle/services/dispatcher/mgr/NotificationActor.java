@@ -83,17 +83,6 @@ public class NotificationActor implements Runnable {
 				log.error("failed to send report by " + end, e);
 			}
 		});
-//		
-//		for (final Map.Entry<String, StringBuilder> entry : mailsAndContents.entrySet()) {
-//			if (StringUtils.isBlank(entry.getKey()) || entry.getValue() == null) {
-//				continue;
-//			}
-//			try {
-//				MiscUtils.sendMail("localhost", 25, "dispatcher@thenetcircle.com", entry.getKey(), "failed message report", entry.getValue().toString());
-//			} catch (Exception e) {
-//				log.error("failed to send report by " + end, e);
-//			}
-//		}
 	}
 	
 	private NotificationActor() {

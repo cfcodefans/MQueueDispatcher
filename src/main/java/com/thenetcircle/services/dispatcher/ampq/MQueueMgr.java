@@ -27,21 +27,15 @@ import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg.Status;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
-import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
-import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 
 public class MQueueMgr {
 
-	public static final Thread cleaner = new Thread() {
-		public void run() {
-			log.info("system shutdown!");
-			MQueueMgr.instance().shutdown();
-		}
-	};
+//	public static final Thread cleaner = new Thread(MQueueMgr.instance()::shutdown);
+	
 	static MQueueMgr instance = new MQueueMgr();
 	protected static final Logger log = Logger.getLogger(MQueueMgr.class);
-	
+		
 	public static int NUM_CHANNEL_PER_CONN = 2;
 	
 	private static final void _error(final ServerCfg sc, final String infoStr) {
@@ -74,17 +68,14 @@ public class MQueueMgr {
 	private Map<ServerCfg, ConnectionFactory> connFactories = new ConcurrentHashMap<ServerCfg, ConnectionFactory>();
 	
 	ReconnectActor reconnActor = new ReconnectActor();
-
-//	private ScheduledExecutorService reconnActorThread = Executors.newSingleThreadScheduledExecutor();
 	
-	private Map<ServerCfg, Set<NamedConnection>> serverCfgAndConns = new ConcurrentHashMap<ServerCfg, Set<NamedConnection>>();
+	private ConcurrentHashMap<ServerCfg, Set<NamedConnection>> serverCfgAndConns = new ConcurrentHashMap<ServerCfg, Set<NamedConnection>>();
 	
 	public MQueueMgr() {
 		NUM_CHANNEL_PER_CONN = (int)MiscUtils.getPropertyNumber("channel.number.connection", NUM_CHANNEL_PER_CONN);
-		initActors();
+//		initActors();
 	}
 	
-
 	public MessageContext acknowledge(final MessageContext mc) {
 		if (mc == null || mc.getDelivery() == null) {
 			return mc;
@@ -169,12 +160,11 @@ public class MQueueMgr {
 		return reconnActor;
 	}
 
-	private void initActors() {
-		//reconnActorThread.scheduleAtFixedRate(reconnActor, 30, 30, TimeUnit.SECONDS);
-		Responder.instance();
-		HttpDispatcherActor.instance();
-		FailedMessageSqlStorage.instance();
-	}
+//	private void initActors() {
+//		Responder.instance();
+//		HttpDispatcherActor.instance();
+//		FailedMessageSqlStorage.instance();
+//	}
 
 	private synchronized ConnectionFactory initConnFactory(final ServerCfg sc) {
 		if (sc == null)
@@ -209,17 +199,17 @@ public class MQueueMgr {
 		return queueCtx != null && queueCtx.ch != null && queueCtx.ch.isOpen();
 	}
 	
-	public synchronized void shutdown() {
-		log.info(MiscUtils.invocationInfo());
-		shutdownActors();
-	}
+//	public synchronized void shutdown() {
+//		log.info(MiscUtils.invocationInfo());
+//		shutdownActors();
+//	}
 
-	private void shutdownActors() {
-		//reconnActorThread.shutdownNow();
-		Responder.stopAll();
-		HttpDispatcherActor.instance().stop();
-		FailedMessageSqlStorage.instance().stop();
-	}
+//	private void shutdownActors() {
+//		//reconnActorThread.shutdownNow();
+//		Responder.stopAll();
+//		HttpDispatcherActor.instance().stop();
+//		FailedMessageSqlStorage.instance().stop();
+//	}
 
 	public QueueCfg startQueue(final QueueCfg qc) {
 		if (cfgAndCtxs.containsKey(qc)) {
@@ -227,11 +217,7 @@ public class MQueueMgr {
 		}
 
 		final ServerCfg sc = qc.getServerCfg();
-		Set<NamedConnection> connSet = serverCfgAndConns.get(sc);
-		if (connSet == null) {
-			connSet = new LinkedHashSet<NamedConnection>();
-			serverCfgAndConns.put(sc, connSet);
-		}
+		Set<NamedConnection> connSet = serverCfgAndConns.putIfAbsent(sc, new LinkedHashSet<NamedConnection>());
 
 		NamedConnection nc = connSet.stream().filter(_nc->_nc.qcSet.size() < NUM_CHANNEL_PER_CONN).findFirst().get();
 

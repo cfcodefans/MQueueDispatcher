@@ -76,7 +76,6 @@ public class ViewProcModel implements Serializable {
 				// the root is not ancestor of _element
 				return new Integer[0];
 			}
-			
 			idxList.addFirst(currentElement.elementSiblingIndex());
 		}
 		
