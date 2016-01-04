@@ -150,15 +150,15 @@ public class JGroupsActor extends ReceiverAdapter {
 	}
 
 	public synchronized void stop() {
+		if (ch == null)
+			return;
 		try {
-			if (ch != null) {
-				log.info("leave the jgroup cluster...");
-				ch.clearChannelListeners();
-				ch.disconnect();
-				ch.close();
-				ch = null;
-				log.info("left the jgroup cluster...");
-			}
+			log.info("leave the jgroup cluster...");
+			ch.clearChannelListeners();
+			ch.disconnect();
+			ch.close();
+			ch = null;
+			log.info("left the jgroup cluster...");
 		} catch (Exception e) {
 			log.error("can't stop JGroups!!", e);
 		}

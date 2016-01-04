@@ -65,7 +65,7 @@ public class MQueueMgr {
 
 	private ConcurrentHashMap<QueueCfg, QueueCtx> cfgAndCtxs = new ConcurrentHashMap<QueueCfg, QueueCtx>();
 
-	private Map<ServerCfg, ConnectionFactory> connFactories = new ConcurrentHashMap<ServerCfg, ConnectionFactory>();
+	private ConcurrentHashMap<ServerCfg, ConnectionFactory> connFactories = new ConcurrentHashMap<ServerCfg, ConnectionFactory>();
 	
 	ReconnectActor reconnActor = new ReconnectActor();
 	
@@ -138,18 +138,14 @@ public class MQueueMgr {
 			return null;
 		}
 	
-		ConnectionFactory connFactory = connFactories.get(sc);
-		if (connFactory == null) {
-			connFactory = initConnFactory(sc);
+		return connFactories.computeIfAbsent(sc, (_sc)-> {
+			ConnectionFactory connFactory = initConnFactory(_sc);
 			if (connFactory == null) {
 				log.error("fail to create ConnectionFactory: \n\t" + sc);
 				_error(sc, "fail to create ConnectionFactory: \n\t" + sc);
-				return null;
 			}
-			connFactories.put(sc, connFactory);
-		}
-	
-		return connFactory;
+			return connFactory;
+		});
 	}
 	
 	public Collection<QueueCfg> getQueueCfgs() {
@@ -245,6 +241,7 @@ public class MQueueMgr {
 					ch.basicQos(qc.getPrefetchSize());
 				}
 			}
+			
 			final ConsumerActor ca = new ConsumerActor(ch, qc);
 			ch.basicConsume(qc.getQueueName(), false, ca);
 
