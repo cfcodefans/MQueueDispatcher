@@ -1,4 +1,6 @@
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
@@ -48,6 +50,14 @@ public class ScriptEngineTest {
 			e.printStackTrace();
 		}
 		return StringUtils.EMPTY;
+	}
+	
+	@Test public void testMap() {
+		ConcurrentMap<Integer, String> map = new ConcurrentHashMap<>();
+		map.computeIfAbsent(1, String::valueOf);
+		System.out.println(map);
+		System.out.println(map.putIfAbsent(2, "2"));
+		System.out.println(map);
 	}
 
 }

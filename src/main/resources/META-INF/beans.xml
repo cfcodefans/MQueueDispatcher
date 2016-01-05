@@ -5,12 +5,10 @@
 	bean-discovery-mode="annotated">
 	<scan>
 		<exclude name="org.jboss.**">
+			<if-class-available name="org.jboss.**" />
 		</exclude>
 		<exclude name="javax.**">
+			<if-class-available name="javax.**" />
 		</exclude>
 	</scan>
-
-	<interceptors>
-		<class>com.thenetcircle.services.commons.persistence.jpa.cdi.TransactionalInterceptor</class>
-	</interceptors>
 </beans> 

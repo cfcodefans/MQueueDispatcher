@@ -6,13 +6,13 @@ import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Default;
 import javax.persistence.EntityManager;
 
-import com.thenetcircle.services.commons.persistence.jpa.BaseDao;
+import com.thenetcircle.services.commons.persistence.jpa.CdiBaseDao;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Default
 @RequestScoped
 //@Transactional
-public class ServerCfgDao extends BaseDao<ServerCfg> {
+public class ServerCfgDao extends CdiBaseDao<ServerCfg> {
 	private static final long serialVersionUID = 1L;
 	
 	@Override

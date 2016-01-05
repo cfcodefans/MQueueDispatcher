@@ -8,7 +8,7 @@ import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Default;
 import javax.persistence.EntityManager;
 
-import com.thenetcircle.services.commons.persistence.jpa.BaseDao;
+import com.thenetcircle.services.commons.persistence.jpa.CdiBaseDao;
 import com.thenetcircle.services.commons.persistence.jpa.cdi.Transactional;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -16,7 +16,7 @@ import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Default
 @RequestScoped //for java se, only applicatoin scope available
-public class ExchangeCfgDao extends BaseDao<ExchangeCfg> {
+public class ExchangeCfgDao extends CdiBaseDao<ExchangeCfg> {
 	private static final long serialVersionUID = 1L;
 	
 	@Override

@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
 	<display-name>mqueue-consumer</display-name>
-	<listener>
-		<listener-class>org.jboss.weld.environment.servlet.BeanManagerResourceBindingListener</listener-class>
-	</listener>
-	<listener>
-		<listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>
-	</listener>
+<!-- 	<listener> -->
+<!-- 		<listener-class>org.jboss.weld.environment.servlet.BeanManagerResourceBindingListener</listener-class> -->
+<!-- 	</listener> -->
+<!-- 	<listener> -->
+<!-- 		<listener-class>org.jboss.weld.environment.servlet.Listener</listener-class> -->
+<!-- 	</listener> -->
 
 	<servlet>
 		<servlet-name>ResLoader</servlet-name>
@@ -23,11 +25,16 @@
 		</init-param>
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>
-			<param-value>com.thenetcircle.services.rest</param-value>
+			<param-value>com.thenetcircle.services.rest,com.thenetcircle.services.commons.rest,com.thenetcircle.services.dispatcher.dao,com.thenetcircle.services.commons.persistence.jpa</param-value>
+		</init-param>
+		<init-param>
+			<param-name>jersey.config.server.provider.classnames</param-name>
+			<param-value>org.glassfish.jersey.ext.cdi1x.internal.CdiComponentProvider</param-value>
 		</init-param>
 		<load-on-startup>2</load-on-startup>
 		<async-supported>true</async-supported>
 	</servlet>
+
 	<servlet-mapping>
 		<servlet-name>ResLoader</servlet-name>
 		<url-pattern>/rest/v1/*</url-pattern>
@@ -39,7 +46,7 @@
 		<init-param>
 			<param-name>javax.ws.rs.Application</param-name>
 			<param-value>com.thenetcircle.services.commons.web.mvc.MvcResLoader</param-value>
-<!-- 			<param-value>org.glassfish.jersey.server.ResourceConfig</param-value> -->
+			<!-- <param-value>org.glassfish.jersey.server.ResourceConfig</param-value> -->
 		</init-param>
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>
@@ -61,5 +68,5 @@
 		<servlet-name>JerseyController</servlet-name>
 		<url-pattern>/mvc/*</url-pattern>
 	</servlet-mapping>
-	
+
 </web-app>

@@ -10,7 +10,7 @@ import javax.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 
-import com.thenetcircle.services.commons.persistence.jpa.BaseDao;
+import com.thenetcircle.services.commons.persistence.jpa.CdiBaseDao;
 import com.thenetcircle.services.commons.persistence.jpa.cdi.Transactional;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
@@ -18,7 +18,7 @@ import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Default
 @RequestScoped //for java se, only applicatoin scope available
-public class QueueCfgDao extends BaseDao<QueueCfg> {
+public class QueueCfgDao extends CdiBaseDao<QueueCfg> {
 	private static final long serialVersionUID = 1L;
 	
 	@Override

@@ -20,12 +20,12 @@
 			<!-- <property name="javax.persistence.jdbc.url" value="jdbc:hsqldb:hsql://localhost:9002/dispatcher" /> -->
 			<!-- <property name="javax.persistence.jdbc.user" value="sa" /> -->
 			<!-- <property name="javax.persistence.jdbc.password" value="" /> -->
-			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://bart:4000/dispatcher" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://bart:3306/dispatcher" />
 			<property name="javax.persistence.jdbc.user" value="dispatcher" />
 			<property name="javax.persistence.jdbc.password" value="dispatcher" />
 			<!-- hibernate connection properties -->
 			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
-			<property name="hibernate.hbm2ddl.auto" value="update" />
+			<property name="hibernate.hbm2ddl.auto" value="validate" />
 			<property name="hibernate.max_fetch_depth" value="4" />
 			<property name="hibernate.jdbc.batch_size" value="50" />
 			<!-- hibernate debug properties -->

@@ -33,19 +33,38 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jersey.version>2.21</jersey.version>
 		<weld.version>2.2.0.SP1</weld.version>
+		<dependency.scope>compile</dependency.scope>
 	</properties>
 
 	<dependencies>
 		<dependency>
+			<groupId>org.jboss.weld.servlet</groupId>
+			<artifactId>weld-servlet</artifactId>
+			<version>2.2.0.SP1</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.thenetcircle.services</groupId>
 			<artifactId>base-commons</artifactId>
 			<version>0.0.1</version>
+			<!-- <exclusions> -->
+			<!-- <exclusion> -->
+			<!-- <artifactId>weld-se</artifactId> -->
+			<!-- <groupId>org.jboss.weld.se</groupId> -->
+			<!-- </exclusion> -->
+			<!-- </exclusions> -->
 		</dependency>
 
 		<dependency>
 			<groupId>com.thenetcircle.services</groupId>
 			<artifactId>joint-commons</artifactId>
 			<version>0.0.1</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>servlet-api</artifactId>
+					<groupId>javax.servlet</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -62,8 +81,6 @@
 			<artifactId>jgroups</artifactId>
 			<version>3.6.6.Final</version>
 		</dependency>
-
-
 
 		<!-- Consumer Dispatcher -->
 
@@ -92,7 +109,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.20</version>
+			<version>5.1.38</version>
 		</dependency>
 
 		<dependency>
@@ -106,14 +123,6 @@
 			<artifactId>hibernate-jpa-2.1-api</artifactId>
 			<version>1.0.0.Final</version>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>org.hibernate</groupId> -->
-		<!-- <artifactId>hibernate-c3p0</artifactId> -->
-		<!-- <version>4.3.6.Final</version> -->
-		<!-- </dependency> -->
-		<!-- -->
-
-
 
 		<dependency>
 			<groupId>org.jboss</groupId>
@@ -121,36 +130,73 @@
 			<version>1.2.0.Final</version>
 		</dependency>
 
-		<!-- <dependency> -->
-		<!-- <groupId>net.sf.ehcache</groupId> -->
-		<!-- <artifactId>ehcache</artifactId> -->
-		<!-- <version>2.9.0</version> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>19.0-rc2</version>
 		</dependency>
 
-		<!-- <dependency> -->
-		<!-- <groupId>org.python</groupId> -->
-		<!-- <artifactId>jython</artifactId> -->
-		<!-- <version>2.7-b1</version> -->
-		<!-- </dependency> -->
-
-		<!-- <dependency> -->
-		<!-- <groupId>org.clojure</groupId> -->
-		<!-- <artifactId>clojure</artifactId> -->
-		<!-- <version>1.7.0-alpha5</version> -->
-		<!-- </dependency> -->
-
-		<!-- <dependency> -->
-		<!-- <groupId>org.apache.clerezza.scala</groupId> -->
-		<!-- <artifactId>script-engine</artifactId> -->
-		<!-- <version>0.3</version> -->
-		<!-- </dependency> -->
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-web-api</artifactId>
+			<version>7.0</version>
+			<scope>${dependency.scope}</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.enterprise</groupId>
+			<artifactId>cdi-api</artifactId>
+			<version>1.1</version>
+			<scope>${dependency.scope}</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>2.21</version>
+			<scope>${dependency.scope}</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-servlet</artifactId>
+			<version>2.21</version>
+			<scope>${dependency.scope}</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-servlet-core</artifactId>
+			<version>2.21</version>
+			<scope>${dependency.scope}</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.ext.cdi</groupId>
+			<artifactId>jersey-cdi1x-servlet</artifactId>
+			<version>2.21</version>
+<!-- 			<scope>test</scope> -->
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.ext.cdi</groupId>
+			<artifactId>jersey-weld2-se</artifactId>
+			<version>2.21</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>javax.ws.rs-api</artifactId>
+			<version>2.0.1</version>
+			<scope>${dependency.scope}</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-common</artifactId>
+			<version>2.21</version>
+			<scope>${dependency.scope}</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.hk2.external</groupId>
+			<artifactId>javax.inject</artifactId>
+			<version>2.4.0-b31</version>
+			<scope>${dependency.scope}</scope>
+		</dependency>
 	</dependencies>
-
 	<build>
 		<testResources>
 			<testResource>

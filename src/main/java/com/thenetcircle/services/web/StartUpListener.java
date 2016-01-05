@@ -12,12 +12,15 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg.Status;
+import com.thenetcircle.services.dispatcher.mgr.NotificationActor;
+import com.thenetcircle.services.rest.MonitorRes;
 
 
 @WebListener
@@ -36,7 +39,7 @@ public class StartUpListener implements ServletContextListener {
 	@Override
 	public void contextDestroyed(final ServletContextEvent paramServletContextEvent) {
 		log.info(MiscUtils.invocationInfo());
-//		MQueueMgr.instance().shutdown();
+//		MQueueMgr.instance().s
 //		JpaModule.instance().destory();
 //		MonitorRes.shutdown();
 //		JGroupsActor.instance().stop();
@@ -57,6 +60,7 @@ public class StartUpListener implements ServletContextListener {
 			} 
 			
 			log.info(String.format("loading %d queues...", qcList.size()));
+			if (true) return;
 
 			final ExecutorService threadPool = Executors.newFixedThreadPool(MiscUtils.AVAILABLE_PROCESSORS, MiscUtils.namedThreadFactory("MQueueLoader"));
 			final MQueueMgr mqueueMgr = MQueueMgr.instance();
@@ -74,9 +78,6 @@ public class StartUpListener implements ServletContextListener {
 			log.info("\n\nWait for queues initialization");
 			while (!threadPool.isTerminated());
 			log.info("\n\nDone for queues initialization");
-			
-//			Runtime.getRuntime().addShutdownHook(MQueueMgr.cleaner);
-
 		} catch (Exception e) {
 			log.error("failed to load queues", e);
 		} finally {

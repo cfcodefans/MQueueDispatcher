@@ -1,6 +1,3 @@
-
-
-
 function MethodBuilder(_method, _metadata) {
 	var invocable = {
 		metadata: _metadata,
@@ -17,13 +14,6 @@ function MethodBuilder(_method, _metadata) {
 
 
 	for (var i = 0, j = invocable.method.params.length; i < j; i++)	{
-		/*with ({param: invocable.method.params[i]}) {
-		
-			invocable["with_" + param.sourceName] = function(value) {
-				this.paramAndValues[param.sourceName] = value;
-				return this;
-			};
-		}*/
 		var param = invocable.method.params[i];
 		invocable["with_" + param.sourceName] = addSetter(param.sourceName);
 	}
@@ -133,7 +123,7 @@ RS = {
 	}
 };
 
-var xhr = $.ajax("../rest/v1/ajax", {
+var xhr = $.ajax("../rest/v1/ajax?appName=rest-ajax", {
 	async : false,
 	dataType : "json",
 	complete : function(xhr) {
