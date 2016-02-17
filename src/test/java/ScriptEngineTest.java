@@ -1,6 +1,8 @@
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
@@ -58,6 +60,16 @@ public class ScriptEngineTest {
 		System.out.println(map);
 		System.out.println(map.putIfAbsent(2, "2"));
 		System.out.println(map);
+	}
+	
+	@Test
+	public void testFormat() {
+		//^(format:[a-z_]+;)(.*)$
+		Matcher m = Pattern.compile("^(format:[a-z_]+;)(.*)$").matcher("format:json;{\"name\":\"jack\",\"age\":10,\"vip\":false,\"amqp:publisher:info\":{\"HTTP_ORIGIN\":null}}");
+		System.out.println(m.find());
+		System.out.println(m.groupCount());
+		System.out.println(m.group(0));
+		System.out.println(m.group(1));
 	}
 
 }

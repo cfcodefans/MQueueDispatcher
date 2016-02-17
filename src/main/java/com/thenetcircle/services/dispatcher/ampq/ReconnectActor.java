@@ -2,6 +2,7 @@ package com.thenetcircle.services.dispatcher.ampq;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 
@@ -15,7 +16,7 @@ public class ReconnectActor implements Runnable {
 	private Set<QueueCfg>			queuesForReconnect	= new LinkedHashSet<QueueCfg>();
 	protected static final Logger	log					= Logger.getLogger(ReconnectActor.class);
 
-	public void reconnect(final QueueCfg qc) {
+	public void addReconnect(final QueueCfg qc) {
 		if (qc == null) {
 			return;
 		}
@@ -28,6 +29,29 @@ public class ReconnectActor implements Runnable {
 		}
 	}
 
+	protected QueueCfg tryReconnect(QueueCfg qc) {
+		try (final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager())) {
+			qc = qcDao.find(qc.getId());
+		} catch (Exception e) {
+			// TODO: handle exception
+			log.error("what is up?", e);
+		}
+		log.info("reconnecting queue: " + qc.getName());
+		final QueueCfg _qc = MQueueMgr.instance.startQueue(qc);
+		if (_qc.isEnabled()) {
+			if (!Status.running.equals(qc.getStatus())) {
+				final String infoStr = "failed to reconnect queue: \n\t" + qc.getName();
+				log.info(infoStr);
+				MQueueMgr._info(qc.getServerCfg(), infoStr);
+			} else {
+				final String infoStr = "successfully reconnected queue: \n\t" + qc.getName();
+				log.info(infoStr);
+				MQueueMgr._info(qc.getServerCfg(), infoStr);
+			}
+		}
+		return _qc;
+	}
+	
 	public void run() {
 		synchronized (queuesForReconnect) {
 			log.info(MiscUtils.invocationInfo() + "\n\n\n");
@@ -36,39 +60,12 @@ public class ReconnectActor implements Runnable {
 				log.info("no queue needs to be reconnected");
 				return;
 			}
-			try {
-				final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
-
-				final Set<QueueCfg> _queuesForReconnect = new LinkedHashSet<QueueCfg>(queuesForReconnect);
-				final Set<QueueCfg> tempSet = new LinkedHashSet<QueueCfg>(queuesForReconnect);
-				for (QueueCfg qc : _queuesForReconnect) {
-					try {
-						qc = qcDao.find(qc.getId());
-					} catch (Exception e) {
-						// TODO: handle exception
-						log.error("what is up?", e);
-					}
-
-					log.info("reconnecting queue: " + qc.getName());
-					final QueueCfg _qc = MQueueMgr.instance.startQueue(qc);
-					if (qc.isEnabled()) {
-						if (!Status.running.equals(qc.getStatus())) {
-							final String infoStr = "failed to reconnect queue: \n\t" + qc.getName();
-							log.info(infoStr);
-							MQueueMgr._info(qc.getServerCfg(), infoStr);
-						} else {
-							tempSet.remove(_qc);
-							final String infoStr = "successfully reconnected queue: \n\t" + qc.getName();
-							log.info(infoStr);
-							MQueueMgr._info(qc.getServerCfg(), infoStr);
-						}
-					}
-				}
-				queuesForReconnect = tempSet;
-				qcDao.close();
-			} catch (Exception e) {
-				log.error("what is up?", e);
-			}
+			
+			Set<QueueCfg> stillDisconnectQueues = queuesForReconnect.stream()
+					.map(this::tryReconnect)
+					.filter(qc -> qc.isEnabled() && !Status.running.equals(qc.getStatus()))
+					.collect(Collectors.toSet());
+			queuesForReconnect = stillDisconnectQueues;
 		}
 	}
 

@@ -1,5 +1,7 @@
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.persistence.EntityManager;
 
@@ -172,5 +174,12 @@ public class FunctionalTests {
 		}
 		
 //		tearDown();
+	}
+	
+	@Test
+	public void testFormat() {
+		//^(format:[a-z_]+;)(.*)$
+		Matcher m = Pattern.compile("^(format:[a-z_]+;)(.*)$").matcher("format:json;{\"name\":\"jack\",\"age\":10,\"vip\":false,\"amqp:publisher:info\":{\"HTTP_ORIGIN\":null}}");
+		System.out.println(m.group());
 	}
 }

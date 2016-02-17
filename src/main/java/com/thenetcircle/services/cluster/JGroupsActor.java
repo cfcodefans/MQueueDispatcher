@@ -185,10 +185,10 @@ public class JGroupsActor extends ReceiverAdapter {
 			return;
 		}
 		
-		final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
-		final Set<QueueCfg> qcs = cmd.qcIds.stream().map(qcDao::find).filter(qc->qc != null).collect(Collectors.toSet());
-		cmd.execute(qcs);
-		qcDao.close();
+		try (final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager())) {
+			final Set<QueueCfg> qcs = cmd.qcIds.stream().map(qcDao::find).filter(qc -> qc != null).collect(Collectors.toSet());
+			cmd.execute(qcs);
+		}
 	}
 
 	@Override

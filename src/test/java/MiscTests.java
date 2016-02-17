@@ -16,6 +16,7 @@ import org.junit.Test;
 import com.thenetcircle.services.cluster.JGroupsActor.Command;
 import com.thenetcircle.services.cluster.JGroupsActor.CommandType;
 import com.thenetcircle.services.commons.Jsons;
+import com.thenetcircle.services.commons.MaintenanceUtils;
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.MiscUtils.LoopingArrayIterator;
 
@@ -109,7 +110,7 @@ public class MiscTests {
 	@Test
 	public void testSendMail() {
 		try {
-			MiscUtils.sendMail("sh.thenetcircle.com", 25, "dispatcher@thenetcircle.com", "fan@thenetcircle.com", "test", "test");
+			MaintenanceUtils.sendMail("sh.thenetcircle.com", 25, "dispatcher@thenetcircle.com", "fan@thenetcircle.com", "test", "test");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

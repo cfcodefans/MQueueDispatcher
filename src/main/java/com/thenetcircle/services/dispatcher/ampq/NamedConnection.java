@@ -83,7 +83,7 @@ class NamedConnection implements ShutdownListener {
 		final MQueueMgr _instance = MQueueMgr.instance();
 		_queuesForReconnect.forEach(qc->{
 			_instance.stopQueue(qc);
-			_instance.reconnActor.reconnect(qc);
+			_instance.reconnActor.addReconnect(qc);
 		});
 	}
 }

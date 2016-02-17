@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.MaintenanceUtils;
 import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.dao.MessageContextDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
@@ -78,7 +78,7 @@ public class NotificationActor implements Runnable {
 		
 		mailsAndContents.entrySet().stream().sorted().filter(en->!(StringUtils.isBlank(en.getKey()) || en.getValue() == null)).forEach(en->{
 			try {
-				MiscUtils.sendMail("localhost", 25, "dispatcher@thenetcircle.com", en.getKey(), "failed message report", en.getValue().toString());
+				MaintenanceUtils.sendMail("localhost", 25, "dispatcher@thenetcircle.com", en.getKey(), "failed message report", en.getValue().toString());
 			} catch (Exception e) {
 				log.error("failed to send report by " + end, e);
 			}

@@ -2,13 +2,15 @@ package com.thenetcircle.services.dispatcher.ampq;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -27,6 +29,8 @@ import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg.Status;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
+import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 
 public class MQueueMgr {
@@ -69,11 +73,13 @@ public class MQueueMgr {
 	
 	ReconnectActor reconnActor = new ReconnectActor();
 	
+	private ScheduledExecutorService reconnActorThread = Executors.newSingleThreadScheduledExecutor();
+	
 	private ConcurrentHashMap<ServerCfg, Set<NamedConnection>> serverCfgAndConns = new ConcurrentHashMap<ServerCfg, Set<NamedConnection>>();
 	
 	public MQueueMgr() {
 		NUM_CHANNEL_PER_CONN = (int)MiscUtils.getPropertyNumber("channel.number.connection", NUM_CHANNEL_PER_CONN);
-//		initActors();
+		initActors();
 	}
 	
 	public MessageContext acknowledge(final MessageContext mc) {
@@ -156,11 +162,12 @@ public class MQueueMgr {
 		return reconnActor;
 	}
 
-//	private void initActors() {
-//		Responder.instance();
-//		HttpDispatcherActor.instance();
-//		FailedMessageSqlStorage.instance();
-//	}
+	private void initActors() {
+		reconnActorThread.scheduleAtFixedRate(reconnActor, 30, 30, TimeUnit.SECONDS);
+		Responder.instance();
+		HttpDispatcherActor.instance();
+		FailedMessageSqlStorage.instance();
+	}
 
 	private synchronized ConnectionFactory initConnFactory(final ServerCfg sc) {
 		if (sc == null)
@@ -195,17 +202,17 @@ public class MQueueMgr {
 		return queueCtx != null && queueCtx.ch != null && queueCtx.ch.isOpen();
 	}
 	
-//	public synchronized void shutdown() {
-//		log.info(MiscUtils.invocationInfo());
-//		shutdownActors();
-//	}
+	public synchronized void shutdown() {
+		log.info(MiscUtils.invocationInfo());
+		shutdownActors();
+	}
 
-//	private void shutdownActors() {
-//		//reconnActorThread.shutdownNow();
-//		Responder.stopAll();
-//		HttpDispatcherActor.instance().stop();
-//		FailedMessageSqlStorage.instance().stop();
-//	}
+	private void shutdownActors() {
+		reconnActorThread.shutdownNow();
+		Responder.stopAll();
+		HttpDispatcherActor.instance().stop();
+		FailedMessageSqlStorage.instance().stop();
+	}
 
 	public QueueCfg startQueue(final QueueCfg qc) {
 		if (cfgAndCtxs.containsKey(qc)) {
@@ -214,8 +221,8 @@ public class MQueueMgr {
 
 		final ServerCfg sc = qc.getServerCfg();
 		Set<NamedConnection> connSet = serverCfgAndConns.putIfAbsent(sc, new LinkedHashSet<NamedConnection>());
-
-		NamedConnection nc = connSet.stream().filter(_nc->_nc.qcSet.size() < NUM_CHANNEL_PER_CONN).findFirst().get();
+		Iterator<NamedConnection> it = connSet.stream().filter(_nc->_nc.qcSet.size() < NUM_CHANNEL_PER_CONN).iterator();
+		NamedConnection nc = it.hasNext() ? it.next() : null;
 
 		try {
 			if (nc == null) {
@@ -254,12 +261,15 @@ public class MQueueMgr {
 			
 			qc.setStatus(Status.running);
 			
-			final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
-			qcDao.update(qc);
+			try (final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager())) {
+				qcDao.beginTransaction();
+				qcDao.update(qc);
+				qcDao.endTransaction();
+			} 
 			
 			cfgAndCtxs.put(qc, queueCtx);
 			return qc;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			final String infoStr = "failed to start queue: \n\t" + qc;
 			log.error(infoStr, e);
 			_error(sc, infoStr, e);

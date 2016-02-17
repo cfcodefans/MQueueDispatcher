@@ -20,7 +20,6 @@ import org.glassfish.jersey.media.sse.SseBroadcaster;
 import org.glassfish.jersey.media.sse.SseFeature;
 import org.glassfish.jersey.server.ChunkedOutput;
 
-import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.actor.BlockingAsynActor;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
@@ -126,7 +125,7 @@ public class MonitorRes {
 	}
 
 	public static void shutdown() {
-		// es.shutdownNow();
+//		 es.shutdownNow();
 	}
 
 	@GET
@@ -145,16 +144,4 @@ public class MonitorRes {
 		return new QueueOperator(qc).getTotalMessageCount();
 	}
 	
-	@GET
-	@Path("/report")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String testMailReport() {
-		try {
-			MiscUtils.sendMail("sh.thenetcircle.com", 25, "dispatcher@thenetcircle.com", "fan@thenetcircle.com", "test", "test");
-		} catch (Exception e) {
-			e.printStackTrace();
-			return e.getMessage();
-		}
-		return "ok";
-	}
 }

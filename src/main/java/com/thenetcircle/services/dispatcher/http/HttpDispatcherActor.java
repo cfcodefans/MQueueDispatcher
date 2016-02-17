@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -31,6 +33,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.thenetcircle.services.commons.Jsons;
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.commons.actor.IActor;
@@ -127,13 +131,46 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 		mcs.forEach(this::handle);
 	}
 
+	private static Pattern resolvePattern = Pattern.compile("^(format:[a-z_]+;)(.*)$"); 
+	
+	protected String resolveDestUrl(final MessageContext mc) {
+		final QueueCfg qc = mc.getQueueCfg();
+		final HttpDestinationCfg destCfg = qc.getDestCfg();
+		String defaultUrl = destCfg.getUrl();
+		
+		//format:json;{"name":"jack","age":10,"vip":false,"amqp:publisher:info":{"HTTP_ORIGIN":null}}
+		//to help GuangQi test redirect feature
+		
+		String payload = mc.getMessageContent();
+		Matcher m = resolvePattern.matcher(payload);
+		
+		if (!m.find()) {
+			return defaultUrl;
+		}
+		
+		String format = m.group(1);
+		if (!StringUtils.contains(format, "json")) {
+			return defaultUrl;
+		}
+		
+		String msg = StringUtils.substringAfter(payload, format);
+		JsonNode read = Jsons.read(msg);
+		JsonNode publisherInfo = read.get("amqp:publisher:info");
+		if (publisherInfo == null) {
+			return defaultUrl;
+		}
+			
+		String origin = publisherInfo.get("HTTP_ORIGIN").asText();
+		return StringUtils.isBlank(origin) ? defaultUrl : origin;
+	}
+	
 	@SuppressWarnings({ "deprecation" })
 	public MessageContext handle(final MessageContext mc) {
 		MsgMonitor.prefLog(mc, log);
 
 		final QueueCfg qc = mc.getQueueCfg();
 		final HttpDestinationCfg destCfg = qc.getDestCfg();
-		final String destUrlStr = destCfg.getUrl();
+		final String destUrlStr = resolveDestUrl(mc);
 
 		HttpUriRequest req = null;
 

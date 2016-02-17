@@ -73,6 +73,6 @@ class QueueCtx implements ShutdownListener {
 		}
 
 		MQueueMgr.instance().stopQueue(qc);
-		MQueueMgr.instance().reconnActor.reconnect(qc);
+		MQueueMgr.instance().reconnActor.addReconnect(qc);
 	}
 }

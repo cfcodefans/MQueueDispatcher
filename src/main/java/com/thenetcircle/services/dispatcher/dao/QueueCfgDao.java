@@ -1,5 +1,6 @@
 package com.thenetcircle.services.dispatcher.dao;
 
+import java.io.Closeable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -10,6 +11,7 @@ import javax.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 
+import com.thenetcircle.services.commons.cdi.rest.WeldBinder;
 import com.thenetcircle.services.commons.persistence.jpa.CdiBaseDao;
 import com.thenetcircle.services.commons.persistence.jpa.cdi.Transactional;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
@@ -17,8 +19,8 @@ import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Default
-@RequestScoped //for java se, only applicatoin scope available
-public class QueueCfgDao extends CdiBaseDao<QueueCfg> {
+@RequestScoped //for java SE, only application scope available
+public class QueueCfgDao extends CdiBaseDao<QueueCfg> implements Closeable {
 	private static final long serialVersionUID = 1L;
 	
 	@Override
@@ -109,5 +111,9 @@ public class QueueCfgDao extends CdiBaseDao<QueueCfg> {
 
 	public List<QueueCfg> findQueuesByServer(final ServerCfg sc) {
 		return super.query("select qc from QueueCfg qc where qc.serverCfg=?1", sc);
+	}
+	
+	public static QueueCfgDao instance() {
+		return WeldBinder.getBean(QueueCfgDao.class);
 	}
 }

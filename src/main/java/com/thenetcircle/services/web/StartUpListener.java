@@ -31,19 +31,18 @@ public class StartUpListener implements ServletContextListener {
 	@Override
 	public void contextInitialized(final ServletContextEvent paramServletContextEvent) {
 		log.info(MiscUtils.invocationInfo());
-//		loadQueues();
-//		JGroupsActor.instance().start();
-//		NotificationActor.instance().start();
+		loadQueues();
+		JGroupsActor.instance().start();
+		NotificationActor.instance().start();
 	}
 
 	@Override
 	public void contextDestroyed(final ServletContextEvent paramServletContextEvent) {
 		log.info(MiscUtils.invocationInfo());
-//		MQueueMgr.instance().s
-//		JpaModule.instance().destory();
-//		MonitorRes.shutdown();
-//		JGroupsActor.instance().stop();
-//		NotificationActor.instance().stop();
+		JpaModule.instance().destory();
+		MonitorRes.shutdown();
+		JGroupsActor.instance().stop();
+		NotificationActor.instance().stop();
 	}
 
 	private void loadQueues() {
@@ -60,7 +59,6 @@ public class StartUpListener implements ServletContextListener {
 			} 
 			
 			log.info(String.format("loading %d queues...", qcList.size()));
-			if (true) return;
 
 			final ExecutorService threadPool = Executors.newFixedThreadPool(MiscUtils.AVAILABLE_PROCESSORS, MiscUtils.namedThreadFactory("MQueueLoader"));
 			final MQueueMgr mqueueMgr = MQueueMgr.instance();
@@ -69,7 +67,7 @@ public class StartUpListener implements ServletContextListener {
 				threadPool.submit(()->{
 					final QueueCfg startedQueue = mqueueMgr.startQueue(qc);
 					if (startedQueue.isEnabled() && Status.running.equals(startedQueue.getStatus())) return;
-					mqueueMgr.getReconnActor().reconnect(qc);
+					mqueueMgr.getReconnActor().addReconnect(qc);
 				});
 			});
 			
