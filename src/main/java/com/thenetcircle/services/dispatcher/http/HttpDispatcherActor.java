@@ -6,13 +6,16 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.logging.Log;
@@ -131,36 +134,18 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 		mcs.forEach(this::handle);
 	}
 
-	private static Pattern resolvePattern = Pattern.compile("^(format:[a-z_]+;)(.*)$"); 
 	
 	protected String resolveDestUrl(final MessageContext mc) {
 		final QueueCfg qc = mc.getQueueCfg();
 		final HttpDestinationCfg destCfg = qc.getDestCfg();
 		String defaultUrl = destCfg.getUrl();
-		
-		//format:json;{"name":"jack","age":10,"vip":false,"amqp:publisher:info":{"HTTP_ORIGIN":null}}
-		//to help GuangQi test redirect feature
-		
-		String payload = mc.getMessageContent();
-		Matcher m = resolvePattern.matcher(payload);
-		
-		if (!m.find()) {
-			return defaultUrl;
-		}
-		
-		String format = m.group(1);
-		if (!StringUtils.contains(format, "json")) {
-			return defaultUrl;
-		}
-		
-		String msg = StringUtils.substringAfter(payload, format);
-		JsonNode read = Jsons.read(msg);
-		JsonNode publisherInfo = read.get("amqp:publisher:info");
-		if (publisherInfo == null) {
-			return defaultUrl;
-		}
 			
-		String origin = publisherInfo.get("HTTP_ORIGIN").asText();
+		Map<String, Object> headers = mc.getDelivery().getProperties().getHeaders();
+		if (MapUtils.isEmpty(headers)) {
+			return defaultUrl;
+		}
+		
+		String origin = ObjectUtils.defaultIfNull(headers.get("consumer_target"), defaultUrl).toString();
 		return StringUtils.isBlank(origin) ? defaultUrl : origin;
 	}
 	

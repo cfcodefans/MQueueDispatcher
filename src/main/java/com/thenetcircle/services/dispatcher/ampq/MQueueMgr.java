@@ -221,8 +221,11 @@ public class MQueueMgr {
 
 		final ServerCfg sc = qc.getServerCfg();
 		Set<NamedConnection> connSet = serverCfgAndConns.putIfAbsent(sc, new LinkedHashSet<NamedConnection>());
-		Iterator<NamedConnection> it = connSet.stream().filter(_nc->_nc.qcSet.size() < NUM_CHANNEL_PER_CONN).iterator();
-		NamedConnection nc = it.hasNext() ? it.next() : null;
+		NamedConnection nc = null;
+		if (CollectionUtils.isNotEmpty(connSet)) {
+			Iterator<NamedConnection> it = connSet.stream().filter(_nc->_nc.qcSet.size() < NUM_CHANNEL_PER_CONN).iterator();
+			nc = it.hasNext() ? it.next() : null;
+		}
 
 		try {
 			if (nc == null) {

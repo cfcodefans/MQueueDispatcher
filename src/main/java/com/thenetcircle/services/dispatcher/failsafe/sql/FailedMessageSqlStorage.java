@@ -44,8 +44,8 @@ public class FailedMessageSqlStorage  extends ConcurrentAsynActor<MessageContext
 		q.executeUpdate();
 	}
 
-	public void handle(final Collection<MessageContext> mcs) {
-		if (CollectionUtils.isEmpty(mcs)) return;
+	public MessageContext handle(final MessageContext mc) {
+		if (mc == null) return mc;
 		
 		try {
 			em = JpaModule.getEntityManager();
@@ -53,18 +53,13 @@ public class FailedMessageSqlStorage  extends ConcurrentAsynActor<MessageContext
 			EntityTransaction transaction = null;
 			try {
 				transaction = BaseDao.beginTransaction(em);
-				
-				for (final MessageContext mc : mcs) {
-					if (mc != null) {
-						log.info("handle Message: \n" + mc);
-					}
-					handle(mc);
-				}
+				_handle(mc);
 				transaction.commit();
 				em.close();
 			} catch (Exception e) {
 				log.error("failed by exception", e);
-				transaction.setRollbackOnly();
+				if (transaction != null && transaction.isActive())
+					transaction.setRollbackOnly();
 				BaseDao.endTransaction(em);
 				
 				log.error("close EntityManager");
@@ -77,9 +72,10 @@ public class FailedMessageSqlStorage  extends ConcurrentAsynActor<MessageContext
 			
 			log.error("failed by exception", e);
 		}
+		return mc;
 	}
 
-	public MessageContext handle(final MessageContext mc) {
+	public MessageContext _handle(final MessageContext mc) {
 		if (mc == null) return mc;
 		try {
 			if (mc.isSucceeded() && mc.getId() > 0) {
@@ -89,38 +85,15 @@ public class FailedMessageSqlStorage  extends ConcurrentAsynActor<MessageContext
 			
 			mc.fail();
 			
-			if (mc.getId() > 0) {
-				final Query q = em.createQuery("update MessageContext mc set "
-						+ " mc.failTimes=:failTimes, "
-						+ " mc.response.statusCode=:statusCode, "
-						+ " mc.response.responseStr=:responseStr, "
-						+ " mc.timestamp=:_timestamp "
-						+ " where mc.id=:id");
-				
-				q.setParameter("failTimes", Long.valueOf(mc.getFailTimes()));
-				final MsgResp resp = mc.getResponse();
-				if (resp != null) {
-					q.setParameter("statusCode", resp.getStatusCode());
-					q.setParameter("responseStr", resp.getResponseStr());
-				} 
-				
-				q.setParameter("_timestamp", Long.valueOf(mc.getTimestamp()));
-				q.setParameter("id", Long.valueOf(mc.getId()));
-				
-			    final int updatedFailMsg = q.executeUpdate();
-			    
-				log.info("update failed job: " + updatedFailMsg);
-				if (updatedFailMsg <= 0) {
-					final MessageContext merge = em.merge(mc);
-					em.flush();
-					mc.setFailTimes(merge.getFailTimes());
-					mc.setId(merge.getId());
-				}
+			MessageContext _mc = em.find(MessageContext.class, Long.valueOf(mc.getId()));
+			if (_mc == null) {
+				_mc = em.merge(mc);
+				mc.setId(_mc.getId());
 			} else {
-				final MessageContext merge = em.merge(mc);
-				em.flush();
-				mc.setFailTimes(merge.getFailTimes());
-				mc.setId(merge.getId());
+				_mc.setDelivery(mc.getDelivery());
+				_mc.setFailTimes(mc.getFailTimes());
+				_mc.setResponse(mc.getResponse());
+				em.merge(_mc);
 			}
 			
 			return HttpDispatcherActor.instance().handover(mc);
