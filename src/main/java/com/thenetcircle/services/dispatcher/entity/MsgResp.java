@@ -5,6 +5,8 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.xml.bind.annotation.XmlElement;
 
+import org.apache.commons.lang3.StringUtils;
+
 @Embeddable
 public class MsgResp {
 
@@ -39,7 +41,7 @@ public class MsgResp {
 	}
 
 	public void setResponseStr(String response) {
-		this.responseStr = response;
+		this.responseStr = StringUtils.substring(response, 0, 2000);
 	}
 
 	@Override

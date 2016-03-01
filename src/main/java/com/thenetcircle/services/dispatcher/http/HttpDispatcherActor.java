@@ -8,8 +8,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -23,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.GzipCompressingEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -36,8 +35,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.thenetcircle.services.commons.Jsons;
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.commons.actor.IActor;
@@ -66,6 +63,7 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 
 		public void completed(final HttpResponse resp) {
 			sw.stop();
+//			log.info(sw.getTime());
 			String respStr = null;
 			try {
 				respStr = EntityUtils.toString(resp.getEntity());
@@ -166,14 +164,12 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 
 				final List<NameValuePair> paramList = getParamsList("queueName", qc.getName(), "bodyData", bodyStr);
 				UrlEncodedFormEntity fe = new UrlEncodedFormEntity(paramList, HTTP.UTF_8);
+				GzipCompressingEntity ze = new GzipCompressingEntity(fe);
 
-				post.setEntity(fe);
+				post.setEntity(ze);
 				req = post;
 			} else {
-				final String msgStr = bodyStr;
-				final String queryStr = URLEncoder.encode(msgStr, "UTF-8");
-				final HttpGet get = new HttpGet(destUrlStr + "?" + queryStr);
-				req = get;
+				req = new HttpGet(destUrlStr + "?" + URLEncoder.encode(bodyStr, "UTF-8"));
 			}
 		} catch (UnsupportedEncodingException e) {
 			log.error("fail to encode message: " + bodyStr, e);
@@ -191,6 +187,7 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 										.setConnectionRequestTimeout(timeout)
 										.setSocketTimeout(timeout)
 										.setConnectTimeout(timeout)
+										.setDecompressionEnabled(true)
 										.build());
 		// }
 
@@ -205,7 +202,12 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 	}
 
 	public MessageContext handover(MessageContext mc) {
-		return handle(mc);
+		try {
+			return handle(mc);
+		} catch (Exception e) {
+			log.error("failed to sent\n" + mc, e);
+		}
+		return null;
 	}
 
 	public void stop() {

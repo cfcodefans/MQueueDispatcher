@@ -11,6 +11,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.functors.EqualPredicate;
@@ -39,10 +41,10 @@ public class MQueueTest {
 	public static void init() {
 		factory = new ConnectionFactory();
 
-		factory.setUsername("consumer");
-		factory.setPassword("consumer");
+		factory.setUsername("poppen");
+		factory.setPassword("poppen");
 		factory.setVirtualHost("/");
-		factory.setHost("rainflying-debian.thenetcircle.lab");
+		factory.setHost("snowball");
 		factory.setPort(5672);
 	}
 
@@ -96,11 +98,18 @@ public class MQueueTest {
 		}
 	}
 
-	private final static String QUEUE_NAME = "hello";
+	private final static String QUEUE_NAME = "pref_test";
 
 	@Test
+	public void testSending() throws Exception {
+		String[] msgs = IntStream.range(0, 20000).mapToObj(i -> StringUtils.repeat("a", 200)).collect(Collectors.toList()).toArray(new String[0]);
+		Publisher p = new Publisher("pref_test", msgs, "pref_test_exchange", "");
+		p.call();
+	}
+	
+	@Test
 	public void testDirectQueue() throws Exception {
-		final String exchangeName = "direct_1";
+		final String exchangeName = "pref_test_exchange";
 		Channel consumer = conn.createChannel();
 
 		consumer.exchangeDeclare(exchangeName, "direct", false);

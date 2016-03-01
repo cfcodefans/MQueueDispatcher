@@ -44,7 +44,7 @@ public class QueueCfg extends Configuration {
 	private static final long serialVersionUID = 1L;
 
 	public static ExchangeCfg defaultExchange(QueueCfg qc) {
-		return new ExchangeCfg(qc.getName()+"_exchange", qc.getServerCfg());
+		return new ExchangeCfg(qc.getName() + "_router", qc.getServerCfg());
 	}
 
 	@Basic

@@ -2,12 +2,13 @@ package com.thenetcircle.services.dispatcher.ampq;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -67,15 +68,15 @@ public class MQueueMgr {
 		return instance;
 	}
 
-	private ConcurrentHashMap<QueueCfg, QueueCtx> cfgAndCtxs = new ConcurrentHashMap<QueueCfg, QueueCtx>();
+	private Map<QueueCfg, QueueCtx> cfgAndCtxs = new HashMap<QueueCfg, QueueCtx>();
 
-	private ConcurrentHashMap<ServerCfg, ConnectionFactory> connFactories = new ConcurrentHashMap<ServerCfg, ConnectionFactory>();
+	private Map<ServerCfg, ConnectionFactory> connFactories = new HashMap<ServerCfg, ConnectionFactory>();
 	
 	ReconnectActor reconnActor = new ReconnectActor();
 	
 	private ScheduledExecutorService reconnActorThread = Executors.newSingleThreadScheduledExecutor();
 	
-	private ConcurrentHashMap<ServerCfg, Set<NamedConnection>> serverCfgAndConns = new ConcurrentHashMap<ServerCfg, Set<NamedConnection>>();
+	private Map<ServerCfg, Set<NamedConnection>> serverCfgAndConns = new HashMap<ServerCfg, Set<NamedConnection>>();
 	
 	public MQueueMgr() {
 		NUM_CHANNEL_PER_CONN = (int)MiscUtils.getPropertyNumber("channel.number.connection", NUM_CHANNEL_PER_CONN);

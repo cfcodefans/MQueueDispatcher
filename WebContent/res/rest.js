@@ -1,8 +1,29 @@
+function simpleClassName(clsName) {
+	if (!(clsName && typeof(clsName) == "string"))
+		return clsName;
+	
+	return clsName.split().pop();
+}
+
 function MethodBuilder(_method, _metadata) {
 	var invocable = {
 		metadata: _metadata,
 		method: _method,
-		paramAndValues: []
+		paramAndValues: [],
+		toString: function() {
+			var str = "[" + _method.produceMediaTypes +"] "; 
+			str += "@" + _method.httpMethod + " "; 
+			str += _method.name;
+			str += "(";
+			for (var i = 0, j = this.method.params.length; i < j; i++) {
+				var p = this.method.params[i];
+				str += "@" + p.source + " ";
+				str += simpleClassName(p.type) + " ";
+				str += p.sourceName + (i + 1 == j ? "" : ", ");
+			}
+			str += ")";
+			return str;
+		}
 	};
 
 	function addSetter(srcName) {
@@ -11,7 +32,6 @@ function MethodBuilder(_method, _metadata) {
 			return this;
 		};
 	}
-
 
 	for (var i = 0, j = invocable.method.params.length; i < j; i++)	{
 		var param = invocable.method.params[i];
@@ -36,6 +56,12 @@ function MethodBuilder(_method, _metadata) {
 		}
 		return url;
 	}
+
+	invocable.asyncCall = function(settings) {
+		if (!settings) settings = {};
+		settings.async = true;
+		return this.call(settings)
+	}
 	
 	invocable.call = function(settings) {
 		if (!settings) {
@@ -55,8 +81,6 @@ function MethodBuilder(_method, _metadata) {
 			for (var hp in headerParams) {
 				xhr.setRequestHeader(hp, headerParams[hp]);	
 			}	
-			
-//			xhr.setRequestHeader("Content-Encoding", "gzip");
 		};
 
 		var data = [];
@@ -84,14 +108,29 @@ function MethodBuilder(_method, _metadata) {
 	return invocable;
 }
 
+function Proxy() {
+	
+}
+
+Proxy.prototype = {
+	toString : function() {
+		var str = "Resource " + this.name;
+		for ( var i in this) {
+			if (i == "toString") continue;
+			str += "\t" + this[i].toString() + "\n";
+		}
+		return str;
+	}
+}
+
 function ProxyBuilder(){
-	this._proxy = {};
+	this._proxy = new Proxy();
 };
 
 ProxyBuilder.prototype = {
-	// _proxy:{},
-
-	build: function() {return this._proxy;},
+	build: function() {
+		return this._proxy;
+	},
 
 	withName: function(name) {
 		this._proxy.name = name;
@@ -109,7 +148,7 @@ ProxyBuilder.prototype = {
 			this._proxy[method.name] = MethodBuilder(method, metadata);
 		}
 		return this;
-	}
+	},
 };
 
 RS = {
