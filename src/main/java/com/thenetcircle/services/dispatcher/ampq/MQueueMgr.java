@@ -215,13 +215,13 @@ public class MQueueMgr {
 		FailedMessageSqlStorage.instance().stop();
 	}
 
-	public QueueCfg startQueue(final QueueCfg qc) {
+	public synchronized QueueCfg startQueue(final QueueCfg qc) {
 		if (cfgAndCtxs.containsKey(qc)) {
 			stopQueue(qc);
 		}
 
 		final ServerCfg sc = qc.getServerCfg();
-		Set<NamedConnection> connSet = serverCfgAndConns.putIfAbsent(sc, new LinkedHashSet<NamedConnection>());
+		Set<NamedConnection> connSet = serverCfgAndConns.computeIfAbsent(sc, (_sc) -> new LinkedHashSet<NamedConnection>());
 		NamedConnection nc = null;
 		if (CollectionUtils.isNotEmpty(connSet)) {
 			Iterator<NamedConnection> it = connSet.stream().filter(_nc->_nc.qcSet.size() < NUM_CHANNEL_PER_CONN).iterator();

@@ -190,3 +190,13 @@ td {
 .form-group div.noUi-horizontal {
 	margin-top: 9px;
 }
+
+.navbar-compact {
+	margin-bottom: 0px;
+	border: none;
+	width: 95%;
+	background-color: #fff;
+}
+.main-grid {
+	width: 95%;
+}

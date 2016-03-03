@@ -15,6 +15,12 @@ import com.thenetcircle.services.dispatcher.entity.QueueCfg.Status;
 public class ReconnectActor implements Runnable {
 	private Set<QueueCfg>			queuesForReconnect	= new LinkedHashSet<QueueCfg>();
 	protected static final Logger	log					= Logger.getLogger(ReconnectActor.class);
+	
+	ReconnectActor() {}
+	
+	public QueueCfg[] getQueuesForReconnect() {
+		return queuesForReconnect.toArray(new QueueCfg[0]);
+	}
 
 	public void addReconnect(final QueueCfg qc) {
 		if (qc == null) {

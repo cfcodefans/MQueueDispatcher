@@ -111,6 +111,14 @@ public class ExchangeCfgRes {
 		final List<ExchangeCfg> ecList = ecDao.findAll();
 		return Response.ok(ecList.toArray(new ExchangeCfg[0]), MediaType.APPLICATION_XML_TYPE).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
 	}
+	
+	@GET
+	@Produces(MediaType.APPLICATION_XML)
+	@Path("json")
+	public Response getAllJson() {
+		final List<ExchangeCfg> ecList = ecDao.findAll();
+		return Response.ok(ecList.toArray(new ExchangeCfg[0]), MediaType.APPLICATION_JSON).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
+	}
 
 	@OPTIONS
 	public String options() {

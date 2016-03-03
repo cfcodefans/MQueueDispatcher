@@ -88,6 +88,15 @@ public class ServerCfgRes {
 		return Response.ok(scList.toArray(new ServerCfg[0]), MediaType.APPLICATION_XML_TYPE).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
 	}
 
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("json")
+	public Response getAllJson() {
+		final List<ServerCfg> scList = scDao.findAll();
+		return Response.ok(scList.toArray(new ServerCfg[0]), MediaType.APPLICATION_JSON).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
+	}
+
+	
 	@OPTIONS
 	public String options() {
 		return "ServerCfg Resource";

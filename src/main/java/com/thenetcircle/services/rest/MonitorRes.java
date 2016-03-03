@@ -20,7 +20,7 @@ import org.glassfish.jersey.media.sse.SseBroadcaster;
 import org.glassfish.jersey.media.sse.SseFeature;
 import org.glassfish.jersey.server.ChunkedOutput;
 
-import com.thenetcircle.services.commons.actor.BlockingAsynActor;
+import com.thenetcircle.services.commons.actor.ConcurrentAsynActor;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
@@ -33,7 +33,7 @@ public class MonitorRes {
 
 	protected static final Log log = LogFactory.getLog(MonitorRes.class.getName());
 
-	private static class Watcher extends BlockingAsynActor<MessageContext> {
+	private static class Watcher extends ConcurrentAsynActor<MessageContext> {
 		// private EventOutput eventOutput = null;
 		private SseBroadcaster broadcaster = new SseBroadcaster() {
 			private AtomicInteger cnt = new AtomicInteger(0);

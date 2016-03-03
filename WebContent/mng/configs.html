@@ -8,11 +8,11 @@
 <title>Consumer Dispatcher</title>
 
 <link href="../webjars/bootstrap/3.3.6/dist/css/bootstrap.css" rel="stylesheet" />
-<link href="../webjars/angular-ui-tree/2.13.0/angular-ui-tree.min.css" rel="stylesheet" />
 <link href="../webjars/ui-grid/3.0.7/ui-grid.css" rel="stylesheet" />
 <link href="../webjars/angular-bootstrap/1.1.2/ui-bootstrap-csp.css" rel="stylesheet" />
 <link href="../res/style.css" rel="stylesheet" />
 <link href="../res/simple-sidebar.css" rel="stylesheet" />
+<!-- <link href="../res/ui-grid-qorsmond.css" rel="stylesheet" /> -->
 </head>
 <body>
 
@@ -37,10 +37,7 @@
 			</ul>
 		</div>
 
-		<div id="page-content-wrapper">
-			<div class="container-fluid">
-				<ng-view></ng-view>
-			</div>
+		<div id="page-content-wrapper" ng-view>
 		</div>
 	</div>
 
@@ -49,51 +46,28 @@
 	<script type="text/javascript" src="../webjars/bootstrap/3.3.6/dist/js/bootstrap.js"></script>
 	<script type="text/javascript" src="../webjars/angularjs/1.5.0/angular.js"></script>
 	<script type="text/javascript" src="../webjars/angular-route/1.5.0/angular-route.js"></script>
-	<script type="text/javascript" src="../webjars/angular-ui-tree/2.13.0/angular-ui-tree.js"></script>
 	<script type="text/javascript" src="../webjars/angular-bootstrap/1.1.2/ui-bootstrap.js"></script>
 	<script type="text/javascript" src="../webjars/angular-bootstrap/1.1.2/ui-bootstrap-tpls.js"></script>
 	<script type="text/javascript" src="../webjars/ui-grid/3.0.7/ui-grid.js"></script>
 	<script type="text/javascript" src="../res/rest.js"></script>
-	<script type="text/javascript" src="mng.js"></script>
+	<script type="text/javascript" src="configs.js"></script>
 
-
-	<script type="text/ng-template" id="overview.html">
-		<h1>overview</h1>
+	<script type="text/ng-template" id="cellCtrl">
+		<div class="btn-group btn-group-justified" role="group">
+			<a role="button" class="btn">Edit</a>
+  			<a role="button" class="btn">Copy</a>
+		</div>
 	</script>
-	<script type="text/ng-template" id="servers.html">
-		<h1>servers</h1>
-	</script>
-	<script type="text/ng-template" id="exchanges.html">
-		<h1>exchanges</h1>
-	</script>
-	<script type="text/ng-template" id="queues.html">
-		<h1>queues</h1>
+	
+	<script type="text/ng-template" id="queueCtrl">
+		<div class="btn-group btn-group-justified" role="group">
+			<a role="button" class="btn">Edit</a>
+  			<a role="button" class="btn">Copy</a>
+			<a role="button" class="btn">Stop</a>
+		</div>
 	</script>
 
 	<script type="text/javascript">
-		function overviewCtrl($scope) {
-			console.info("overviewCtrl!");
-		}
-
-		function serversCtrl($scope) {
-			console.info("serversCtrl!");
-		}
-
-		function exchangesCtrl($scope) {
-			console.info("exchangesCtrl!");
-		}
-
-		function queuesCtrl($scope) {
-			console.info("queuesCtrl!");
-		}
-
-		function to(ctrlName, viewUrl) {
-			return {
-				controller : ctrlName,
-				templateUrl : viewUrl
-			};
-		}
-
 		function to(ctrlName, viewUrl) {
 			return {
 				controller : ctrlName,
@@ -102,23 +76,26 @@
 		}
 
 		function redirect(key) {
-			return {
-				redirectTo : key
-			};
+			return {redirectTo : key};
 		}
-		var app = angular.module("Configs", [ "ngRoute" ]);
+		var app = angular.module("Configs", [ "ngRoute", 
+		                                      "ui.grid", 
+		                                      "ui.grid.autoResize", 
+		                                      "ui.grid.pagination" ]);
 
 		app.config([ "$routeProvider", function($routeProvider) {
-			$routeProvider.when("/overview", to("overviewCtrl", "overview.html")).when("/servers", to("serversCtrl", "servers.html")).when("/exchanges", to("exchangesCtrl", "exchanges.html")).when("/queues", to("queuesCtrl", "queues.html")).otherwise(redirect("/overview"));
-			console.info("routeCfg!");
+			$routeProvider
+				.when("/overview", to("overviewCtrl", "../mvc/overview.html"))
+				.when("/servers", to("serversCtrl", "servers.html"))
+				.when("/exchanges", to("exchangesCtrl", "exchanges.html"))
+				.when("/queues", to("queuesCtrl", "queues.html"))
+				.otherwise(redirect("/overview"));
 		} ]);
 
-		app.controller("overviewCtrl", [ "$scope", function($scope) {
-			console.info("overviewCtrl!");
-		} ]);
-		app.controller("serversCtrl", [ "$scope", serversCtrl ]);
-		app.controller("exchangesCtrl", [ "$scope", exchangesCtrl ]);
-		app.controller("queuesCtrl", [ "$scope", queuesCtrl ]);
+		app.controller("overviewCtrl", [ "$scope", "$route", "$rootScope", "$templateCache", overviewCtrl ]);
+		app.controller("serversCtrl", [ "$scope", "$route", "$rootScope", "$templateCache", serversCtrl ]);
+		app.controller("exchangesCtrl", [ "$scope", "$route", "$rootScope", "$templateCache", "$parse", exchangesCtrl ]);
+		app.controller("queuesCtrl", [ "$scope", "$route", "$rootScope", "$templateCache", "$parse", queuesCtrl ]);
 	</script>
 
 </body>

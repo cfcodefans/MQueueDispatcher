@@ -1,0 +1,67 @@
+<div class="container">
+	<div class="page-header">
+		<h3>Overview</h3>
+	</div>
+	<div class="jumbotron">
+		<p>JVM Memory usage: {{ov.runtime.info}}</p>
+		<p>{{ov.serverNum}} Queue Servers are defined.</p>
+		<p>{{ov.exchangeNum}} Exchanges are defined.</p>
+		<p>{{ov.queueNum}} Queues are defined.</p>
+
+		<p>{{ov.reconnects.length}} queues need to be reconnected.</p>
+		<div ng-if="ov.reconnects.length > 0">
+			<hr/>
+			<ul>
+				<li class="alert alert-warning" role="alert" ng-repeat="q in ov.reconnects">
+					{{q.server}}/{{q.name}}
+				</li>
+			</ul>
+		</div>
+	</div>
+	<script type="text/javascript" src="/pages/bind.js" data-runat="server"></script>
+	<script type="text/javascript" data-runat="server">
+		load("nashorn:mozilla_compat.js");
+
+		importClass(Packages.java.lang.Runtime);
+		importClass(Packages.com.thenetcircle.services.commons.MiscUtils);
+		importClass(Packages.com.thenetcircle.services.dispatcher.dao.GeneralDao);
+		importClass(Packages.com.thenetcircle.services.commons.persistence.jpa.JpaModule);
+		importClass(Packages.com.thenetcircle.services.dispatcher.ampq.MQueueMgr);
+
+		var rt = Runtime.getRuntime();
+
+		var ov = {};
+		ov.runtime = {
+			totalMemory : rt.totalMemory(),
+			freeMemory : rt.freeMemory(),
+			info: MiscUtils.byteCountToDisplaySize(rt.totalMemory() - rt.freeMemory()) + "/" + MiscUtils.byteCountToDisplaySize(rt.totalMemory()) 
+		};
+
+		var gd = new GeneralDao(JpaModule.getEntityManager());
+
+		var serverNum = gd.queryCount("select count(1) from ServerCfg sc");
+		ov.serverNum = serverNum;
+
+		var exchangeNum = gd.queryCount("select count(1) from ExchangeCfg ec");
+		ov.exchangeNum = exchangeNum;
+
+		var queueNum = gd.queryCount("select count(1) from QueueCfg qc");
+		ov.queueNum = queueNum;
+
+		ov.reconnects = [];
+		var reconns = MQueueMgr.instance().getReconnActor().getQueuesForReconnect();
+		for (var i = 0, j = reconns.length; i < j; i++) {
+			var q = reconns[i];
+			ov.reconnects[i] = {
+				id : q.getId(),
+				name : q.getQueueName(),
+				server : q.getServerCfg().getHost()
+			};
+		}
+
+		var resultTag = createScriptElement();
+		injectVarToScript(resultTag, "ov", ov);
+
+		me.after(resultTag);
+	</script>
+</div>

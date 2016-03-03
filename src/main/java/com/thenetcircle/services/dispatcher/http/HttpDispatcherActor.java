@@ -164,9 +164,9 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 
 				final List<NameValuePair> paramList = getParamsList("queueName", qc.getName(), "bodyData", bodyStr);
 				UrlEncodedFormEntity fe = new UrlEncodedFormEntity(paramList, HTTP.UTF_8);
-				GzipCompressingEntity ze = new GzipCompressingEntity(fe);
+//				GzipCompressingEntity ze = new GzipCompressingEntity(fe);
 
-				post.setEntity(ze);
+				post.setEntity(fe);
 				req = post;
 			} else {
 				req = new HttpGet(destUrlStr + "?" + URLEncoder.encode(bodyStr, "UTF-8"));
@@ -187,7 +187,7 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 										.setConnectionRequestTimeout(timeout)
 										.setSocketTimeout(timeout)
 										.setConnectTimeout(timeout)
-										.setDecompressionEnabled(true)
+//										.setDecompressionEnabled(true)
 										.build());
 		// }
 

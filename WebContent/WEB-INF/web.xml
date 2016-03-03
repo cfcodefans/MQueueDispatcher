@@ -69,4 +69,23 @@
 		<url-pattern>/mvc/*</url-pattern>
 	</servlet-mapping>
 
+	<servlet>
+		<servlet-name>hide</servlet-name>
+		<servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
+		<init-param>
+			<param-name>dirAllowed</param-name>
+			<param-value>false</param-value>
+		</init-param>
+		<init-param>
+			<param-name>redirectWelcome</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>hide</servlet-name>
+		<url-pattern>/pages/*</url-pattern>
+	</servlet-mapping>
+
 </web-app>

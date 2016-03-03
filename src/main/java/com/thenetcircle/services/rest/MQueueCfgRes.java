@@ -155,11 +155,24 @@ public class MQueueCfgRes {
 	@GET
 	@Produces({ MediaType.APPLICATION_XML })
 	public Response getAll() {
+		final List<QueueCfg> qcList = loadAll();
+		return Response.ok(qcList.toArray(new QueueCfg[0]), MediaType.APPLICATION_XML_TYPE).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
+	}
+	
+	@GET
+	@Produces({ MediaType.APPLICATION_JSON })
+	@Path("json")
+	public Response getAllJson() {
+		final List<QueueCfg> qcList = loadAll();
+		return Response.ok(qcList.toArray(new QueueCfg[0]), MediaType.APPLICATION_JSON).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
+	}
+
+	private List<QueueCfg> loadAll() {
 		final List<QueueCfg> qcList = qcDao.findAll();
 		final Collection<QueueCfg> queueCfgs = MQueueMgr.instance().getQueueCfgs();
 		final Collection<QueueCfg> nonStartedQueueCfgs = CollectionUtils.subtract(qcList, queueCfgs);
 		nonStartedQueueCfgs.forEach(qc->qc.setEnabled(false));
-		return Response.ok(qcList.toArray(new QueueCfg[0]), MediaType.APPLICATION_XML_TYPE).header(HttpHeaders.CONTENT_ENCODING, "gzip").build();
+		return qcList;
 	}
 
 	@GET
