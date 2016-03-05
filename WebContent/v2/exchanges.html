@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<nav class="navbar navbar-default navbar-compact">
+	<div class="navbar-header">
+		<span class="navbar-brand">Exchanges</span>
+	</div>
+	<button type="button" class="btn btn-default navbar-btn">Create</button>
+	<form class="navbar-form navbar-right" role="search">
+		<div class="form-group">
+			<input type="text" class="form-control" placeholder="Search" ng-model="filterValue" ng-change="filter()"/>
+		</div>
+	</form>
+</nav>
+<div id="exchangeTable" 
+	ui-grid="gridCfgs" 
+	ng-style="{height: 18*30+42+'px'}" 
+	ui-grid-auto-resize 
+	ui-grid-pagination
+	class="main-grid">
+	<!-- 
+	 -->
+</div>
