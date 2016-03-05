@@ -41,6 +41,20 @@
 		</div>
 	</div>
 
+	<script type="text/ng-template" id="cellCtrl">
+		<div class="btn-group btn-group-justified" role="group">
+			<a role="button" class="btn" ng-click="grid.appScope.edit(row.entity)">Edit</a>
+  			<a role="button" class="btn" ng-click="grid.appScope.copy(row.entity)">Copy</a>
+		</div>
+	</script>
+	
+	<script type="text/ng-template" id="queueCtrl">
+		<div class="btn-group btn-group-justified" role="group">
+			<a role="button" class="btn" ng-click="grid.appScope.edit(row.entity)">Edit</a>
+  			<a role="button" class="btn" ng-click="grid.appScope.copy(row.entity)">Copy</a>
+			<a role="button" class="btn">Stop</a>
+		</div>
+	</script>
 
 	<script type="text/javascript" src="../webjars/jquery/2.2.0/dist/jquery.js"></script>
 	<script type="text/javascript" src="../webjars/bootstrap/3.3.6/dist/js/bootstrap.js"></script>
@@ -50,74 +64,15 @@
 	<script type="text/javascript" src="../webjars/angular-bootstrap/1.1.2/ui-bootstrap-tpls.js"></script>
 	<script type="text/javascript" src="../webjars/ui-grid/3.0.7/ui-grid.js"></script>
 	<script type="text/javascript" src="../res/rest.js"></script>
+	<script type="text/javascript" src="mng.js"></script>
+	<script type="text/javascript" src="servers.js"></script>
+	<script type="text/javascript" src="exchanges.js"></script>
+	<script type="text/javascript" src="queues.js"></script>
 	<script type="text/javascript" src="configs.js"></script>
 
-	<script type="text/ng-template" id="cellCtrl">
-		<div class="btn-group btn-group-justified" role="group">
-			<a role="button" class="btn">Edit</a>
-  			<a role="button" class="btn">Copy</a>
-		</div>
-	</script>
-	
-	<script type="text/ng-template" id="queueCtrl">
-		<div class="btn-group btn-group-justified" role="group">
-			<a role="button" class="btn">Edit</a>
-  			<a role="button" class="btn">Copy</a>
-			<a role="button" class="btn">Stop</a>
-		</div>
-	</script>
 
 	<script type="text/javascript">
-		function to(ctrlName, viewUrl) {
-			return {
-				controller : ctrlName,
-				templateUrl : viewUrl
-			};
-		}
-
-		function redirect(key) {
-			return {redirectTo : key};
-		}
-		var app = angular.module("Configs", [ "ngRoute", 
-		                                      "ui.grid", 
-		                                      "ui.grid.autoResize", 
-		                                      "ui.grid.pagination" ]);
-
-		app.config([ "$routeProvider", function($routeProvider) {
-			$routeProvider
-				.when("/overview", 	to("overviewCtrl", 	"../mvc/overview.html"))
-				.when("/servers", 	to("serversCtrl", 	"servers.html"))
-				.when("/exchanges", to("exchangesCtrl", "exchanges.html"))
-				.when("/queues", 	to("queuesCtrl", 	"queues.html"))
-				.otherwise(redirect("/overview"));
-		} ]);
-
-		app.controller("overviewCtrl", [ "$scope", 
-		                                 "$route", 
-		                                 "$rootScope", 
-		                                 "$templateCache", 
-		                                 overviewCtrl ]);
 		
-		app.controller("serversCtrl", [ "$scope", 
-		                                "$route", 
-		                                "$rootScope", 
-		                                "$templateCache", 
-		                                "$uibModal", 
-		                                serversCtrl ]);
-		
-		app.controller("exchangesCtrl", [ "$scope", 
-		                                  "$route", 
-		                                  "$rootScope", 
-		                                  "$templateCache", 
-		                                  "$parse", 
-		                                  exchangesCtrl ]);
-		
-		app.controller("queuesCtrl", [ "$scope", 
-		                               "$route", 
-		                               "$rootScope", 
-		                               "$templateCache", 
-		                               "$parse", 
-		                               queuesCtrl ]);
 	</script>
 
 </body>

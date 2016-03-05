@@ -1,5 +1,6 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -19,7 +21,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.AMQP.Exchange.DeleteOk;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.commons.MiscUtils;
@@ -81,6 +85,41 @@ public class MQueueMgr {
 	public MQueueMgr() {
 		NUM_CHANNEL_PER_CONN = (int)MiscUtils.getPropertyNumber("channel.number.connection", NUM_CHANNEL_PER_CONN);
 		initActors();
+	}
+	
+	public <R> R operate(final ServerCfg sc, Function<Channel, R> fn) throws Exception {
+		if (sc == null || fn == null) {
+			return null;
+		}
+		
+		Connection conn = null;
+		Channel ch = null;
+		try {
+			conn = this.getConnFactory(sc).newConnection();
+			ch = conn.createChannel();
+			return fn.apply(ch);
+		} finally {
+			ch.close();
+			conn.close();
+		}
+	}
+	
+	public void updateExchange(ExchangeCfg ex) throws Exception {
+		if (ex == null) return;
+		ServerCfg sc = ex.getServerCfg();
+		if (sc == null) return;
+		Set<QueueCfg> queues = ex.getQueues();
+		if (CollectionUtils.isEmpty(queues)) return;
+		
+		operate(sc, (Channel ch) -> {
+			try {
+				DeleteOk del = ch.exchangeDelete(ex.getExchangeName());
+			} catch(Exception e) {
+				log.error("failed to update Exchange:\n" + ex, e);
+				return e;
+			}
+			return null;
+		});
 	}
 	
 	public MessageContext acknowledge(final MessageContext mc) {
@@ -176,7 +215,7 @@ public class MQueueMgr {
 	
 		final Logger logForSrv = ConsumerLoggers.getLoggerByServerCfg(sc);
 	
-		String infoStr = String.format("initiating ConnectionFactory with ServerCfg: \n%s", sc.toString());
+		String infoStr = String.format("initiating ConnectionFactory with ServerCfg: \n%s", sc);
 		log.info(infoStr);
 		logForSrv.info(infoStr);
 	
@@ -248,7 +287,7 @@ public class MQueueMgr {
 				ch.queueDeclare(qc.getQueueName(), qc.isDurable(), qc.isExclusive(), qc.isAutoDelete(), null);
 				ch.queueBind(qc.getQueueName(), StringUtils.defaultIfBlank(ec.getExchangeName(), StringUtils.EMPTY), qc.getRouteKey());
 				
-				if (qc.getPrefetchSize() != null && qc.getPrefetchSize() > 0) {
+				if (qc.getPrefetchSize() != null) {
 					ch.basicQos(qc.getPrefetchSize());
 				}
 			}

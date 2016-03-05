@@ -8,12 +8,6 @@ function loadIntoDom(dom_sel, xml, xslt_src) {
 	return dom;
 }
 
-function loadServerCfgOpts() {
-	var xhr = RS.ctx.ServerCfgRes.getAll.call({async:false});
-	var data = xhr.responseText;
-	loadIntoDom("#serverCfg_select_div", data, "server_cfg_opts.xsl");
-}
-
 function loadExchangeCfgOpts(serverCfgId) {
 	var ecs = null;
 	var xhr = null;
@@ -80,74 +74,27 @@ function resendFailedMsg(qc_id, msg_id) {
 	var xhr = RS.ctx.FailedJobRes.resendFailedMsg.with_qc_id(qc_id).with_mc_id(msg_id).call({async:false});
 }
 
-function newServerCfg(original) {
-	var serverCfg = null;
-	if (original) {
-		serverCfg = $.extend({}, original);
-		serverCfg.id = -1;
-	} else {
-		serverCfg = {
-			version : 0,
-			host : "localhost",
-			id : -1,
-			logFilePath: "",
-			maxFileSize : "2GB",
-			password : "guest",
-			port : 5672,
-			userName : "guest",
-			virtualHost : "/"
-		};
+function find(array, el, keyFn) {
+	if (!array || array.length == 0) return -1;
+	for (var i = 0, 
+			j = array.length, 
+			key = typeof(keyFn) === "function" ? keyFn(el) : el; 
+			 
+			i < j; 
+			i++) {
+		if (key === array[i]) return i;
 	}
-	return serverCfg;
+	return -1;
 }
 
-function serverCfgKey(sc) {
-	var sc = row;
-	if (!$.isEmptyObject(sc.id) || sc.id > 0) return sc.id;
-	return sc.host + ":" + sc.port + "/" + sc.virtualHost;
-}
-
-function updateServerCfgs(sc, scs) {
-	if (!scs) scs = [];
+function updateArray(el, array, keyFn) {
+	if (!array) array = [];
 	
-	for (var i = 0; i < scs.length; i++) {
-		var _sc = scs[i];
-		if (_sc.id == sc.id) {
-			scs[i] = sc;
-			return;
-		}
+	var i = find(array, el, keyFn);
+	if (i > 0) {
+		array[i] = el;
+		return i;
 	}
-	scs.push(sc);
-}
-
-function getServerCfg(idx) {
-	if (!idx || idx < 0) {
-		return newServerCfg();
-	}
-
-	var serverCfg = null;
-	var xhr = RS.ctx.ServerCfgRes.getJson.with_id(idx).call();
-	if (xhr.statusCode().status != 200) {
-		console.log(xhr);
-		return;
-	}
-	serverCfg = xhr.responseJSON;
-	return serverCfg;
-}
-
-function save(serverCfg) {
-	serverCfg = toEntity(serverCfg);
-	var xhr = null;
-
-	var scStr=JSON.stringify(serverCfg);
-	var oper = serverCfg.id < 0 ? RS.ctx.ServerCfgRes.create : RS.ctx.ServerCfgRes.update;   
-	xhr = oper.with_entity(scStr).call({async : false});
-
-	if (xhr.statusCode().status != 200) {
-		console.log(xhr);
-		return;
-	}
-
-	var newServerCfg = xhr.responseJSON;
-	return newServerCfg;
+	array.push(el);
+	return array.length - 1;
 }

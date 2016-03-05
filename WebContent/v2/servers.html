@@ -3,7 +3,10 @@
 	<div class="navbar-header">
 		<span class="navbar-brand">Servers</span>
 	</div>
-	<a ng-click="create($scope)">Create</a>
+	<button type="button" class="btn btn-default navbar-btn"
+		ng-click="create(this)">
+		Create
+	</button>
 	<form class="navbar-form navbar-right" role="search">
 		<div class="form-group">
 			<input type="text" class="form-control" placeholder="Search" ng-model="filterValue" ng-change="filter()"/>
@@ -16,8 +19,48 @@
 	ui-grid-auto-resize 
 	ui-grid-pagination
 	class="main-grid">
-	<!-- 
- -->
 </div>
 <script type="text/ng-template" id="server_modal">
+<form class="form-horizontal" role="form" id="edit_form">
+	<div class="modal-content">
+		<div class="modal-header">
+			<!--button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button-->
+			<h4 class="modal-title">Edit Server</h4>
+		</div>
+		<div class="modal-body">
+			<div class="input-group">
+				<span class="input-group-addon" id="hostDesc">Host</span> 
+				<input ng-model="sc.host" type="text" id="host" required="true" class="form-control" aria-describedby="hostDesc">
+			</div>
+			<div class="input-group">
+				<span class="input-group-addon" id="vhostDesc">Virtual Host</span> 
+				<input ng-model="sc.virtualHost" type="text" required="true" class="form-control" aria-describedby="vhostDesc">
+			</div>
+			<div class="input-group">
+				<span class="input-group-addon" id="portDesc">Port</span> 
+				<input ng-model="sc.port" type="number" min="1" max="65535" required="true" class="form-control" aria-describedby="PortDesc">
+			</div>
+			<div class="input-group">
+				<span class="input-group-addon" id="usernameDesc">Username</span> 
+				<input ng-model="sc.userName" type="text" required="true" class="form-control" aria-describedby="usernameDesc">
+			</div>
+			<div class="input-group">
+				<span class="input-group-addon" id="pwdDesc">Password</span> 
+				<input ng-model="sc.password" type="text" required="true" class="form-control" aria-describedby="pwdDesc">
+			</div>
+			<div class="input-group">
+				<span class="input-group-addon" id="logPathDesc">Log Path</span> 
+				<input ng-model="sc.logFilePath" type="text" required="true" class="form-control" aria-describedby="logPathDesc">
+			</div>
+			<div class="input-group">
+				<span class="input-group-addon" id="logSizeDesc">Log Size</span> 
+				<input ng-model="sc.maxFileSize" type="text" required="true" class="form-control" aria-describedby="logSizeDesc">
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="cancel()">Close</button>
+			<button type="button" class="btn btn-primary" ng-click="save(sc)">Save</button>
+		</div>
+	</div>
+</form>
 </script>

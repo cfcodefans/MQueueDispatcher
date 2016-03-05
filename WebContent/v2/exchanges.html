@@ -3,7 +3,10 @@
 	<div class="navbar-header">
 		<span class="navbar-brand">Exchanges</span>
 	</div>
-	<button type="button" class="btn btn-default navbar-btn">Create</button>
+	<button type="button" class="btn btn-default navbar-btn"
+		ng-click="create(this)">
+		Create
+	</button>
 	<form class="navbar-form navbar-right" role="search">
 		<div class="form-group">
 			<input type="text" class="form-control" placeholder="Search" ng-model="filterValue" ng-change="filter()"/>
@@ -19,3 +22,56 @@
 	<!-- 
 	 -->
 </div>
+<script type="text/ng-template" id="Exchange_modal">
+
+<form class="form-horizontal" role="form" id="edit_form">
+	<div class="modal-content">
+		<div class="modal-header">
+			<!--button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button-->
+			<h4 class="modal-title">Edit Exchange</h4>
+		</div>
+		<div class="modal-body">
+			<div class="input-group">
+				<span class="input-group-addon" id="nameDesc">Name</span> 
+				<input ng-model="ec.exchangeName" type="text" id="host" required="true" class="form-control" aria-describedby="nameDesc" />
+			</div>
+			<div class="input-group">
+				<span class="input-group-addon" id="serverDesc">Server</span> 
+				<select 
+					size="10"
+					ng-options="sc as serverCfg.label for serverCfg in serverCfgs track by serverCfg.id" 
+					ng-model="ec.serverCfg" 
+					required="true" 
+					class="form-control" 
+					aria-describedby="serverDesc">
+					
+				</select>
+			</div>
+			<div class="input-group">
+				<span class="input-group-addon" id="optionsDesc">Options</span>
+				<div class="form-control">
+					<label class=""> 
+					<input type="checkbox" id="durable" ng-model="ec.durable"> durable
+					</label> 
+					<label class=""> 
+					<input type="checkbox" id="autoDelete" ng-model="ec.autoDelete"> autoDelete
+					</label>
+				</div>
+			</div>
+			<div class="input-group">
+				<span class="input-group-addon" id="typeDesc">Type</span>
+				<div class="form-control">
+					<label class=""> <input type="radio" name="type" id="type_direct" value="direct" ng-model="ec.type"> direct
+					</label> <label class=""> <input type="radio" name="type" id="type_fanout" value="fanout" ng-model="ec.type"> fanout
+					</label> <label class=""> <input type="radio" name="type" id="type_topic" value="topic" ng-model="ec.type"> topic
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal" ng-click="cancel()">Close</button>
+			<button type="button" class="btn btn-primary" ng-click="save(sc)">Save</button>
+		</div>
+	</div>
+</form>
+</script>

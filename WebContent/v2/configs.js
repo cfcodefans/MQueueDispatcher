@@ -63,208 +63,56 @@ function overviewCtrl($scope, $route, $rootScope, $templateCache) {
 	});*/
 }
 
-function serversCtrl($scope, $route, $rootScope, $templateCache, $uibModal) {
-	$templateCache.remove($route.current.templateUrl);
-	console.info("serversCtrl!");
-	var xhr = RS.ctx.ServerCfgRes.getAllJson.call();
-
-	var gridCfgs = {
-		flatEntityAccess:true,
-		paginationPageSizes: [20, 50, 75],
-		paginationPageSize: 20,
-		rowIdentity: function(row) {
-			var sc = row;
-			if (!$.isEmptyObject(sc.id) || sc.id > 0) return sc.id;
-			return sc.host+"/"+virtualHost;
-		},
-		onRegisterApi : function(gridApi) {
-			$scope.gridApi = gridApi;
-			$scope.gridApi.grid.registerRowsProcessor($scope.singleFilter, 200);
-		},
-		columnDefs : [ {field : 'id', maxWidth:40},
-		               {field : 'host', maxWidth: 100},
-		               {field : 'port', maxWidth: 100}, 
-		               {field : 'virtualHost', maxWidth: 100}, 
-		               {field : 'userName', maxWidth: 100}, 
-		               {field : 'password', maxWidth: 100}, 
-		               {field : 'logFilePath'}, 
-		               {field : 'maxFileSize', maxWidth: 100},
-		               {field : 'id', maxWidth: 120, displayName:"", cellTemplate:"cellCtrl", enableSorting:false, enableColumnMenu: false}]
+function to(ctrlName, viewUrl) {
+	return {
+		controller : ctrlName,
+		templateUrl : viewUrl
 	};
-	gridCfgs.data = xhr.responseJSON;
-	gridCfgs.enableFiltering = false;
-
-	$scope.gridCfgs = gridCfgs;
-
-	$scope.filter = function() {
-		$scope.gridApi.grid.refresh();
-	};
-
-	$scope.singleFilter = buildFilter($scope, [ "virtualHost", "userName", "password", "logFilePath" ]);
-	
-	$scope.open = function(sc) {
-		var modal = $uibModal.open({
-			templateUrl: "server_modal",
-			controller: ["h$scope", "$uibModalInstance", "sc", this],
-			size: "lg",
-			resolve: {
-				"sc": function() {
-					return sc;
-				}
-			}
-		});
-	}
-	
-	function newServerCfg(original) {
-		var serverCfg = null;
-		if (original) {
-			serverCfg = $.extend({}, original);
-			serverCfg.id = -1;
-		} else {
-			serverCfg = {
-				version : 0,
-				host : "localhost",
-				id : -1,
-				maxFileSize : "2GB",
-				password : "guest",
-				port : 5672,
-				userName : "guest",
-				virtualHost : "/"
-			};
-		}
-		return serverCfg;
-	}
-	
-	function getServerCfg(idx) {
-		if (!idx || idx < 0) {
-			return newServerCfg();
-		}
-
-		var serverCfg = null;
-		var xhr = RS.ctx.ServerCfgRes.getJson.with_id(idx).call();
-		if (xhr.statusCode().status != 200) {
-			console.log(xhr);
-			return;
-		}
-		serverCfg = xhr.responseJSON;
-		return serverCfg;
-	}
-	
-	function save(serverCfg) {
-		serverCfg = toEntity(serverCfg);
-		var xhr = null;
-
-		var scStr=JSON.stringify(serverCfg);
-		if (serverCfg.id < 0) {
-			xhr = RS.ctx.ServerCfgRes.create.with_entity(scStr).call({async : false});
-		} else {
-			xhr = RS.ctx.ServerCfgRes.update.with_entity(scStr).call({async : false});
-		}
-
-		if (xhr.statusCode().status != 200) {
-			console.log(xhr);
-			return;
-		}
-
-		var newServerCfg = xhr.responseJSON;
-		
-	}
-	
-	$scope.create = function(_ctx) {
-		this.open(newServerCfg());
-	}
-	$scope.edit = function(_ctx) {
-		this.open()
-	}
 }
 
-function exchangesCtrl($scope, $route, $rootScope, $templateCache, $parse) {
-	$templateCache.remove($route.current.templateUrl);
-	console.info("exchangesCtrl!");
-	/*
-	autoDelete : false
-	durable			:			true
-	enabled			:			true
-	exchangeName			:			null
-	id			:			566
-	serverCfg			:			null
-	type			:			"direct"
-	version			:			*/
-	var xhr = RS.ctx.ExchangeCfgRes.getAllJson.call();
-	
-	var gridCfgs = {
-			paginationPageSizes: [20, 50, 75],
-			paginationPageSize: 20,					
-			onRegisterApi : function(gridApi) {
-				$scope.gridApi = gridApi;
-				$scope.gridApi.grid.registerRowsProcessor($scope.singleFilter, 200);
-			},
-			rowIdentity: function(row) {
-				var ec = row;
-				if (!$.isEmptyObject(ec.id) || ec.id > 0) return ec.id;
-				var sc = ec.serverCfg;
-				return sc.host+"/"+virtualHost+"/"+ec.exchangeName;
-			},
-			columnDefs : [ {field : 'id', maxWidth:40},
-			               {field : 'exchangeName', minWidth: 100},
-			               {field : "serverCfg.host", displayName:"Host", minWidth: 100}, 
-			               {field : 'type', maxWidth: 100}, 
-			               {field : 'durable', maxWidth: 100}, 
-			               {field : 'autoDelete', maxWidth: 100}, 
-			               {field : 'enable', maxWidth: 100}, 
-			               {field : 'id', maxWidth: 120, displayName:"", cellTemplate:"cellCtrl", enableSorting:false, enableColumnMenu: false}]
-		};
-		gridCfgs.data = xhr.responseJSON;
-		gridCfgs.enableFiltering = false;
-
-		$scope.gridCfgs = gridCfgs;
-
-		$scope.filter = function() {
-			$scope.gridApi.grid.refresh();
-		};
-
-		$scope.singleFilter = buildFilterWithParse($scope, [ "exchangeName", "type", "serverCfg.host" ], $parse);
+function redirect(key) {
+	return {redirectTo : key};
 }
+var app = angular.module("Configs", [ "ngRoute", 
+                                      "ui.grid", 
+                                      "ui.grid.autoResize", 
+                                      "ui.grid.pagination",
+                                      "ui.bootstrap"]);
 
-function queuesCtrl($scope, $route, $rootScope, $templateCache, $parse) {
-	$templateCache.remove($route.current.templateUrl);
-	var xhr = RS.ctx.MQueueCfgRes.getAllJson.call();
-	
-	var gridCfgs = {
-			paginationPageSizes: [20, 50, 75],
-			paginationPageSize: 20,					
-			onRegisterApi : function(gridApi) {
-				$scope.gridApi = gridApi;
-				$scope.gridApi.grid.registerRowsProcessor($scope.singleFilter, 200);
-			},
-			rowIdentity: function(row) {
-				var qc = row;
-				if (!$.isEmptyObject(qc.id) || qc.id > 0) return qc.id;
-				var sc = qc.serverCfg;
-				return sc.host+"/"+virtualHost+"/"+qc.queueName;
-			},
-			columnDefs : [ {field : 'id', maxWidth:40},
-			               {field : "serverCfg.host", displayName:"Host", maxWidth: 100}, 
-			               {field : "serverCfg.virtualHost", displayName:"vHost", maxWidth: 80},
-			               {field : 'queueName', maxWidth: 150}, 
-			               {field : 'destCfg.url', displayName:"Url", minWidth: 100}, 
-			               {field : 'destCfg.httpMethod', displayName:"Method", maxWidth: 70},
-			               {field : 'destCfg.timeout', displayName:"Timeout", maxWidth: 70},
-			               {field : 'retryLimit', displayName:"Retry", maxWidth: 40},
-			               {field : 'enable', maxWidth: 50}, 
-			               {field : 'id', maxWidth: 150, displayName:"", cellTemplate:"queueCtrl", enableSorting:false, enableColumnMenu: false}]
-		};
-		gridCfgs.data = xhr.responseJSON;
-		gridCfgs.enableFiltering = false;
+app.config([ "$routeProvider", function($routeProvider) {
+	$routeProvider
+		.when("/overview", 	to("overviewCtrl", 	"../mvc/overview.html"))
+		.when("/servers", 	to("serversCtrl", 	"servers.html"))
+		.when("/exchanges", to("exchangesCtrl", "exchanges.html"))
+		.when("/queues", 	to("queuesCtrl", 	"queues.html"))
+		.otherwise(redirect("/overview"));
+} ]);
 
-		$scope.gridCfgs = gridCfgs;
+app.controller("overviewCtrl", [ "$scope", 
+                                 "$route", 
+                                 "$rootScope", 
+                                 "$templateCache", 
+                                 overviewCtrl ]);
 
-		$scope.filter = function() {
-			$scope.gridApi.grid.refresh();
-		};
+app.controller("serversCtrl", [ "$scope", 
+                                "$route", 
+                                "$rootScope", 
+                                "$templateCache", 
+                                "$uibModal", 
+                                serversCtrl ]);
 
-		$scope.singleFilter = buildFilterWithParse($scope, [ "serverCfg.host",
-		                                                     "serverCfg.virtualHost",
-		                                                     "queueName",
-		                                                     "destCfg.url"], $parse);
-}
+app.controller("exchangesCtrl", [ "$scope", 
+                                  "$route", 
+                                  "$rootScope", 
+                                  "$templateCache", 
+                                  "$parse", 
+                                  "$uibModal", 
+                                  exchangesCtrl ]);
+
+app.controller("queuesCtrl", [ "$scope", 
+                               "$route", 
+                               "$rootScope", 
+                               "$templateCache", 
+                               "$parse", 
+                               "$uibModal", 
+                               queuesCtrl ]);
