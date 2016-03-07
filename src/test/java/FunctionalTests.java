@@ -5,13 +5,11 @@ import java.util.regex.Pattern;
 
 import javax.persistence.EntityManager;
 
-import junit.framework.Assert;
-import mgr.dao.QueueCfgDao;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -20,6 +18,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
+import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;

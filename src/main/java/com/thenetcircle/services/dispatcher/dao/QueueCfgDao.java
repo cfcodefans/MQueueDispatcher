@@ -69,7 +69,7 @@ public class QueueCfgDao extends CdiBaseDao<QueueCfg> implements Closeable {
 		if (!em.contains(qc)) {
 			prepare(qc);
 		}
-		return super.edit(qc);
+		return super.em.merge(qc);
 	}
 
 	private void prepare(final QueueCfg qc) {
@@ -84,12 +84,12 @@ public class QueueCfgDao extends CdiBaseDao<QueueCfg> implements Closeable {
 		if (_qc != null) {
 			final Collection<ExchangeCfg> ecs = new HashSet<ExchangeCfg>(_qc.getExchanges());
 			_qc.getExchanges().clear();
-			
 			ecs.forEach(ec -> ec.getQueues().remove(_qc));
 		}
 		
 		if (CollectionUtils.isEmpty(qc.getExchanges())) {
 			final ExchangeCfg _ec = QueueCfg.defaultExchange(qc);
+			ecDao.create(_ec);
 			qc.getExchanges().add(_ec);
 			_ec.getQueues().add(qc);
 		} else {

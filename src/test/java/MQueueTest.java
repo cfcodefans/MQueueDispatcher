@@ -714,4 +714,16 @@ public class MQueueTest {
 		
 		//Can't work out
 	}
+	
+	@Test
+	public void checkExchange() throws Exception {
+		final Channel ch = conn.createChannel();
+		ch.exchangeDeclarePassive("pref_test_exchange");
+	}
+	
+	@Test
+	public void checkQueue() throws Exception {
+		final Channel ch = conn.createChannel();
+		ch.queueDeclarePassive("what");
+	}
 }

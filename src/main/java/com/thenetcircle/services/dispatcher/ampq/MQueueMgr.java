@@ -13,6 +13,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -87,7 +88,7 @@ public class MQueueMgr {
 		initActors();
 	}
 	
-	public <R> R operate(final ServerCfg sc, Function<Channel, R> fn) throws Exception {
+	public <R> R operate(final ServerCfg sc, Function<Channel, R> fn) {
 		if (sc == null || fn == null) {
 			return null;
 		}
@@ -95,12 +96,35 @@ public class MQueueMgr {
 		Connection conn = null;
 		Channel ch = null;
 		try {
-			conn = this.getConnFactory(sc).newConnection();
-			ch = conn.createChannel();
+			try {
+				conn = this.getConnFactory(sc).newConnection();
+				ch = conn.createChannel();
+				return fn.apply(ch);
+			} finally {
+				ch.close();
+				conn.close();
+			}
+		} catch (IOException | TimeoutException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public <R> R operate(final QueueCfg qc, Function<Channel, R> fn) throws Exception {
+		if (qc == null || fn == null) {
+			return null;
+		}
+		
+		Channel ch = null;
+		try {
+			QueueCtx queueCtx = cfgAndCtxs.get(qc);
+			if (queueCtx == null) {
+				return null;
+			}
+			ch = queueCtx.ch;
 			return fn.apply(ch);
 		} finally {
 			ch.close();
-			conn.close();
 		}
 	}
 	
@@ -111,15 +135,19 @@ public class MQueueMgr {
 		Set<QueueCfg> queues = ex.getQueues();
 		if (CollectionUtils.isEmpty(queues)) return;
 		
+		queues.forEach(this::stopQueue);
+		
 		operate(sc, (Channel ch) -> {
 			try {
 				DeleteOk del = ch.exchangeDelete(ex.getExchangeName());
-			} catch(Exception e) {
+			} catch (Exception e) {
 				log.error("failed to update Exchange:\n" + ex, e);
 				return e;
 			}
 			return null;
 		});
+		
+		queues.forEach(this::startQueue);
 	}
 	
 	public MessageContext acknowledge(final MessageContext mc) {
@@ -177,6 +205,32 @@ public class MQueueMgr {
 	public Channel getChannel(final QueueCfg qc) {
 		final QueueCtx queueCtx = cfgAndCtxs.get(qc);
 		return queueCtx != null ? queueCtx.ch : null;
+	}
+	
+	public boolean ifExchangeExists(ExchangeCfg ec) {
+		if (ec == null || ec.getServerCfg() == null || StringUtils.isBlank(ec.getExchangeName()))
+			return false;
+		return operate(ec.getServerCfg(), (ch)->{
+			try {
+				ch.exchangeDeclarePassive(ec.getExchangeName());
+				return Boolean.TRUE;
+			} catch(Exception e) {
+				return Boolean.FALSE;
+			}
+		});
+	}
+	
+	public boolean ifQueueExists(QueueCfg qc) {
+		if (qc == null || qc.getServerCfg() == null || StringUtils.isBlank(qc.getName()))
+			return false;
+		return operate(qc.getServerCfg(), (ch)->{
+			try {
+				ch.queueDeclarePassive(qc.getName());
+				return Boolean.TRUE;
+			} catch(Exception e) {
+				return Boolean.FALSE;
+			}
+		});
 	}
 	
 	public synchronized ConnectionFactory getConnFactory(final ServerCfg sc) {
@@ -282,10 +336,20 @@ public class MQueueMgr {
 			
 			ch.addShutdownListener(queueCtx);
 
+			String queueName = qc.getQueueName();
+			String routeKey = qc.getRouteKey();
+			
 			for (final ExchangeCfg ec : qc.getExchanges()) {
-				ch.exchangeDeclare(ec.getExchangeName(), ec.getType(), ec.isDurable(), ec.isAutoDelete(), null);
-				ch.queueDeclare(qc.getQueueName(), qc.isDurable(), qc.isExclusive(), qc.isAutoDelete(), null);
-				ch.queueBind(qc.getQueueName(), StringUtils.defaultIfBlank(ec.getExchangeName(), StringUtils.EMPTY), qc.getRouteKey());
+				String exchangeName = StringUtils.defaultString(ec.getExchangeName(), StringUtils.EMPTY);
+				
+				if (ifExchangeExists(ec) && ifQueueExists(qc)) {
+					ch.queueUnbind(queueName, exchangeName, routeKey);
+					ch.exchangeDelete(exchangeName, true);
+				}
+				
+				ch.exchangeDeclare(exchangeName, ec.getType(), ec.isDurable(), ec.isAutoDelete(), null);
+				ch.queueDeclare(queueName, qc.isDurable(), qc.isExclusive(), qc.isAutoDelete(), null);
+				ch.queueBind(queueName, exchangeName, routeKey);
 				
 				if (qc.getPrefetchSize() != null) {
 					ch.basicQos(qc.getPrefetchSize());
@@ -293,7 +357,7 @@ public class MQueueMgr {
 			}
 			
 			final ConsumerActor ca = new ConsumerActor(ch, qc);
-			ch.basicConsume(qc.getQueueName(), false, ca);
+			ch.basicConsume(queueName, false, ca);
 
 			queueCtx.ca = ca;
 			queueCtx.qc = qc;
@@ -304,22 +368,27 @@ public class MQueueMgr {
 			
 			qc.setStatus(Status.running);
 			
-			try (final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager())) {
-				qcDao.beginTransaction();
-				qcDao.update(qc);
-				qcDao.endTransaction();
-			} 
-			
 			cfgAndCtxs.put(qc, queueCtx);
 			return qc;
 		} catch (Throwable e) {
 			final String infoStr = "failed to start queue: \n\t" + qc;
 			log.error(infoStr, e);
 			_error(sc, infoStr, e);
+			qc.setStatus(Status.started);
+		} finally {
+			updateDatabase(qc); 
 		}
-		
-		qc.setStatus(Status.started);
 		return qc;
+	}
+
+	private void updateDatabase(final QueueCfg qc) {
+		try (final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager())) {
+			qcDao.beginTransaction();
+			qcDao.edit(qc);
+			qcDao.endTransaction();
+		} catch(Exception e) {
+			log.error("failed to update \n" + qc, e);
+		}
 	}
 	
 	public List<QueueCfg> startQueues(final List<QueueCfg> qcList) {
@@ -342,6 +411,18 @@ public class MQueueMgr {
 		try {
 			try {
 				if (ch != null && ch.isOpen()) {
+					String queueName = qc.getQueueName();
+					String routeKey = qc.getRouteKey();
+					
+					for (final ExchangeCfg ec : qc.getExchanges()) {
+						String exchangeName = StringUtils.defaultString(ec.getExchangeName(), StringUtils.EMPTY);
+						
+						if (ifExchangeExists(ec) && ifQueueExists(qc)) {
+							ch.queueUnbind(queueName, exchangeName, routeKey);
+							ch.exchangeDelete(exchangeName, true);
+						}
+					}
+					
 					ch.close(AMQP.CONNECTION_FORCED, "OK");
 				}
 			} catch (Exception e) {
@@ -368,7 +449,9 @@ public class MQueueMgr {
 			final String infoStr = "failed to shut down Queue: \n" + qc.getQueueName();
 			log.error(infoStr, e);
 			_error(qc.getServerCfg(), infoStr, e);
-		} 
+		} finally {
+			updateDatabase(qc);
+		}
 		
 		return qc;
 	}

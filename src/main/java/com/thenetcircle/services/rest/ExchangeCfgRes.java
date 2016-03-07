@@ -139,10 +139,12 @@ public class ExchangeCfgRes {
 			}
 
 			final ExchangeCfg edited = ecDao.update(prepare(ec));
+			MQueueMgr.instance().updateExchange(edited);
 			
-			final QueueCfg[] qcs = edited.getQueues().toArray(new QueueCfg[0]);
-			Stream.of(qcs).forEach(qc->MQueueMgr.instance().updateQueueCfg(qc));
-			JGroupsActor.instance().restartQueues(qcs);
+			
+//			final QueueCfg[] qcs = edited.getQueues().toArray(new QueueCfg[0]);
+//			Stream.of(qcs).forEach(qc->MQueueMgr.instance().updateQueueCfg(qc));
+//			JGroupsActor.instance().restartQueues(qcs);
 			
 			return edited;
 		} catch (Exception e) {
