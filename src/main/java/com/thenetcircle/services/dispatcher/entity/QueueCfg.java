@@ -44,7 +44,7 @@ public class QueueCfg extends Configuration {
 	private static final long serialVersionUID = 1L;
 
 	public static ExchangeCfg defaultExchange(QueueCfg qc) {
-		return new ExchangeCfg(qc.getName() + "_router", qc.getServerCfg());
+		return new ExchangeCfg(qc.getQueueName() + "_router", qc.getServerCfg());
 	}
 
 	@Basic
@@ -269,5 +269,9 @@ public class QueueCfg extends Configuration {
 				.append("', \nexchanges:").append(exchanges).append(", \nserverCfg:'").append(serverCfg).append("', \npriority:'").append(prefetchSize).append("', destCfg:'").append(destCfg).append("', enabled:'").append(enabled).append("', failsafeCfg:").append(failsafeCfg)
 				.append(", retryLimit:'").append(retryLimit).append("'}");
 		return builder.toString();
+	}
+	
+	public boolean isRunning() {
+		return isEnabled() && Status.running.equals(getStatus());
 	}
 }

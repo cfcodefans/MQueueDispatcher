@@ -162,7 +162,7 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 			if (!"get".equalsIgnoreCase(StringUtils.trim(destCfg.getHttpMethod()))) {
 				final HttpPost post = new HttpPost(destUrlStr);
 
-				final List<NameValuePair> paramList = getParamsList("queueName", qc.getName(), "bodyData", bodyStr);
+				final List<NameValuePair> paramList = getParamsList("queueName", qc.getQueueName(), "bodyData", bodyStr);
 				UrlEncodedFormEntity fe = new UrlEncodedFormEntity(paramList, HTTP.UTF_8);
 //				GzipCompressingEntity ze = new GzipCompressingEntity(fe);
 

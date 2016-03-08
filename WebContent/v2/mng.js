@@ -46,7 +46,7 @@ function getQueueCfg(idx) {
 	var QueueCfg = null;
 	var xhr = RS.ctx.MQueueCfgRes.getJson.with_qc_id(idx).call();
 	if (xhr.statusCode().status != 200) {
-		console.log(xhr);
+		console.error(xhr);
 		return;
 	}
 	QueueCfg = xhr.responseJSON;
@@ -78,11 +78,13 @@ function find(array, el, keyFn) {
 	if (!array || array.length == 0) return -1;
 	for (var i = 0, 
 			j = array.length, 
-			key = typeof(keyFn) === "function" ? keyFn(el) : el; 
+			isFn = typeof(keyFn) === "function",
+			key = isFn ? keyFn(el) : el; 
 			 
 			i < j; 
 			i++) {
-		if (key === array[i]) return i;
+		var elKey = isFn ? keyFn(array[i]) : array[i]; 
+		if (key === elKey) return i;
 	}
 	return -1;
 }

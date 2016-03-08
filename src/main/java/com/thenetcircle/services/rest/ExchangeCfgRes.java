@@ -166,4 +166,11 @@ public class ExchangeCfgRes {
 	public List<ExchangeCfg> getExchangesByServer(@QueryParam("server_id") int srvId) {
 		return ecDao.findExchangesByServer(scDao.find(srvId));
 	}
+	
+	@GET
+	@Path("/by_server/json")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public List<ExchangeCfg> getExchangesJsonByServer(@QueryParam("server_id") int srvId) {
+		return ecDao.findExchangesByServer(scDao.find(srvId));
+	}
 }

@@ -111,7 +111,7 @@ public class FailedMessageSqlStorage extends ConcurrentAsynActor<MessageContext>
 		if (mc.getDelivery() != null) {
 			log.info(" deliveryTag: " + mc.getDelivery().getEnvelope().getDeliveryTag());
 		} else {
-			log.info(String.format("failed message resent: %s \t failed times: %d", mc.getQueueCfg().getName(), mc.getFailTimes()));
+			log.info(String.format("failed message resent: %s \t failed times: %d", mc.getQueueCfg().getQueueName(), mc.getFailTimes()));
 		}
 		buf.offer(mc);
 		return mc;

@@ -1,8 +1,11 @@
 package com.thenetcircle.services.web;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -46,8 +49,7 @@ public class StartUpListener implements ServletContextListener {
 	}
 
 	private void loadQueues() {
-		final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager());
-		try {
+		try (QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager())) {
 			log.info(MiscUtils.invocationInfo());
 			log.info("\n\tloading QueueCfg from database\n");
 
@@ -63,24 +65,38 @@ public class StartUpListener implements ServletContextListener {
 			final ExecutorService threadPool = Executors.newFixedThreadPool(MiscUtils.AVAILABLE_PROCESSORS, MiscUtils.namedThreadFactory("MQueueLoader"));
 			final MQueueMgr mqueueMgr = MQueueMgr.instance();
 			
-			qcList.forEach(qc->{
-				threadPool.submit(()->{
-					final QueueCfg startedQueue = mqueueMgr.startQueue(qc);
-					if (startedQueue.isEnabled() && Status.running.equals(startedQueue.getStatus())) return;
-					mqueueMgr.getReconnActor().addReconnect(qc);
-				});
-			});
-			
+			List<Callable<QueueCfg>> initiators = qcList.stream().map(StartUpListener::makeQueueInitiator).collect(Collectors.toList()); 
+
+			List<QueueCfg> starteds = threadPool.invokeAll(initiators).stream().map(f -> {
+				try {
+					return f.get();
+				} catch(Exception e) {
+					log.error("can't load queue", e);
+					return null;
+				}
+			}).filter(qc -> qc instanceof QueueCfg).collect(Collectors.toList());
 			threadPool.shutdown();
 			
+			qcDao.beginTransaction();
+			starteds.forEach(qcDao::edit);
+			qcDao.endTransaction();
+			
+			CollectionUtils.subtract(qcList, starteds).forEach(mqueueMgr.getReconnActor()::addReconnect);
+			starteds.stream().filter(qc -> !qc.isRunning()).forEach(mqueueMgr.getReconnActor()::addReconnect);
+			
 			log.info("\n\nWait for queues initialization");
-			while (!threadPool.isTerminated());
+			while (!threadPool.isTerminated()) {
+				Thread.sleep(1);
+			}
 			log.info("\n\nDone for queues initialization");
 		} catch (Exception e) {
 			log.error("failed to load queues", e);
-		} finally {
-			qcDao.close();
-		}
+		} 
 	}
 
+	private static Callable<QueueCfg> makeQueueInitiator(QueueCfg qc) {
+		return ()->{
+			return MQueueMgr.instance().startQueue(qc);
+		};
+	}
 }

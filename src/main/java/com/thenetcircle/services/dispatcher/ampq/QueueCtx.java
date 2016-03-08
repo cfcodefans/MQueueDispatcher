@@ -10,6 +10,7 @@ import com.rabbitmq.client.ShutdownListener;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers.*;
 
 class QueueCtx implements ShutdownListener {
 	public ConsumerActor			ca;
@@ -50,7 +51,7 @@ class QueueCtx implements ShutdownListener {
 			if (AMQP.CONNECTION_FORCED == close.getReplyCode() && "OK".equals(close.getReplyText())) {
 				final String infoStr = String.format("\n close connection to server: \n\t %s", sc);
 				log.error(infoStr);
-				MQueueMgr._info(sc, infoStr);
+				_info(sc, infoStr);
 				return;
 			}
 		}
@@ -60,7 +61,7 @@ class QueueCtx implements ShutdownListener {
 			if (AMQP.CONNECTION_FORCED == close.getReplyCode() && "OK".equals(close.getReplyText())) {
 				final String infoStr = String.format("\n close connection to server: \n\t %s", sc);
 				log.error(infoStr);
-				MQueueMgr._info(sc, infoStr);
+				_info(sc, infoStr);
 				return;
 			}
 		}
@@ -68,7 +69,7 @@ class QueueCtx implements ShutdownListener {
 		if (cause.isHardError()) {
 			final String infoStr = String.format("\n unexpected shutdown on connection to server: \n\t %s \n\n\t", sc, cause.getCause());
 			log.error(infoStr);
-			MQueueMgr._info(sc, infoStr);
+			_info(sc, infoStr);
 			return;
 		}
 

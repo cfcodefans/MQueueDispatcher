@@ -38,7 +38,7 @@
 				<span class="input-group-addon" id="serverDesc">Server</span> 
 				<select 
 					size="10"
-					ng-options="sc as serverCfg.label for serverCfg in serverCfgs track by serverCfg.id" 
+					ng-options="serverCfg.label for serverCfg in serverCfgs track by serverCfg.id" 
 					ng-model="ec.serverCfg" 
 					required="true" 
 					class="form-control" 

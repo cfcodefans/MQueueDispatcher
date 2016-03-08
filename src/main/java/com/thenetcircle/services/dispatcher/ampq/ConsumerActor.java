@@ -16,6 +16,8 @@ import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
 
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers.*;
+
 public class ConsumerActor extends DefaultConsumer {
 
 	private QueueCfg queueCfg;
@@ -31,7 +33,7 @@ public class ConsumerActor extends DefaultConsumer {
 		final MessageContext mc = new MessageContext(queueCfg, d);
 
 		final ServerCfg sc = queueCfg.getServerCfg();
-		MQueueMgr._info(sc, "get message: " + d.getEnvelope().getDeliveryTag() + " for q: " + queueCfg.getName()  + " on server " + sc.getVirtualHost());
+		_info(sc, "get message: " + d.getEnvelope().getDeliveryTag() + " for q: " + queueCfg.getName()  + " on server " + sc.getVirtualHost());
 		
 		// TODO use injection to decouple dependency
 		MsgMonitor.prefLog(mc, log);

@@ -13,6 +13,8 @@ import com.rabbitmq.client.ShutdownSignalException;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers.*;
+
 class NamedConnection implements ShutdownListener {
 	public Connection conn;
 	public String name;
@@ -67,7 +69,7 @@ class NamedConnection implements ShutdownListener {
 			if (AMQP.CONNECTION_FORCED == close.getReplyCode() && "OK".equals(close.getReplyText())) {
 				final String infoStr = String.format("\n close connection to server: \n\t %s", sc);
 				log.error(infoStr);
-				MQueueMgr._info(sc, infoStr);
+				_info(sc, infoStr);
 				return;
 			}
 		}
@@ -75,7 +77,7 @@ class NamedConnection implements ShutdownListener {
 		if (!cause.isHardError()) {
 			final String infoStr = String.format("\n unexpected shutdown on connection to server: \n\t %s \n\n\t", sc, cause.getCause());
 			log.error(infoStr);
-			MQueueMgr._info(sc, infoStr);
+			_info(sc, infoStr);
 			return;
 		} 
 		

@@ -80,7 +80,8 @@ function exchangesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibM
 }
 
 function exchangeToString(ec) {
-	return exchangeCfgKey(ec);
+	var sc = ec.serverCfg;
+	return ec.id +": " + sc.host + ":" + sc.port + sc.virtualHost + "/" + ec.exchangeName;
 }
 
 
@@ -133,4 +134,13 @@ function saveExchangeCfg(ExchangeCfg) {
 	
 	var newExchangeCfg = xhr.responseJSON;
 	return newExchangeCfg;
+}
+
+function loadExchangeCfgOpts(scId) {
+	var xhr = RS.ctx.ExchangeCfgRes.getExchangesJsonByServer.with_server_id(scId).call({async:false});
+	var data = xhr.responseJSON;
+	for (var i = 0, j = data.length; i < j; i++) {
+		data[i].label = exchangeToString(data[i]);
+	}
+	return data;
 }

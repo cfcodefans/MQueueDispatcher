@@ -68,4 +68,25 @@ public class ConsumerLoggers {
 	}
 
 	protected static final Log log = LogFactory.getLog(ConsumerLoggers.class.getName());
+	
+	public static final void _info(final ServerCfg sc, final String infoStr) {
+		final Logger logForSrv = getLoggerByServerCfg(sc);
+		if (logForSrv != null) {
+			logForSrv.info(infoStr);
+		}
+	}
+	
+	public static final void _error(final ServerCfg sc, final String infoStr) {
+		final Logger logForSrv = getLoggerByServerCfg(sc);
+		if (logForSrv != null) {
+			logForSrv.error(infoStr);
+		}
+	}
+
+	public static final void _error(final ServerCfg sc, final String infoStr, final Throwable t) {
+		final Logger logForSrv = getLoggerByServerCfg(sc);
+		if (logForSrv != null) {
+			logForSrv.error(infoStr, t);
+		}
+	}
 }

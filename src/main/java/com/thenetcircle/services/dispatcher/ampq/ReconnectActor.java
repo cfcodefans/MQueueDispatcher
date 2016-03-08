@@ -12,6 +12,8 @@ import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg.Status;
 
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers.*;
+
 public class ReconnectActor implements Runnable {
 	private Set<QueueCfg>			queuesForReconnect	= new LinkedHashSet<QueueCfg>();
 	protected static final Logger	log					= Logger.getLogger(ReconnectActor.class);
@@ -29,30 +31,24 @@ public class ReconnectActor implements Runnable {
 
 		final String infoStr = "going to reconnect queue: \n\t" + qc;
 		log.info(infoStr);
-		MQueueMgr._info(qc.getServerCfg(), infoStr);
+		_info(qc.getServerCfg(), infoStr);
 		synchronized (queuesForReconnect) {
 			queuesForReconnect.add(qc);
 		}
 	}
 
 	protected QueueCfg tryReconnect(QueueCfg qc) {
-		try (final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager())) {
-			qc = qcDao.find(qc.getId());
-		} catch (Exception e) {
-			// TODO: handle exception
-			log.error("what is up?", e);
-		}
-		log.info("reconnecting queue: " + qc.getName());
+		log.info("reconnecting queue: " + qc.getQueueName());
 		final QueueCfg _qc = MQueueMgr.instance.startQueue(qc);
 		if (_qc.isEnabled()) {
 			if (!Status.running.equals(qc.getStatus())) {
-				final String infoStr = "failed to reconnect queue: \n\t" + qc.getName();
+				final String infoStr = "failed to reconnect queue: \n\t" + qc.getQueueName();
 				log.info(infoStr);
-				MQueueMgr._info(qc.getServerCfg(), infoStr);
+				_info(qc.getServerCfg(), infoStr);
 			} else {
-				final String infoStr = "successfully reconnected queue: \n\t" + qc.getName();
+				final String infoStr = "successfully reconnected queue: \n\t" + qc.getQueueName();
 				log.info(infoStr);
-				MQueueMgr._info(qc.getServerCfg(), infoStr);
+				_info(qc.getServerCfg(), infoStr);
 			}
 		}
 		return _qc;
@@ -67,18 +63,24 @@ public class ReconnectActor implements Runnable {
 				return;
 			}
 			
-			Set<QueueCfg> stillDisconnectQueues = queuesForReconnect.stream()
-					.map(this::tryReconnect)
-					.filter(qc -> qc.isEnabled() && !Status.running.equals(qc.getStatus()))
-					.collect(Collectors.toSet());
-			queuesForReconnect = stillDisconnectQueues;
+			try (final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager())) {
+				Set<QueueCfg> stillDisconnectQueues = queuesForReconnect.stream()
+						.map(qc -> qcDao.find(qc.getId()))
+						.map(this::tryReconnect)
+						.filter(qc -> qc.isRunning())
+						.collect(Collectors.toSet());
+				queuesForReconnect = stillDisconnectQueues;
+			} catch (Exception e) {
+				// TODO: handle exception
+				log.error("what is up?", e);
+			}
 		}
 	}
 
 	public void stopReconnect(final QueueCfg qc) {
 		final String infoStr = "will not reconnect queue: \n\t" + qc;
 		log.info(infoStr);
-		MQueueMgr._info(qc.getServerCfg(), infoStr);
+		_info(qc.getServerCfg(), infoStr);
 		synchronized (queuesForReconnect) {
 			queuesForReconnect.remove(qc);
 		}
