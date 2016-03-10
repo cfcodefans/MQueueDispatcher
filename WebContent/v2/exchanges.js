@@ -15,14 +15,14 @@ function exchangesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibM
 			$scope.gridApi.grid.registerRowsProcessor($scope.singleFilter, 200);
 		},
 		rowIdentity: exchangeCfgKey,
-		columnDefs : [ {field : 'id', maxWidth:40},
-		               {field : 'exchangeName', minWidth: 100},
+		columnDefs : [ {field : "id", maxWidth:40},
+		               {field : "exchangeName", minWidth: 100},
 		               {field : "serverCfg.host", displayName:"Host", minWidth: 100}, 
-		               {field : 'type', maxWidth: 100}, 
-		               {field : 'durable', maxWidth: 100}, 
-		               {field : 'autoDelete', maxWidth: 100}, 
-		               {field : 'enable', maxWidth: 100}, 
-		               {field : 'id', maxWidth: 120, displayName:"", cellTemplate:"cellCtrl", enableSorting:false, enableColumnMenu: false}]
+		               {field : "type", maxWidth: 100}, 
+		               {field : "durable", maxWidth: 100}, 
+		               {field : "autoDelete", maxWidth: 100}, 
+		               {field : "enable", maxWidth: 100}, 
+		               {field : "id", maxWidth: 120, displayName:"", cellTemplate:"cellCtrl", enableSorting:false, enableColumnMenu: false}]
 	};
 	gridCfgs.data = xhr.responseJSON;
 	gridCfgs.enableFiltering = false;
@@ -47,7 +47,7 @@ function exchangesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibM
 			}
 		};
 		$scope.cancel = function() {
-			$uibModalInstance.dismiss('cancel');
+			$uibModalInstance.dismiss("cancel");
 		};
 	}
 
@@ -62,7 +62,9 @@ function exchangesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibM
 //			size: "sm",
 			resolve: {
 				"ec": function() {
-					return angular.copy(ec);
+					var _ec=angular.copy(ec);
+					delete _ec.label;
+					return _ec;
 				}
 			}
 		}).result.then(this.update.bind(this));

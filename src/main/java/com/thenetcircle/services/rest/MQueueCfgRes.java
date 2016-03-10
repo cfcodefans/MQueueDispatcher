@@ -122,12 +122,14 @@ public class MQueueCfgRes {
 		qc.setEnabled(on);
 		qc = qcDao.update(qc);
 		
+		JGroupsActor jgoup = JGroupsActor.instance();
+		MQueueMgr queueMgr = MQueueMgr.instance();
 		if (on) {
-			MQueueMgr.instance().updateQueueCfg(qc);
-			JGroupsActor.instance().restartQueues(qc);
+			queueMgr.updateQueueCfg(qc);
+			jgoup.restartQueues(qc);
 		} else {
-			MQueueMgr.instance().stopQueue(qc);
-			JGroupsActor.instance().stopQueues(qc);
+			queueMgr.stopQueue(qc);
+			jgoup.stopQueues(qc);
 		}
 		
 		return qc;

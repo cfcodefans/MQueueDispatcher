@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thenetcircle.services.dispatcher.cfg.Configuration;
 import com.thenetcircle.services.dispatcher.failsafe.FailsafeCfg;
 
@@ -271,6 +272,8 @@ public class QueueCfg extends Configuration {
 		return builder.toString();
 	}
 	
+	@XmlTransient
+	@JsonIgnoreProperties
 	public boolean isRunning() {
 		return isEnabled() && Status.running.equals(getStatus());
 	}

@@ -12,15 +12,15 @@ function serversCtrl($scope, $route, $rootScope, $templateCache, $uibModal) {
 			$scope.gridApi = gridApi;
 			$scope.gridApi.grid.registerRowsProcessor($scope.singleFilter, 200);
 		},
-		columnDefs : [ {field : 'id', maxWidth:40},
-		               {field : 'host', maxWidth: 100},
-		               {field : 'port', maxWidth: 100}, 
-		               {field : 'virtualHost', maxWidth: 100}, 
-		               {field : 'userName', maxWidth: 100}, 
-		               {field : 'password', maxWidth: 100}, 
-		               {field : 'logFilePath'}, 
-		               {field : 'maxFileSize', maxWidth: 100},
-		               {field : 'id', maxWidth: 120, displayName:"", cellTemplate:"cellCtrl", enableSorting:false, enableColumnMenu: false}]
+		columnDefs : [ {field : "id", maxWidth:40},
+		               {field : "host", maxWidth: 100},
+		               {field : "port", maxWidth: 100}, 
+		               {field : "virtualHost", maxWidth: 100}, 
+		               {field : "userName", maxWidth: 100}, 
+		               {field : "password", maxWidth: 100}, 
+		               {field : "logFilePath"}, 
+		               {field : "maxFileSize", maxWidth: 100},
+		               {field : "id", maxWidth: 120, displayName:"", cellTemplate:"cellCtrl", enableSorting:false, enableColumnMenu: false}]
 	};
 	gridCfgs.data = xhr.responseJSON;
 	gridCfgs.enableFiltering = false;
@@ -44,7 +44,7 @@ function serversCtrl($scope, $route, $rootScope, $templateCache, $uibModal) {
 			}
 		};
 		$scope.cancel = function() {
-			$uibModalInstance.dismiss('cancel');
+			$uibModalInstance.dismiss("cancel");
 		};
 	}
 
@@ -59,7 +59,9 @@ function serversCtrl($scope, $route, $rootScope, $templateCache, $uibModal) {
 //			size: "sm",
 			resolve: {
 				"sc": function() {
-					return angular.copy(sc);
+					var _sc=angular.copy(sc);
+					delete _sc.label;
+					return _sc;
 				}
 			}
 		}).result.then(this.update.bind(this));

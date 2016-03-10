@@ -39,8 +39,8 @@
 				<select 
 					size="7"
 					ng-options="serverCfg.label for serverCfg in serverCfgs track by serverCfg.id" 
-					ng-model="qc.serverCfg" 
-					ng-change="onServerCfgSelected(qc.serverCfg)"
+					ng-model="selectedServerCfg" 
+					ng-change="onServerCfgSelected(selectedServerCfg)"
 					required="true" 
 					class="form-control" 
 					aria-describedby="serverDesc">
@@ -51,7 +51,7 @@
 				<select multiple
 					size="7"
 					ng-options="ec as exchangeCfg.label for exchangeCfg in exchangeCfgs track by exchangeCfg.id" 
-					ng-model="qc.exchanges" 
+					ng-model="selectedExchanges" 
 					required="true" 
 					class="form-control" 
 					aria-describedby="exDesc">
@@ -60,7 +60,7 @@
 			<div class="input-group">
 				<span class="input-group-addon" id="routeKeyDesc">Route Key</span> 
 				<input ng-model="qc.routeKey" type="text" id="routeKey" required="false" class="form-control" aria-describedby="nameDesc" />
-				<span class="input-group-addon" id="retryDesc">Queue Name</span> 
+				<span class="input-group-addon" id="retryDesc">Retry</span> 
 				<input ng-model="qc.retryLimit" type="number" id="retryLimit" required="true" class="form-control" aria-describedby="retryDesc" />
 				<span class="input-group-addon" id="fetchDesc">Fetch Size</span> 
 				<input ng-model="qc.prefetchSize" type="number" id="retryLimit" required="true" class="form-control" aria-describedby="fetchDesc" />

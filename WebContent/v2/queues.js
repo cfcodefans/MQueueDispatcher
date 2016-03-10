@@ -10,16 +10,16 @@ function queuesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibModa
 			$scope.gridApi.grid.registerRowsProcessor($scope.singleFilter, 200);
 		},
 		rowIdentity: queueCfgKey,
-		columnDefs : [ {field : 'id', maxWidth:40},
+		columnDefs : [ {field : "id", maxWidth:40},
 		               {field : "serverCfg.host", displayName:"Host", maxWidth: 100}, 
 		               {field : "serverCfg.virtualHost", displayName:"vHost", maxWidth: 80},
-		               {field : 'queueName', maxWidth: 150}, 
-		               {field : 'destCfg.url', displayName:"Url", minWidth: 100}, 
-		               {field : 'destCfg.httpMethod', displayName:"Method", maxWidth: 70},
-		               {field : 'destCfg.timeout', displayName:"Timeout", maxWidth: 70},
-		               {field : 'retryLimit', displayName:"Retry", maxWidth: 40},
-		               {field : 'enable', maxWidth: 50}, 
-		               {field : 'id', maxWidth: 150, displayName:"", cellTemplate:"queueCtrl", enableSorting:false, enableColumnMenu: false}]
+		               {field : "queueName", maxWidth: 150}, 
+		               {field : "destCfg.url", displayName:"Url", minWidth: 100}, 
+		               {field : "destCfg.httpMethod", displayName:"Method", maxWidth: 70},
+		               {field : "destCfg.timeout", displayName:"Timeout", maxWidth: 70},
+		               {field : "retryLimit", displayName:"Retry", maxWidth: 40},
+		               {field : "enable", maxWidth: 50}, 
+		               {field : "id", maxWidth: 150, displayName:"", cellTemplate:"queueCtrl", enableSorting:false, enableColumnMenu: false}]
 	};
 	
 	gridCfgs.data = xhr.responseJSON;
@@ -40,6 +40,9 @@ function queuesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibModa
 		$scope.qc = qc;
 		$scope.serverCfgs = loadServerCfgOpts();
 		
+		$scope.selectedServerCfg = qc.serverCfg;
+		$scope.selectedExchanges = qc.exchanges;
+		
 		$scope.loadExchangeOpts = function() {
 			var scId = 0;
 			if (this.qc != null && this.qc.serverCfg != null) {
@@ -55,9 +58,20 @@ function queuesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibModa
 				this.exchangeCfgs = loadExchangeCfgOpts(sc.id);
 			else
 				this.exchangeCfgs = [];
+			
+			if (sc.id == this.qc.serverCfg.id) {
+				this.selectedExchanges = qc.exchanges;
+			} else {
+				this.selectedExchanges = [];
+			}
 		}
 		
 		$scope.save = function() {
+			if (this.selectedServerCfg) {
+				this.qc.serverCfg = this.selectedServerCfg;
+			}
+			qc.exchanges = this.selectedExchanges;
+			
 			var saved = saveQueueCfg(this.qc);
 			if (saved) {
 				this.qc = saved;
@@ -66,12 +80,12 @@ function queuesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibModa
 			}
 		};
 		$scope.cancel = function() {
-			$uibModalInstance.dismiss('cancel');
+			$uibModalInstance.dismiss("cancel");
 		};
 	}
 	
 	$scope.update = function(qc) {
-		this.gridApi.grid.refresh(updateExchangeCfgs(ec, gridCfgs.data));
+		this.gridApi.grid.refresh(updateQueueCfgs(qc, gridCfgs.data));
 	}
 	
 	$scope.open = function(qc) {
@@ -81,7 +95,9 @@ function queuesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibModa
 //			size: "sm",
 			resolve: {
 				"qc": function() {
-					return angular.copy(qc);
+					var _qc=angular.copy(qc);
+					delete _qc.label;
+					return _qc;
 				}
 			}
 		}).result.then(this.update.bind(this));
@@ -149,10 +165,10 @@ function getQueueCfg(idx) {
 	return QueueCfg;
 }
 
-function saveQueueCfg(QueueCfg) {
+function saveQueueCfg(qc) {
 	var xhr = null; 
-	var oper = (QueueCfg.id < 0) ? RS.ctx.QueueCfgRes.create : RS.ctx.QueueCfgRes.update; 
-	xhr = oper.with_entity(JSON.stringify(QueueCfg)).call({async:false});
+	var oper = (qc.id < 0) ? RS.ctx.MQueueCfgRes.create : RS.ctx.MQueueCfgRes.update; 
+	xhr = oper.with_entity(JSON.stringify(qc)).call({async:false});
 
 	if (xhr.statusCode().status != 200) {
 		console.log(xhr);
