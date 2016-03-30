@@ -13,25 +13,32 @@
 <link href="../res/style.css" rel="stylesheet" />
 <link href="../res/simple-sidebar.css" rel="stylesheet" />
 <!-- <link href="../res/ui-grid-qorsmond.css" rel="stylesheet" /> -->
+
+<style type="text/css">
+.sidebar-nav li {
+    text-indent: 20px;
+    line-height: 20px;
+}
+</style>
 </head>
 <body>
 
 	<div id="board">
 		<div id="sidebar">
-			<ul class="sidebar-nav">
+			<ul class="sidebar-nav nav nav-pills nav-stacked">
 				<li class="sidebar-brand">
 					<a href="#"> Dispatchers </a>
 				</li>
-				<li>
+				<li role="presentation">
 					<a href="#/overview">Overview</a>
 				</li>
-				<li>
+				<li role="presentation">
 					<a href="#/servers">Servers</a>
 				</li>
-				<li>
+				<li role="presentation">
 					<a href="#/exchanges">Exchanges</a>
 				</li>
-				<li>
+				<li role="presentation">
 					<a href="#/queues">Queues</a>
 				</li>
 			</ul>
@@ -48,14 +55,6 @@
 		</div>
 	</script>
 	
-	<script type="text/ng-template" id="queueCtrl">
-		<div class="btn-group btn-group-justified" role="group">
-			<a role="button" class="btn" ng-click="grid.appScope.edit(row.entity)">Edit</a>
-  			<a role="button" class="btn" ng-click="grid.appScope.copy(row.entity)">Copy</a>
-			<a role="button" class="btn">Stop</a>
-		</div>
-	</script>
-
 	<script type="text/javascript" src="../webjars/jquery/2.2.0/dist/jquery.js"></script>
 	<script type="text/javascript" src="../webjars/bootstrap/3.3.6/dist/js/bootstrap.js"></script>
 	<script type="text/javascript" src="../webjars/angularjs/1.5.0/angular.js"></script>
@@ -68,6 +67,7 @@
 	<script type="text/javascript" src="servers.js"></script>
 	<script type="text/javascript" src="exchanges.js"></script>
 	<script type="text/javascript" src="queues.js"></script>
+	<script type="text/javascript" src="queue.js"></script>
 	<script type="text/javascript" src="configs.js"></script>
 
 

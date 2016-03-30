@@ -9,11 +9,11 @@ function queuesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibModa
 			$scope.gridApi = gridApi;
 			$scope.gridApi.grid.registerRowsProcessor($scope.singleFilter, 200);
 		},
+		rowEquality: rowKeyEq,
 		rowIdentity: queueCfgKey,
 		columnDefs : [ {field : "id", maxWidth:40},
-		               {field : "serverCfg.host", displayName:"Host", maxWidth: 100}, 
-		               {field : "serverCfg.virtualHost", displayName:"vHost", maxWidth: 80},
-		               {field : "queueName", maxWidth: 150}, 
+		               {field : "serverCfg.host",cellTemplate: "<div class='ui-grid-cell-contents'>{{row.entity.serverCfg.host}} : {{row.entity.serverCfg.virtualHost}}</div>", displayName:"Host : vHost", maxWidth: 100}, 
+		               {field : "queueName", maxWidth: 150, cellTemplate: "queue_name"}, 
 		               {field : "destCfg.url", displayName:"Url", minWidth: 100}, 
 		               {field : "destCfg.httpMethod", displayName:"Method", maxWidth: 70},
 		               {field : "destCfg.timeout", displayName:"Timeout", maxWidth: 70},
@@ -37,34 +37,7 @@ function queuesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibModa
 	                                                     "destCfg.url"], $parse);
 	
 	function queueModalCtrl($scope, $uibModalInstance, qc) {
-		$scope.qc = qc;
-		$scope.serverCfgs = loadServerCfgOpts();
-		
-		$scope.selectedServerCfg = qc.serverCfg;
-		$scope.selectedExchanges = qc.exchanges;
-		
-		$scope.loadExchangeOpts = function() {
-			var scId = 0;
-			if (this.qc != null && this.qc.serverCfg != null) {
-				scId = this.qc.serverCfg.id;
-			}
-			this.exchangeCfgs = loadExchangeCfgOpts(scId);
-		}
-		
-		$scope.loadExchangeOpts();
-		
-		$scope.onServerCfgSelected = function(sc) {
-			if (sc)
-				this.exchangeCfgs = loadExchangeCfgOpts(sc.id);
-			else
-				this.exchangeCfgs = [];
-			
-			if (sc.id == this.qc.serverCfg.id) {
-				this.selectedExchanges = qc.exchanges;
-			} else {
-				this.selectedExchanges = [];
-			}
-		}
+		loadQueueCfgIntoScope($scope, qc);
 		
 		$scope.save = function() {
 			if (this.selectedServerCfg) {
@@ -85,7 +58,15 @@ function queuesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibModa
 	}
 	
 	$scope.update = function(qc) {
-		this.gridApi.grid.refresh(updateQueueCfgs(qc, gridCfgs.data));
+		var g = this.gridApi.grid;
+		var rows = g.getRow(qc);
+		if (rows) {
+			updateQueueCfgs(qc, gridCfgs.data);
+			rows.entity = qc;
+			g.modifyRows([qc]);
+		} else {
+			gridCfgs.data.push(qc);
+		}
 	}
 	
 	$scope.open = function(qc) {
@@ -111,6 +92,46 @@ function queuesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibModa
 	}
 	$scope.copy = function(qc) {
 		this.open(newQueueCfg(qc));
+	}
+}
+
+function queueCtrl($scope, $route, $routeParams, $rootScope, $templateCache, $parse) {
+	console.info("loading queue: " + $routeParams.qc_id);
+	var qc = getQueueCfg($routeParams.qc_id);
+	
+	loadQueueCfgIntoScope($scope, qc);
+	
+	
+}
+
+function loadQueueCfgIntoScope($scope, qc) {
+	$scope.qc = qc;
+	$scope.serverCfgs = loadServerCfgOpts();
+	
+	$scope.selectedServerCfg = qc.serverCfg;
+	$scope.selectedExchanges = qc.exchanges;
+	
+	$scope.loadExchangeOpts = function() {
+		var scId = 0;
+		if (this.qc != null && this.qc.serverCfg != null) {
+			scId = this.qc.serverCfg.id;
+		}
+		this.exchangeCfgs = loadExchangeCfgOpts(scId);
+	}
+	
+	$scope.loadExchangeOpts();
+	
+	$scope.onServerCfgSelected = function(sc) {
+		if (sc)
+			this.exchangeCfgs = loadExchangeCfgOpts(sc.id);
+		else
+			this.exchangeCfgs = [];
+		
+		if (sc.id == this.qc.serverCfg.id) {
+			this.selectedExchanges = qc.exchanges;
+		} else {
+			this.selectedExchanges = [];
+		}
 	}
 }
 
@@ -156,7 +177,7 @@ function getQueueCfg(idx) {
 	}
 
 	var QueueCfg = null;
-	var xhr = RS.ctx.QueueCfgRes.getJson.with_id(idx).call();
+	var xhr = RS.ctx.MQueueCfgRes.getJson.with_qc_id(idx).call();
 	if (xhr.statusCode().status != 200) {
 		console.error(xhr);
 		return;

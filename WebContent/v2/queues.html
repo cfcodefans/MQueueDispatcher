@@ -10,6 +10,19 @@
 		</div>
 	</form>
 </nav>
+
+	<script type="text/ng-template" id="queueCtrl">
+		<div class="btn-group btn-group-justified" role="group">
+			<a role="button" class="btn" ng-click="grid.appScope.edit(row.entity)">Edit</a>
+  			<a role="button" class="btn" ng-click="grid.appScope.copy(row.entity)">Copy</a>
+			<a role="button" class="btn">Stop</a>
+		</div>
+	</script>
+	
+	<script type="text/ng-template" id="queue_name">
+		<a href="#/queue/{{row.entity.id}}">{{row.entity.name}}</a>
+	</script>
+
 <div id="queueTable" 
 	ui-grid="gridCfgs" 
 	ui-grid-auto-resize 

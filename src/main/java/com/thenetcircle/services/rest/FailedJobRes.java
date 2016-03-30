@@ -17,6 +17,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.logging.Log;
@@ -47,6 +48,13 @@ public class FailedJobRes {
 		log.info(MiscUtils.invocationInfo());
 	}
 
+	@GET
+	@Path("/range")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Range<Long> getRange() {
+		return mcDao.getFailedJobsRange(qcDao.find(qcId));
+	}
+	
 	@GET
 	@Path("/{mc_id}.xml")
 	@Produces(MediaType.APPLICATION_XML)
@@ -84,7 +92,7 @@ public class FailedJobRes {
 	}
 	
 	@DELETE
-	@Path("/{mc_id}/resend") 
+	@Path("/{mc_id}/delete") 
 	public MessageContext deleteFailedMsg(@PathParam("mc_id") int id) {
 		final MessageContext mc = mcDao.find(new Long(id));
 		if (mc == null) {

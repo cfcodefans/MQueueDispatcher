@@ -8,6 +8,7 @@ function serversCtrl($scope, $route, $rootScope, $templateCache, $uibModal) {
 		paginationPageSizes: [20, 50, 75],
 		paginationPageSize: 20,
 		rowIdentity: serverCfgKey,
+		rowEquality: rowKeyEq,
 		onRegisterApi : function(gridApi) {
 			$scope.gridApi = gridApi;
 			$scope.gridApi.grid.registerRowsProcessor($scope.singleFilter, 200);
@@ -49,7 +50,17 @@ function serversCtrl($scope, $route, $rootScope, $templateCache, $uibModal) {
 	}
 
 	$scope.update = function(sc) {
-		this.gridApi.grid.refresh(updateServerCfgs(sc, gridCfgs.data));
+		var g = this.gridApi.grid;
+		var rows = g.getRow(sc);
+		if (rows) {
+			updateServerCfgs(sc, gridCfgs.data);
+			rows.entity = sc;
+			g.modifyRows([sc]);
+		} else {
+			gridCfgs.data.push(sc);
+			
+		}
+//		g.notifyDataChange("all");
 	}
 	
 	$scope.open = function(sc) {

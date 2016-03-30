@@ -114,10 +114,11 @@ public class MonitorRes {
 
 		final EventOutput eventOutput = new EventOutput();
 
-		Watcher watcher = (Watcher) MsgMonitor.instance().getQueueMonitor(qc);
+		MsgMonitor monitor = MsgMonitor.instance();
+		Watcher watcher = (Watcher) monitor.getQueueMonitor(qc);
 		if (watcher == null) {
 			watcher = new Watcher(qc);
-			MsgMonitor.instance().register(qc, watcher);
+			monitor.register(qc, watcher);
 		}
 
 		watcher.broadcaster.add(eventOutput);

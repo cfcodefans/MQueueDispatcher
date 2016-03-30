@@ -151,7 +151,7 @@ function exchangesCtrl($scope, $route, $rootScope, $templateCache, $parse) {
 		$scope.singleFilter = buildFilterWithParse($scope, [ "exchangeName", "type", "serverCfg.host" ], $parse);
 }
 
-function queuesCtrl($scope, $route, $rootScope, $templateCache, $parse) {
+function queuesCtrl($scope, $route, $routeParams, $rootScope, $templateCache, $parse) {
 	$templateCache.remove($route.current.templateUrl);
 	var xhr = RS.ctx.MQueueCfgRes.getAllJson.call();
 	

@@ -1,5 +1,6 @@
 package com.thenetcircle.services.dispatcher.dao;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -7,8 +8,12 @@ import java.util.stream.IntStream;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Default;
 import javax.persistence.EntityManager;
+import javax.persistence.Tuple;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 import com.thenetcircle.services.commons.persistence.jpa.CdiBaseDao;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
@@ -34,6 +39,16 @@ public class MessageContextDao extends CdiBaseDao<MessageContext> {
 		super(em);
 	}
 	
+	public Range<Long> getFailedJobsRange(final QueueCfg qc) {
+		List results = queryEntity("select max(mc.timestamp) as newest, min(mc.timestamp) as oldest from MessageContext mc where mc.queueCfg =?1", qc);
+		if (CollectionUtils.isEmpty(results)) {
+			Date now = Calendar.getInstance().getTime();
+			return Range.between(DateUtils.addDays(now, -100).getTime(), now.getTime());
+		}
+		Long[] values = (Long[])results.get(0);
+		return Range.between(values[1], values[0]);
+	}
+	
 	public List<MessageContext> queryFailedJobs(final QueueCfg qc, final Date start, final Date end) {
 		String hql = "select mc from MessageContext mc where mc.queueCfg=?1 ";
 		final Date now = new Date();
@@ -41,13 +56,13 @@ public class MessageContextDao extends CdiBaseDao<MessageContext> {
 			hql = hql + " and mc.timestamp > " + start.getTime();
 		}
 		
-		if (end != null && end.before(now)) {
+		if (end != null && end.before(now) && start.before(end)) {
 			hql = hql + " and mc.timestamp < " + end.getTime();
 		}
 		
 		hql = hql + " order by mc.timestamp desc";
 		
-		return queryPage(hql, 0, 1000, qc);
+		return queryPage(hql, 0, 5000, qc);
 	}
 	
 	public List<MessageContext> findAll() {

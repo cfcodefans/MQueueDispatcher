@@ -14,6 +14,7 @@ function exchangesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibM
 			$scope.gridApi = gridApi;
 			$scope.gridApi.grid.registerRowsProcessor($scope.singleFilter, 200);
 		},
+		rowEquality: rowKeyEq,
 		rowIdentity: exchangeCfgKey,
 		columnDefs : [ {field : "id", maxWidth:40},
 		               {field : "exchangeName", minWidth: 100},
@@ -52,7 +53,15 @@ function exchangesCtrl($scope, $route, $rootScope, $templateCache, $parse, $uibM
 	}
 
 	$scope.update = function(ec) {
-		this.gridApi.grid.refresh(updateExchangeCfgs(ec, gridCfgs.data));
+		var g = this.gridApi.grid;
+		var rows = g.getRow(ec);
+		if (rows) {
+			updateExchangeCfgs(ec, gridCfgs.data);
+			rows.entity = ec;
+			g.modifyRows([ec]);
+		} else {
+			gridCfgs.data.push(ec);
+		}
 	}
 	
 	$scope.open = function(ec) {

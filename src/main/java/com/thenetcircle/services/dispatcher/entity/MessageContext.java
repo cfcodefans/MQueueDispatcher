@@ -32,43 +32,43 @@ import com.thenetcircle.services.commons.MiscUtils;
 
 @XmlRootElement
 @Entity
-@Table(name = "msg_ctx", indexes= {@Index(columnList="")})
+@Table(name = "msg_ctx", indexes = { @Index(columnList = "queue_cfg_id", name = "qc_idx"), @Index(columnList = "timestamp", name = "time_idx") })
 @Cacheable
 public class MessageContext implements Serializable {
-	
-	public static final int DEFAULT_RETRY_LIMIT = 100;
 
-	private static final long serialVersionUID = 1L;
+	public static final int		DEFAULT_RETRY_LIMIT	= 100;
+
+	private static final long	serialVersionUID	= 1L;
 
 	@Transient
-	private int bodyHash = 1;
+	private int					bodyHash			= 1;
 
 	@Transient
 	@XmlTransient
-	private Delivery delivery;
+	private Delivery			delivery;
 
 	@Basic
-	private long failTimes = 0;
+	private long				failTimes			= 0;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id = -1;
+	private long				id					= -1;
 
 	@Column(name = "msg_content", length = 10000)
 	@Lob
-	private byte[] messageBody = new byte[0];
+	private byte[]				messageBody			= new byte[0];
 
-	@ManyToOne(fetch = FetchType.EAGER, cascade=CascadeType.REFRESH)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
 	@JoinColumn(name = "queue_cfg_id")
 	@XmlTransient
-	private QueueCfg queueCfg;
+	private QueueCfg			queueCfg;
 
 	@Basic
-	private long timestamp = System.currentTimeMillis();
+	private long				timestamp			= System.currentTimeMillis();
 
 	@Embedded
-	private MsgResp response = null;
-	
+	private MsgResp				response			= null;
+
 	public MsgResp getResponse() {
 		return response;
 	}
@@ -139,7 +139,7 @@ public class MessageContext implements Serializable {
 	public byte[] getMessageBody() {
 		return messageBody;
 	}
-	
+
 	@XmlElement
 	public String getMessageContent() {
 		return new String(messageBody);
@@ -164,7 +164,7 @@ public class MessageContext implements Serializable {
 	public long getTimestamp() {
 		return timestamp;
 	}
-	
+
 	@XmlElement
 	public String getTimestampStr() {
 		return DateFormatUtils.format(timestamp, "yy-MM-dd HH:mm:ss");
@@ -174,7 +174,7 @@ public class MessageContext implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		
+
 		if (id != -1) {
 			return (int) id;
 		}
@@ -201,7 +201,7 @@ public class MessageContext implements Serializable {
 
 	public void setDelivery(Delivery delivery) {
 		this.delivery = delivery;
-//		this.id = delivery.getEnvelope().getDeliveryTag();
+		// this.id = delivery.getEnvelope().getDeliveryTag();
 		setMessageBody(delivery.getBody());
 	}
 
@@ -225,19 +225,13 @@ public class MessageContext implements Serializable {
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
-	
-	
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("{class:\"MessageContext\",id: ").append(id)
-				.append(", queueCfg: ").append(queueCfg)
-//				.append(", delivery:").append(delivery)
-				.append(", messageBody: '").append(new String(messageBody))
-				.append("', response: ").append(response)
-				.append(", failTimes: ").append(failTimes)
-				.append(", timestamp: '").append(new Date(timestamp))
-				.append("'}");
+		builder.append("{class:\"MessageContext\",id: ").append(id).append(", queueCfg: ").append(queueCfg)
+		// .append(", delivery:").append(delivery)
+				.append(", messageBody: '").append(new String(messageBody)).append("', response: ").append(response).append(", failTimes: ").append(failTimes).append(", timestamp: '").append(new Date(timestamp)).append("'}");
 		return builder.toString();
 	}
 }

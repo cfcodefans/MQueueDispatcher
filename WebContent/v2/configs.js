@@ -53,6 +53,14 @@ function buildFilter($scope, checkFields) {
 	}
 }
 
+function rowKeyEq(a, b) {
+	if (!typeof(this.rowIdentity) === "function") {
+		return a === b;
+	}
+	
+	return this.rowIdentity(a) === this.rowIdentity(b);
+}
+
 
 function overviewCtrl($scope, $route, $rootScope, $templateCache) {
 	$templateCache.remove($route.current.templateUrl);
@@ -85,6 +93,7 @@ app.config([ "$routeProvider", function($routeProvider) {
 		.when("/servers", 	to("serversCtrl", 	"servers.html"))
 		.when("/exchanges", to("exchangesCtrl", "exchanges.html"))
 		.when("/queues", 	to("queuesCtrl", 	"queues.html"))
+		.when("/queue/:qc_id", 	to("queueCtrl", 	"queue.html"))
 		.otherwise(redirect("/overview"));
 } ]);
 
@@ -109,10 +118,18 @@ app.controller("exchangesCtrl", [ "$scope",
                                   "$uibModal", 
                                   exchangesCtrl ]);
 
-app.controller("queuesCtrl", [ "$scope", 
+app.controller("queuesCtrl", [ "$scope",
                                "$route", 
                                "$rootScope", 
                                "$templateCache", 
                                "$parse", 
-                               "$uibModal", 
+                               "$uibModal",
                                queuesCtrl ]);
+
+app.controller("queueCtrl", [ "$scope",
+                               "$route", 
+                               "$routeParams",
+                               "$rootScope", 
+                               "$templateCache", 
+                               "$parse", 
+                               queueCtrl ]);
