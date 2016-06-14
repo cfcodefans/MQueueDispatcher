@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Server Settings</title>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<!-- Optional theme -->
+<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+<!-- Latest compiled and minified JavaScript -->
+
+<link rel="stylesheet" href="http://cdn.datatables.net/1.10.0/css/jquery.dataTables.css">
+<link rel="stylesheet" href="http://cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.css">
+
+<link rel="stylesheet" href="../res/style.css">
+</head>
+<body>
+
+	<header>
+	<!-- Fixed navbar navbar-fixed-top -->
+<div class="navbar navbar-default " role="navigation">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+				<span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="#">MQueue Dispatcher</a>
+		</div>
+		<div class="navbar-collapse collapse">
+			<ul class="nav navbar-nav">
+				<li><a href="#">Home</a></li>
+				<li><a href="#about">Server Settings</a></li>
+				<li class="active"><a href="#about">MQueue Settings</a></li>
+				<li><a href="#about">About</a></li>
+				<li><a href="#contact">Contact</a></li>
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				<!-- 
+					<li><a href="../navbar/">Default</a></li>
+					<li><a href="../navbar-static-top/">Static top</a></li>
+					<li class="active"><a href="./">Fixed top</a></li>
+				 -->
+			</ul>
+		</div>
+		<!--/.nav-collapse -->
+	</div>
+</div>
+	</header>
+
+	<div class="panel container">
+		<div class="panel-heading">
+			<button type="button" id="createBtn" class="btn btn-default">create</button>
+		</div>
+		<div class="panel-body" id="tbl_container">
+		</div>
+	</div>
+
+	<textarea id="template_xslt" style="display: none"> 
+<?xml version="1.0" encoding="UTF-8"?>
+	<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+		<xsl:template match="/">
+			<html>
+<head>
+</head>
+<body>
+	<table id="server_cfg_tbl" class="stripe table">
+		<thead>
+			<tr>
+				<th>host</th>
+				<th>port</th>
+				<th>user name</th>
+				<th>password</th>
+				<th>virtual host</th>
+				<th>log file path</th>
+				<th>max file size</th>
+				<th></th>
+			</tr>
+		</thead>
+		<xsl:for-each select="serverCfgs/serverCfg">
+			<tr>
+				<td><xsl:value-of select="host" /></td>
+				<td><xsl:value-of select="port" /></td>
+				<td><xsl:value-of select="userName" /></td>
+				<td><xsl:value-of select="password" /></td>
+				<td><xsl:value-of select="virtualHost" /></td>
+				<td><xsl:value-of select="logFilePath" /></td>
+				<td><xsl:value-of select="maxFileSize" /></td>
+				<td>
+					<div class="btn-group">
+					  <button type="button" id="editBtn" class="btn btn-default" onclick="editServerCfg({id})">edit</button>
+					  <button type="button" id="copyBtn" class="btn btn-default">copy</button>
+					  <button type="button" id="deleteBtn" class="btn btn-default">delete</button>
+					</div>
+				</td>
+			</tr>
+		</xsl:for-each>
+		<tfoot>
+			<tr>
+
+			</tr>
+		</tfoot>
+	</table>
+</body>
+			</html>
+		</xsl:template>
+	</xsl:stylesheet>
+	</textarea>
+
+	<div class="modal fade" id="edit_modal_div">
+		<div class="modal-dialog">
+			<form class="form-horizontal" role="form" id="edit_form">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title">Edit Server</h4>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="host" class="col-sm-2 control-label">host</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="host" >
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="virtualHost" class="col-sm-2 control-label">virtual host</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="virtualHost" >
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="port" class="col-sm-2 control-label">port</label>
+							<div class="col-sm-10">
+								<input type="number" class="form-control" id="port" min="1" max="65535">
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="userName" class="col-sm-2 control-label">user name</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="userName" >
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="password" class="col-sm-2 control-label">password</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="password" >
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="logFilePath" class="col-sm-2 control-label">log file path</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="logFilePath" >
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="maxFileSize" class="col-sm-2 control-label">max file size</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="maxFileSize" >
+							</div>
+						</div>																																				
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary">Save</button>
+					</div>
+				</div>
+			</form>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal-dialog -->
+	</div>
+	<!-- /.modal -->
+
+	<script type="text/javascript" src="../res/jquery-2.1.1.js"></script>
+	<script type="text/javascript" src="../res/jquery.xslt.js"></script>
+	
+	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="http://cdn.datatables.net/1.10.0/js/jquery.dataTables.js"></script>
+	<script type="text/javascript" src="http://cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+	
+	<script type="text/javascript" src="/dispatcher-0.0.1/rest/v1/ajax" id="ajax_metadata"></script>
+	<script type="text/javascript" src="../res/rest.js"></script>
+	
+	<script type="text/javascript">
+		//$(document).ready(loadData);
+		function editServerCfg(idx) {
+			window.serverCfg = null;
+			var serverCfg = null;
+			if (idx < 0) {
+				serverCfg = {
+					version : 0,
+					host : "localhost",
+					id : -1,
+					maxFileSize : "2GB",
+					password : "guest",
+					port : 5672,
+					userName : "guest",
+					virtualHost : "/"
+				};
+			} else {
+				
+			}
+			window.serverCfg = serverCfg;
+			fillForm(window.serverCfg);
+			$('#edit_modal_div').modal();
+		}
+
+		function fillForm(sc) {
+			if (!sc)
+				return;
+			var ef = $("#edit_form");
+
+			ef.find("#host").val(sc.host);
+			ef.find("#virtualHost").val(sc.virtualHost);
+			ef.find("#port").val(sc.port);
+			ef.find("#userName").val(sc.userName);
+			ef.find("#password").val(sc.password);
+			ef.find("#logFilePath").val(sc.logFilePath);
+			ef.find("#maxFileSize").val(sc.maxFileSize);
+		}
+		
+		function toEntity(sc) {
+			var ef = $("#edit_form");
+
+			sc.host = ef.find("#host").val();
+			sc.virtualHost = ef.find("#virtualHost").val();
+			sc.port = ef.find("#port").val();
+			sc.userName = ef.find("#userName").val();
+			sc.password = ef.find("#password").val();
+			sc.logFilePath = ef.find("#logFilePath").val();
+			sc.maxFileSize = ef.find("#maxFileSize").val();
+			
+			return sc;
+		}
+
+		function loadData() {
+
+			var tx = $("#template_xslt")[0];
+			var cd = $("#tbl_container");
+
+			var xslt = tx.value.trim();
+			var xhr = $.ajax("data.xml").done(
+					function(data, textStatus, jqXHR) {
+						cd.xslt(xhr.responseText, xslt);
+						$('#server_cfg_tbl').dataTable();
+					});
+		}
+		
+		loadData();
+		
+		$(document).ready(function() {
+			$("#createBtn").click(
+				function() {
+					editServerCfg(-1);
+				}
+			);
+		});
+	</script>
+	
+	<footer>
+	</footer>
+</body>
+</html>

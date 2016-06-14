@@ -67,7 +67,7 @@ function MethodBuilder(_method, _metadata) {
 		if (!settings) {
 			settings = {async:false};
 		}
-
+		settings.cache = false;
 		settings["type"] = invocable.method.httpMethod;
 		var headerParams = [];
 		

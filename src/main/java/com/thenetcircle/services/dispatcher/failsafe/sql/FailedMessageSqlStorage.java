@@ -9,6 +9,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -96,7 +97,6 @@ public class FailedMessageSqlStorage extends ConcurrentAsynActor<MessageContext>
 			} else {
 				_mc.setDelivery(mc.getDelivery());
 				_mc.setFailTimes(mc.getFailTimes());
-				_mc.setResponse(mc.getResponse());
 				em.merge(_mc);
 			}
 

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>MQueue Settings</title>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="../res/bootstrap/css/bootstrap.min.css">
+<!-- Optional theme -->
+<link rel="stylesheet" href="../res/bootstrap/css/bootstrap-theme.min.css">
+<!-- Latest compiled and minified JavaScript -->
+
+<link rel="stylesheet" href="../res/datatable/css/dataTables.bootstrap.css">
+
+<link rel="stylesheet" href="../res/style.css">
+</head>
+<body>
+
+	<!-- Fixed navbar navbar-fixed-top -->
+	<header>
+	<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#">MQueue Dispatcher</a>
+			</div>
+			<div class="navbar-collapse collapse">
+				<ul class="nav navbar-nav">
+					<li><a href="#">Home</a></li>
+					<li><a href="server_cfgs.html">Server Settings</a></li>
+					<li class="active"><a href="mqueue_cfgs.html">MQueue Settings</a></li>
+					<li><a href="exchange_cfgs.html">Exchanges Settings</a></li>
+					<li><a href="about.html">About</a></li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+				</ul>
+			</div>
+			<!--/.nav-collapse -->
+		</div>
+	</div>
+	</header>
+
+	<article>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<button type="button" id="createBtn" class="btn btn-default btn-sm" onclick="createQueueCfg()">create</button>
+		</div>
+		<div class="panel-body" id="tbl_container"></div>
+	</div>
+	</article>
+		<div class="modal fade" id="edit_modal_div">
+		<div class="modal-dialog">
+			<form class="form-horizontal" role="form" id="edit_form">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title">Edit Queue</h4>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="cfgName" class="col-sm-2 control-label">config name</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control input-sm" id="cfgName">
+							</div>
+							<label for="queueName" class="col-sm-2 control-label">queue name</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control input-sm" id="queueName">
+							</div>
+						</div>
+							<div class="form-group">
+								<label for="serverCfg" class="col-sm-2 control-label">Server</label>
+								<div class="col-sm-8" id="serverCfg_select_div"></div>
+							</div>
+						<div class="form-group">
+								<label for="exchanges" class="col-sm-2 control-label">Exchanges</label>
+								<div class="col-sm-8" id="exchangeCfg_select_div"></div>
+							</div>
+						<div class="form-group">
+							<label for="routeKey" class="col-sm-2 control-label">route key</label>
+							<div class="col-sm-2">
+								<input type="text" class="form-control" id="routeKey">
+							</div>
+							<label for="retryLimit" class="col-sm-2 control-label">retry limit</label>
+							<div class="col-sm-2">
+								<input type="number" class="form-control" id="retryLimit" min="0">
+							</div>
+							<label for="prefetchSize" class="col-sm-2 control-label">Prefetch Size</label>
+							<div class="col-sm-2">
+								<input type="number" class="form-control" id="prefetchSize" min="0">
+							</div>
+						</div>
+
+
+						<div class="form-group">
+							<label class="col-sm-2 control-label">options</label>
+							<div class="col-sm-10">								
+								<label class="checkbox-inline"> 
+									<input type="checkbox" id="exclusive"> exclusive
+								</label>
+								<label class="checkbox-inline"> 
+									<input type="checkbox" id="durable"> durable
+								</label>  						
+								<label class="checkbox-inline"> 
+									<input type="checkbox" id="autoDelete"> autoDelete
+								</label>  						
+							</div>
+						</div>	
+						
+						<div class="form-group">
+							<label for="url" class="col-sm-2 control-label">url</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="url">
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="hostHead" class="col-sm-2 control-label">host header</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="hostHead">
+							</div>
+						</div>	
+						<div class="form-group">
+							<label for="httpMethod" class="col-sm-2 control-label">http method</label>
+							<div class="col-sm-4">
+								<label class="radio-inline">
+								  <input type="radio" name="httpMethod" id="httpMethod_post" value="post"> post
+								</label>
+								<label class="radio-inline">
+								  <input type="radio" name="httpMethod" id="httpMethod_get" value="get"> get
+								</label>
+							</div>
+							<label for="timeout" class="col-sm-2 control-label">timeout</label>
+							<div class="col-sm-4">
+								<input type="number" class="form-control" id="timeout" min="0">
+							</div>
+						</div>				
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" onclick="save(QueueCfg)">Save</button>
+					</div>
+					
+				</div>
+			</form>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal-dialog -->
+	</div>
+	<!-- /.modal -->
+
+	<script type="text/javascript" src="../res/jquery-2.1.1.js"></script>
+	<script type="text/javascript" src="../res/jquery.xslt.js"></script>
+	
+	<script src="../res/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="../res/datatable/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" src="../res/datatable/js/dataTables.bootstrap.js"></script>
+	
+	<script type="text/javascript" src="../rest/v1/ajax" id="ajax_metadata"></script>
+	<script type="text/javascript" src="../res/rest.js"></script>
+	<script type="text/javascript" src="mng.js"></script>
+	
+	<script type="text/javascript">
+
+	function createQueueCfg() {
+		window.QueueCfg = null;
+		window.QueueCfg = newQueueCfg();
+		fillForm(window.QueueCfg);
+		$('#edit_modal_div').modal();
+	}
+	
+	function editQueueCfg(idx) {
+		window.QueueCfg = null;
+		window.QueueCfg = getQueueCfg(idx);
+		fillForm(window.QueueCfg);
+		$('#edit_modal_div').modal();
+	}
+
+	function copyQueueCfg(idx) {
+		window.QueueCfg = null;
+		window.QueueCfg = newQueueCfg(getQueueCfg(idx));
+		fillForm(window.QueueCfg);
+		$('#edit_modal_div').modal();
+	}
+
+	function fillForm(qc) {
+		if (!qc)
+			return;
+		var ef = $("#edit_form");
+		
+		loadExchangeCfgOpts();
+
+		ef.find("#cfgName").val(qc.name);
+		ef.find("#queueName").val(qc.queueName);
+		ef.find("#routeKey").val(qc.routeKey);
+		ef.find("#retryLimit").val(qc.retryLimit);
+		ef.find("#prefetchSize").val(qc.prefetchSize);
+
+		ef.find("#exclusive").attr("checked", qc.exclusive);
+		ef.find("#durable").attr("checked", qc.durable);
+		ef.find("#autoDelete").attr("checked", qc.autoDelete);
+
+		ef.find("#hostHead").val(qc.destCfg.hostHead);
+		ef.find("[name='httpMethod']").filter("[value='" + qc.destCfg.httpMethod + "']").attr("checked", true);
+		ef.find("#timeout").val(qc.destCfg.timeout);
+		ef.find("#url").val(qc.destCfg.url);
+		
+		if (qc.serverCfg) {			
+			ef.find("#serverCfg").val(qc.serverCfg.id);
+		}
+		
+		var ecs = ef.find("#exchangeCfgs").find("option");
+		ecs.attr("selected", false);
+		for (var i = 0, j = qc.exchanges.length; i < j; i++) {
+			var ec = qc.exchanges[i];
+			ecs.filter("[value='" + ec.id + "']").attr("selected", true);			
+		}
+	}
+	
+	function toEntity(qc) {
+		var ef = $("#edit_form")[0];
+
+		qc.queueName = ef["queueName"].value;
+		qc.name = ef["cfgName"].value;
+		qc.routeKey = ef["routeKey"].value;
+		qc.retryLimit = ef["retryLimit"].value;
+		qc.prefetchSize = ef["prefetchSize"].value;
+		
+		qc.exclusive = ef["exclusive"].checked;
+		qc.durable = ef["durable"].checked;
+		qc.autoDelete = ef["autoDelete"].checked;
+		
+		qc.destCfg.hostHead = ef["hostHead"].value;
+		qc.destCfg.httpMethod = ef["httpMethod"].value;
+		qc.destCfg.timeout = ef["timeout"].value;
+		qc.destCfg.url = ef["url"].value;
+		
+		qc.serverCfg = {id:ef["serverCfg"].value};
+		qc.exchanges = [];
+		for (var ex_ids = ef["exchangeCfgs"].value.split(","), i = 0;
+			 i < ex_ids.length;
+			 i++) {
+			if (parseInt(ex_ids[i]) > 0)
+			qc.exchanges.push({id:ex_ids[i]});
+		}
+		
+		return qc;
+	}
+
+		function save(QueueCfg) {
+			QueueCfg = toEntity(QueueCfg);
+			var xhr = null; 
+						
+			if (QueueCfg.id < 0) {
+				xhr = RS.ctx.MQueueCfgRes.create.with_entity(JSON.stringify(QueueCfg)).call({async:false});	
+			} else {
+				xhr = RS.ctx.MQueueCfgRes.update.with_entity(JSON.stringify(QueueCfg)).call({async:false});	
+			}			
+
+			if (xhr.statusCode().status != 200) {
+				console.log(xhr);
+				return;
+			}
+			
+			var newQueueCfg = xhr.responseJSON;
+			loadData();
+			
+			$('#edit_modal_div').modal('hide');
+		}
+
+		function loadData() {
+			var xhr = RS.ctx.MQueueCfgRes.getAll.call({async:false});
+			var data = xhr.responseText;
+			loadIntoDom("#tbl_container", data, "queue_cfg_table.xsl");
+			$('#mqueue_cfg_tbl').dataTable();
+		}
+		
+		loadServerCfgOpts();
+		loadExchangeCfgOpts();
+		loadData();
+		
+	</script>
+</body>
+</html>

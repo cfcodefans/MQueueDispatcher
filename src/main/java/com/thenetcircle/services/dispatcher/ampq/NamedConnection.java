@@ -1,5 +1,7 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
+
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -12,8 +14,6 @@ import com.rabbitmq.client.ShutdownListener;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
-
-import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers.*;
 
 class NamedConnection implements ShutdownListener {
 	public Connection conn;

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<?xml-stylesheet type="text/xsl" href="template.xsl"?>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Server Settings</title>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
+<!-- Optional theme -->
+<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css"/>
+<!-- Latest compiled and minified JavaScript -->
+
+<link rel="stylesheet" href="http://cdn.datatables.net/1.10.0/css/jquery.dataTables.css"/>
+<link rel="stylesheet" href="http://cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.css"/>
+
+<link rel="stylesheet" href="../res/style.css"/>
+
+</head>
+<body>
+
+	<header>
+	</header>
+
+	<div class="container" id="tbl_container">
+	</div>
+
+	<textarea id="template_xslt" style="display: none"> 
+	<![CDATA[
+	<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+		<xsl:template match="/">
+	<table id="server_cfg_tbl">
+		<thead>
+			<tr>
+				<th>host</th>
+				<th>port</th>
+				<th>user name</th>
+				<th>password</th>
+				<th>virtual host</th>
+				<th>log file path</th>
+				<th>max file size</th>
+				<th></th>
+			</tr>
+		</thead>
+		<xsl:for-each select="serverCfgs/serverCfg">
+			<tr>
+				<td><xsl:value-of select="host" /></td>
+				<td><xsl:value-of select="port" /></td>
+				<td><xsl:value-of select="userName" /></td>
+				<td><xsl:value-of select="password" /></td>
+				<td><xsl:value-of select="virtualHost" /></td>
+				<td><xsl:value-of select="logFilePath" /></td>
+				<td><xsl:value-of select="maxFileSize" /></td>
+				<td></td>
+			</tr>
+		</xsl:for-each>
+		<tfoot>
+			<tr>
+
+			</tr>
+		</tfoot>
+	</table>
+		</xsl:template>
+	</xsl:stylesheet>
+		]]>
+	</textarea>
+
+	<script type="text/javascript" src="../res/jquery-2.1.1.js"></script>
+	<script type="text/javascript" src="../res/jquery.xslt.js"></script>
+	
+<!-- 	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script> -->
+	<script type="text/javascript" src="http://cdn.datatables.net/1.10.0/js/jquery.dataTables.js"></script>
+<!-- 	<script type="text/javascript" src="http://cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.js"></script> -->
+	
+<!-- 	<script type="text/javascript" src="/dispatcher-0.0.1/rest/v1/ajax" id="ajax_metadata"></script> -->
+<!-- 	<script type="text/javascript" src="../res/rest.js"></script> -->
+	
+	<script type="text/javascript">
+		//$(document).ready(loadData);
+
+		function loadData() {
+
+			var tx = $("#template_xslt")[0];
+			var cd = $("#tbl_container");
+
+			var xslt = tx.value.trim();
+			var xhr = $.ajax("data.xml").done(
+					function(data, textStatus, jqXHR) {
+						cd.xslt(xhr.responseText, xslt);
+						$('#server_cfg_tbl').dataTable();
+					});
+		}
+		
+		loadData();
+	</script>
+	
+	<footer>
+	</footer>
+</body>
+</html>

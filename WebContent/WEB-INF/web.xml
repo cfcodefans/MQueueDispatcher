@@ -87,5 +87,8 @@
 		<servlet-name>hide</servlet-name>
 		<url-pattern>/pages/*</url-pattern>
 	</servlet-mapping>
-
+	
+	<welcome-file-list>
+		<welcome-file>/v2/configs.html</welcome-file>
+	</welcome-file-list>
 </web-app>

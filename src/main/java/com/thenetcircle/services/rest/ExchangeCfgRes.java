@@ -1,7 +1,6 @@
 package com.thenetcircle.services.rest;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.ws.rs.FormParam;
@@ -23,13 +22,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.commons.Jsons;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.ExchangeCfgDao;
 import com.thenetcircle.services.dispatcher.dao.ServerCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
-import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Path("exchange_cfgs")

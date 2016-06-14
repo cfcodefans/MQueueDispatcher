@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Exchange Settings</title>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="../res/bootstrap/css/bootstrap.min.css">
+<!-- Optional theme -->
+<link rel="stylesheet" href="../res/bootstrap/css/bootstrap-theme.min.css">
+<!-- Latest compiled and minified JavaScript -->
+
+<link rel="stylesheet" href="../res/datatable/css/dataTables.bootstrap.css">
+
+<link rel="stylesheet" href="../res/style.css">
+</head>
+<body>
+
+	<!-- Fixed navbar navbar-fixed-top -->
+	<header>
+	<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#">MQueue Dispatcher</a>
+			</div>
+			<div class="navbar-collapse collapse">
+				<ul class="nav navbar-nav">
+					<li><a href="#">Home</a></li>
+					<li><a href="server_cfgs.html">Server Settings</a></li>
+					<li><a href="mqueue_cfgs.html">MQueue Settings</a></li>
+					<li class="active"><a href="exchange_cfgs.html">Exchanges Settings</a></li>
+					<li><a href="about.html">About</a></li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+				</ul>
+			</div>
+			<!--/.nav-collapse -->
+		</div>
+	</div>
+	</header>
+
+	<article>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<button type="button" id="createBtn" class="btn btn-default btn-sm" onclick="createExchangeCfg()">create</button>
+		</div>
+		<div class="panel-body" id="tbl_container"></div>
+	</div>
+	</article>
+
+	<textarea id="template_xslt" style="display: none"> 
+
+	</textarea>
+	
+		<div class="modal fade" id="edit_modal_div">
+		<div class="modal-dialog">
+			<form class="form-horizontal" role="form" id="edit_form">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title">Edit Exchange</h4>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="exchangeName" class="col-sm-4 control-label">exchange name</label>
+							<div class="col-sm-8">
+								<input type="text" class="form-control" id="exchangeName" required="required">
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="exchangeCfg" class="col-sm-4 control-label">Server</label>
+							<div class="col-sm-8" id="serverCfg_select_div">
+								
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-4 control-label">options</label>
+							<div class="col-sm-8">
+								<label class="checkbox-inline"> 
+									<input type="checkbox" id="durable"> durable
+								</label>  						
+	  						
+								<label class="checkbox-inline"> 
+									<input type="checkbox" id="autoDelete"> autoDelete
+								</label>  						
+	  						</div>
+						</div>
+						
+						<div class="form-group">
+							<label for="type" class="col-sm-4 control-label">exchange type</label>
+							<div class="col-sm-8">
+								<label class="radio-inline">
+								  <input type="radio" name="type" id="type_direct" value="direct"> direct
+								</label>
+								<label class="radio-inline">
+								  <input type="radio" name="type" id="type_fanout" value="fanout"> fanout
+								</label>
+								<label class="radio-inline">
+								  <input type="radio" name="type" id="type_topic" value="topic"> topic
+								</label>
+							</div>
+						</div>	
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" onclick="save(ExchangeCfg)">Save</button>
+					</div>
+					
+				</div>
+			</form>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal-dialog -->
+	</div>
+	<!-- /.modal -->
+
+	<script type="text/javascript" src="../res/jquery-2.1.1.js"></script>
+	<script type="text/javascript" src="../res/jquery.xslt.js"></script>
+	
+	<script src="../res/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="../res/datatable/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" src="../res/datatable/js/dataTables.bootstrap.js"></script>
+	
+	<script type="text/javascript" src="../rest/v1/ajax" id="ajax_metadata"></script>
+	<script type="text/javascript" src="../res/rest.js"></script>
+	<script type="text/javascript" src="mng.js"></script>
+	
+	<script type="text/javascript">
+		function newExchangeCfg(original) {
+			var ExchangeCfg = null;
+			if (original) {
+				ExchangeCfg = $.extend({}, original);
+				ExchangeCfg.id = -1;
+			} else {
+				ExchangeCfg = {"version":0,"id":-1,"exchangeName":null,"durable":true,"autoDelete":false,"type":"direct","serverCfg":null};
+			}
+			return ExchangeCfg;
+		}
+	
+		function getExchangeCfg(idx) {
+			if (!idx || idx < 0) {
+				return newExchangeCfg();
+			}
+	
+			var ExchangeCfg = null;
+			var xhr = RS.ctx.ExchangeCfgRes.getJson.with_id(idx).call();
+			if (xhr.statusCode().status != 200) {
+				console.log(xhr);
+				return;
+			}
+			ExchangeCfg = xhr.responseJSON;
+			return ExchangeCfg;
+		}
+	
+		function createExchangeCfg() {
+			window.ExchangeCfg = null;
+			window.ExchangeCfg = newExchangeCfg();
+			fillForm(window.ExchangeCfg);
+			$('#edit_modal_div').modal();
+		}
+		
+		function editExchangeCfg(idx) {
+			window.ExchangeCfg = null;
+			window.ExchangeCfg = getExchangeCfg(idx);
+			fillForm(window.ExchangeCfg);
+			$('#edit_modal_div').modal();
+		}
+	
+		function copyExchangeCfg(idx) {
+			window.ExchangeCfg = null;
+			window.ExchangeCfg = newExchangeCfg(getExchangeCfg(idx));
+			fillForm(window.ExchangeCfg);
+			$('#edit_modal_div').modal();
+		}
+	
+		function fillForm(ec) {
+			if (!ec)
+				return;
+			var ef = $("#edit_form");
+	
+			ef.find("#exchangeName").val(ec.exchangeName);
+			ef.find("#durable").attr("checked", ec.durable);
+			ef.find("#autoDelete").attr("checked", ec.autoDelete);
+			ef.find("[name='type']").filter("[value='" + ec.type + "']").attr("checked", true);
+			if (ec.serverCfg) {
+				ef.find("#serverCfg").val(ec.serverCfg.id);
+			}
+		}
+		
+		function toEntity(ec) {
+			var ef = $("#edit_form")[0];
+	
+			ec.exchangeName = ef["exchangeName"].value;
+			ec.durable = ef["durable"].checked;
+			ec.autoDelete = ef["autoDelete"].checked;
+			ec.type = ef["type"].value;
+			ec.serverCfg = {id: ef["serverCfg"].value};
+			
+			return ec;
+		}
+	
+		function save(ExchangeCfg) {
+			ExchangeCfg = toEntity(ExchangeCfg);
+			var xhr = null; 
+						
+			if (ExchangeCfg.id < 0) {
+				xhr = RS.ctx.ExchangeCfgRes.create.with_entity(JSON.stringify(ExchangeCfg)).call({async:false});	
+			} else {
+				xhr = RS.ctx.ExchangeCfgRes.update.with_entity(JSON.stringify(ExchangeCfg)).call({async:false});	
+			}			
+	
+			if (xhr.statusCode().status != 200) {
+				console.log(xhr);
+				return;
+			}
+			
+			var newExchangeCfg = xhr.responseJSON;
+			updateTable();
+			
+			$('#edit_modal_div').modal('hide');
+		}
+		function updateTable() {
+			loadData();
+		}		
+
+		function loadData() {
+			var xhr = RS.ctx.ExchangeCfgRes.getAll.call({async:false});
+			var data = xhr.responseText;
+			loadIntoDom("#tbl_container", data, "exchange_cfg_table.xsl");
+			$('#exchange_cfg_tbl').dataTable();
+		}
+		
+		loadData();
+		loadServerCfgOpts();
+	</script>
+</body>
+</html>

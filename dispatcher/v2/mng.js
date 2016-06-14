@@ -1,0 +1,102 @@
+function loadIntoDom(dom_sel, xml, xslt_src) {
+	var xslt_xhr = $.ajax({url:xslt_src, async:false});
+	var xslt = xslt_xhr.responseText;
+	
+	var dom = $(dom_sel);
+	dom.xslt(xml, xslt);
+	
+	return dom;
+}
+
+function loadExchangeCfgOpts(serverCfgId) {
+	var ecs = null;
+	var xhr = null;
+	if (serverCfgId && serverCfgId > 0) {
+		xhr = RS.ctx.ExchangeCfgRes.getExchangesByServer.with_server_id(serverCfgId).call({async:false});
+	} else {
+		xhr = RS.ctx.ExchangeCfgRes.getAll.call({async:false});
+	}
+
+	ecs = xhr.responseText;
+	loadIntoDom("#exchangeCfg_select_div", ecs, "exchange_cfg_opts.xsl");
+}
+
+function newQueueCfg(original) {
+	var QueueCfg = null;
+	if (original) {
+		QueueCfg = $.extend({}, original);
+		QueueCfg.id = -1;
+		QueueCfg.exchanges = [];
+	} else {
+		QueueCfg = {"version":0,"autoDelete":false,
+					"destCfg":{"version":0,"hostHead":null,"httpMethod":"post","id":-1,"timeout":30000,"url":null},
+					"durable":true,"enabled":true,
+					"exchanges":[],
+					"exclusive":false,"id":-1,"priority":0,"queueName":null,"retryLimit":10,"routeKey":"",
+					"serverCfg":null};
+	}
+	return QueueCfg;
+}
+
+function getQueueCfg(idx) {
+	if (!idx || idx < 0) {
+		return newQueueCfg();
+	}
+
+	var QueueCfg = null;
+	var xhr = RS.ctx.MQueueCfgRes.getJson.with_qc_id(idx).call();
+	if (xhr.statusCode().status != 200) {
+		console.error(xhr);
+		return;
+	}
+	QueueCfg = xhr.responseJSON;
+	return QueueCfg;
+}
+
+function switchQueue(qc_id) {
+	var qc = getQueueCfg(qc_id);
+	if (!qc) {
+		return;
+	}
+	
+	var xhr = RS.ctx.MQueueCfgRes.switchQueue.with_qc_id(qc_id).with_on(!qc.enabled).call({async:false});
+	qc = xhr.responseJSON;
+	event.target.innerText = qc.enabled ? "Stop" : "Start";
+}
+
+function sendMsgToQueue(qc_id, msgStr) {
+	if (!(qc_id && msgStr)){return;}
+	
+	var xhr = RS.ctx.MQueueCfgRes.sendMessage.with_message(msgStr).with_qc_id(qc_id).call({async:false});
+}
+
+function resendFailedMsg(qc_id, msg_id) {
+	var xhr = RS.ctx.FailedJobRes.resendFailedMsg.with_qc_id(qc_id).with_mc_id(msg_id).call({async:false});
+}
+
+function find(array, el, keyFn) {
+	if (!array || array.length == 0) return -1;
+	for (var i = 0, 
+			j = array.length, 
+			isFn = typeof(keyFn) === "function",
+			key = isFn ? keyFn(el) : el; 
+			 
+			i < j; 
+			i++) {
+		var elKey = isFn ? keyFn(array[i]) : array[i]; 
+		if (key === elKey) return i;
+	}
+	return -1;
+}
+
+function updateArray(el, array, keyFn) {
+	if (!array) array = [];
+	
+	var i = find(array, el, keyFn);
+	if (i > 0) {
+		array[i] = el;
+		return i;
+	}
+	array.push(el);
+	return array.length - 1;
+}

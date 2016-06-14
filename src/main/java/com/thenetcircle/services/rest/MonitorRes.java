@@ -31,54 +31,54 @@ import com.thenetcircle.services.dispatcher.mgr.QueueOperator;
 @Path("monitor")
 public class MonitorRes {
 
-	protected static final Log log = LogFactory.getLog(MonitorRes.class.getName());
+	protected static final Log	log	= LogFactory.getLog(MonitorRes.class.getName());
 
 	private static class Watcher extends ConcurrentAsynActor<MessageContext> {
 		// private EventOutput eventOutput = null;
-		private SseBroadcaster broadcaster = new SseBroadcaster() {
-			private AtomicInteger cnt = new AtomicInteger(0);
-			
-			public void onException(final ChunkedOutput<OutboundEvent> chunkedOutput, final Exception exception) {
-				log.warn("Monitor ends: " + exception);
-				exception.printStackTrace();
-			}
+		private SseBroadcaster	broadcaster	= new SseBroadcaster() {
+												private AtomicInteger	cnt	= new AtomicInteger(0);
 
-			public synchronized void onClose(ChunkedOutput<OutboundEvent> chunkedOutput) {
-				log.info("Monitor ends");
-				super.remove(chunkedOutput);
-				if (cnt.get() <= 0) {
-					MsgMonitor.instance().unregister(qc);
-				}
-			}
-			
-		    public synchronized <OUT extends ChunkedOutput<OutboundEvent>> boolean add(final OUT chunkedOutput) {
-		    	cnt.incrementAndGet();
-		        return super.add(chunkedOutput);
-		    }
-		    
-		    public synchronized <OUT extends ChunkedOutput<OutboundEvent>> boolean remove(final OUT chunkedOutput) {
-		    	cnt.decrementAndGet();
-		        return super.remove(chunkedOutput);
-		    }
-		};
+												public void onException(final ChunkedOutput<OutboundEvent> chunkedOutput, final Exception exception) {
+													log.warn("Monitor ends: " + exception);
+													exception.printStackTrace();
+												}
 
-		 private QueueCfg qc = null;
+												public synchronized void onClose(ChunkedOutput<OutboundEvent> chunkedOutput) {
+													log.info("Monitor ends");
+													super.remove(chunkedOutput);
+													if (cnt.get() <= 0) {
+														MsgMonitor.instance().unregister(qc);
+													}
+												}
+
+												public synchronized <OUT extends ChunkedOutput<OutboundEvent>> boolean add(final OUT chunkedOutput) {
+													cnt.incrementAndGet();
+													return super.add(chunkedOutput);
+												}
+
+												public synchronized <OUT extends ChunkedOutput<OutboundEvent>> boolean remove(final OUT chunkedOutput) {
+													cnt.decrementAndGet();
+													return super.remove(chunkedOutput);
+												}
+											};
+
+		private QueueCfg		qc			= null;
 
 		public Watcher(QueueCfg _qc) {
 			super();
-			 this.qc = _qc;
+			this.qc = _qc;
 		}
 
 		public MessageContext handover(final MessageContext mc) {
 			return handle(mc);
 		}
 
+		final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
+		
 		@Override
 		public MessageContext handle(final MessageContext mc) {
-			final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
 			try {
 				OutboundEvent oe = null;
-
 				if (mc != null) {
 					oe = eventBuilder.mediaType(MediaType.APPLICATION_JSON_TYPE).data(mc).build();
 					log.info("Monitor for Queue: " + mc.getQueueCfg().getQueueName());
@@ -101,7 +101,7 @@ public class MonitorRes {
 	}
 
 	@Inject
-	private QueueCfgDao qcDao;
+	private QueueCfgDao	qcDao;
 
 	@GET
 	@Path("/queue/{id}/running")
@@ -118,15 +118,15 @@ public class MonitorRes {
 		Watcher watcher = (Watcher) monitor.getQueueMonitor(qc);
 		if (watcher == null) {
 			watcher = new Watcher(qc);
-			monitor.register(qc, watcher);
 		}
+		monitor.register(qc, new Watcher(qc));
 
 		watcher.broadcaster.add(eventOutput);
 		return eventOutput;
 	}
 
 	public static void shutdown() {
-//		 es.shutdownNow();
+		// es.shutdownNow();
 	}
 
 	@GET
@@ -144,5 +144,5 @@ public class MonitorRes {
 
 		return new QueueOperator(qc).getTotalMessageCount();
 	}
-	
+
 }

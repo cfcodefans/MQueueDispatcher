@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>MQueue Settings</title>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="../res/bootstrap/css/bootstrap.min.css">
+<!-- Optional theme -->
+<link rel="stylesheet" href="../res/bootstrap/css/bootstrap-theme.min.css">
+<!-- Latest compiled and minified JavaScript -->
+
+<link rel="stylesheet" href="../res/datatable/css/dataTables.bootstrap.css">
+
+<link rel="stylesheet" href="../res/style.css">
+
+	<script type="text/javascript" src="../res/jquery-2.1.1.js"></script>
+</head>
+<body>
+
+	<!-- Fixed navbar navbar-fixed-top -->
+	<header>
+	<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#">MQueue Dispatcher</a>
+			</div>
+			<div class="navbar-collapse collapse">
+				<ul class="nav navbar-nav">
+					<li><a href="#">Home</a></li>
+					<li><a href="server_cfgs.html">Server Settings</a></li>
+					<li class="active"><a href="mqueue_cfgs.html">MQueue Settings</a></li>
+					<li><a href="exchange_cfgs.html">Exchanges Settings</a></li>
+					<li><a href="about.html">About</a></li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+				</ul>
+			</div>
+			<!--/.nav-collapse -->
+		</div>
+	</div>
+	</header>
+
+	<article>
+		<div class="row">
+			<div class="col-lg-9">
+				<div class="row">
+					<div class="col-sm-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<i class="fa fa-bell fa-fw"></i> Failed Messages
+							
+							<button type="button" class="btn btn-default btn-sm" onclick="resendAllFailedJobs(getQueueCfgId())">
+								Resend All Messages
+							</button>
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body" id="message_ctx_tbl_div">
+							
+						</div>
+						<!-- /.panel-body -->
+					</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-sm-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<button type="button" class="btn btn-default btn-sm" onclick="sendMsgToQueue(getQueueCfgId(), $('#msgTxt').text())">
+							Send Message
+							</button>
+							<button type="button" class="btn btn-default btn-sm" onclick="sseToggle(event)" id="sseToggleBtn">Stop Monitor</button>
+						</div>
+						<!-- /.panel-heading -->
+						<div class="panel-body">
+						<div id="msgTxt" contenteditable="true" style="height: 200px; overflow:auto; width: 33.33333333%; float: left;" class="form-control">
+						</div>
+
+							<div class="list-group" id="failedMsgDiv" style="height: 200px; max-height: 200px; overflow-y: scroll; width: 66.66666666%; float: left;">
+								
+							</div>
+							<!-- /.list-group -->
+						</div>
+						<!-- /.panel-body -->
+						<script type="text/javascript">
+							window._sse = null;
+
+							$(function () {
+								$(window).unload(
+								function() {
+									if (window._sse) {
+										window._sse.close();
+										window._sse = null;
+									}
+								});
+							});
+
+							function sseToggle(ev) {
+								if (ev.target.innerText == "Start") {
+									var url = RS.ctx.MonitorRes.runningStatus.with_id(getQueueCfgId()).url();
+									window._sse = new EventSource(url);
+									window._sse.onopen = function () {
+										$('#failedMsgDiv').empty();						
+									}
+									window._sse.onmessage = function (msg) {
+										if (msg.data != "nothing") {
+											
+										var mc = JSON.parse(msg.data);
+										$('#failedMsgDiv').prepend(
+											"<a href='#' class='list-group-item'> <i class='fa fa-envelope fa-fw'></i><p> "
+											+ mc.messageContent +
+											"</p><span class='pull-right text-muted small'><em><p>"
+											+ '&nbsp;'
+											+ mc.response
+											+ '&nbsp;'
+											+ mc.timestampStr 
+											+ "</p></em> </span></a>"
+										);
+										return;
+										}
+
+										$('#failedMsgDiv').prepend(
+											"<a href='#' class='list-group-item'> <i class='fa fa-envelope fa-fw'></i> "
+											+ msg.data +
+											"<span class='pull-right text-muted small'><em>"
+											+ (new Date()) +
+											"</em> </span></a>"
+										);
+									}
+
+									ev.target.innerText = "Stop Monitor";
+								} else {
+									if (window._sse) {
+										window._sse.close();
+										window._sse = null;
+									}
+									ev.target.innerText="Start Monitor";
+								}
+							}
+						</script>
+					</div>
+					</div>
+				</div>
+			
+			</div>		
+		</div>
+
+		<div class="col-lg-3 right-sidebar">
+			<div class="list-group" id="main_div">
+				<form class="form-horizontal" role="form" id="queue_form">
+					<li class="list-group-item">
+						<button type="button" class="btn btn-default btn-sm" onclick="save(QueueCfg)">Save</button>
+						<button type="button" id="toggleBtn" class="btn btn-default btn-sm" onclick="switchQueue(getQueueCfgId())">Start</button>
+					</li>
+					<li class="list-group-item">
+						<div class="row">
+							<label for="cfgName" class="col-sm-2 control-label">Config Name</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control input-sm" id="cfgName">
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item">
+						<div class="row">
+							<label for="queueName" class="col-sm-2 control-label">Queue Name</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control input-sm" id="queueName">
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item">
+						<div class="row">
+							<label for="serverCfg" class="col-sm-2 control-label">Server</label>
+							<div class="col-sm-10" id="serverCfg_select_div"></div>
+						</div>
+					</li>
+					<li class="list-group-item">
+						<div class="row">
+							<label for="exchanges" class="col-sm-2 control-label">Exchanges</label>
+							<div class="col-sm-10" id="exchangeCfg_select_div"></div>
+						</div>
+					</li>
+
+					<li class="list-group-item">
+						<div class="row">
+							<label for="url" class="col-sm-2 control-label">routeKey</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control input-sm" id="routeKey">
+							</div>
+						</div>
+					</li>
+
+					<li class="list-group-item">
+						<div class="row">
+							<label for="retryLimit" class="col-sm-2 control-label">Retry Limit</label>
+							<div class="col-sm-4">
+								<input type="number" class="form-control input-sm" id="retryLimit" min="0">
+							</div>
+							<label for="prefetchSize" class="col-sm-2 control-label">Prefetch Size</label>
+							<div class="col-sm-4">
+								<input type="number"  class="form-control input-sm"  id="prefetchSize"  min="0">
+							</div>
+						</div>
+					</li>
+
+
+
+					<li class="list-group-item">
+						<div class="row">
+							<label class="col-sm-2 control-label">Options</label>
+							<div class="col-sm-10">
+								<label class="checkbox-inline"> <input type="checkbox" id="exclusive"> exclusive
+								</label> <label class="checkbox-inline"> <input type="checkbox" id="durable"> durable
+								</label> <label class="checkbox-inline"> <input type="checkbox" id="autoDelete"> autoDelete
+								</label>
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item">
+						<div class="row">
+							<label for="url" class="col-sm-2 control-label">url</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control input-sm" id="url">
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item">
+						<div class="row">
+							<label for="hostHead" class="col-sm-2 control-label">Header</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control input-sm" id="hostHead">
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item">
+						<div class="row">
+							<label for="httpMethod" class="col-sm-2 control-label">Http Method</label>
+							<div class="col-sm-10">
+								<label class="radio-inline"> <input type="radio" name="httpMethod" id="httpMethod_post" value="post"> post
+								</label> <label class="radio-inline"> <input type="radio" name="httpMethod" id="httpMethod_get" value="get"> get
+								</label>
+							</div>
+						</div>
+					</li>
+					<li class="list-group-item">
+						<div class="row">
+							<label for="timeout" class="col-sm-2 control-label">timeout</label>
+							<div class="col-sm-10">
+								<input type="number" class="form-control input-sm" id="timeout" min="0">
+							</div>
+						</div>
+					</li>
+
+				</form>
+			</div>
+		</div>
+
+
+	</article>
+
+
+	<script type="text/javascript" src="../res/jquery.xslt.js"></script>
+	
+	<script src="../res/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="../res/datatable/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" src="../res/datatable/js/dataTables.bootstrap.js"></script>
+	
+	<script type="text/javascript" src="../rest/v1/ajax" id="ajax_metadata"></script>
+	<script type="text/javascript" src="../res/rest.js"></script>
+	<script type="text/javascript" src="mng.js"></script>
+	
+	<script type="text/javascript">
+		function editQueueCfg(idx) {
+			window.QueueCfg = null;
+			window.QueueCfg = getQueueCfg(idx);
+			fillForm(window.QueueCfg);
+		}
+
+		function updateToggleBtn(qc) {
+			$("#toggleBtn")[0].innerText = qc.enabled ? "Stop" : "Start";
+		}
+		
+		function fillForm(qc) {
+			if (!qc)
+				return;
+			
+			updateToggleBtn(qc);
+			
+			var ef = $("#queue_form");
+
+			ef.find("#cfgName").val(qc.name);
+			ef.find("#queueName").val(qc.queueName);
+			ef.find("#routeKey").val(qc.routeKey);
+			ef.find("#retryLimit").val(qc.retryLimit);
+			ef.find("#prefetchSize").val(qc.prefetchSize);
+
+			ef.find("#exclusive").attr("checked", qc.exclusive);
+			ef.find("#durable").attr("checked", qc.durable);
+			ef.find("#autoDelete").attr("checked", qc.autoDelete);
+
+			ef.find("#hostHead").val(qc.destCfg.hostHead);
+			ef.find("[name='httpMethod']").filter(
+					"[value='" + qc.destCfg.httpMethod + "']").attr("checked",
+					true);
+			ef.find("#timeout").val(qc.destCfg.timeout);
+			ef.find("#url").val(qc.destCfg.url);
+
+			if (qc.serverCfg) {
+				ef.find("#serverCfg").val(qc.serverCfg.id);
+			}
+
+			var ecs = ef.find("#exchangeCfgs").find("option");
+			ecs.attr("selected", false);
+			for ( var i = 0, j = qc.exchanges.length; i < j; i++) {
+				var ec = qc.exchanges[i];
+				ecs.filter("[value='" + ec.id + "']").attr("selected", true);
+			}
+		}
+
+		function toEntity(qc) {
+			var ef = $("#queue_form")[0];
+
+			qc.queueName = ef["queueName"].value;
+			qc.name = ef["cfgName"].value;
+			qc.routeKey = ef["routeKey"].value;
+			qc.retryLimit = ef["retryLimit"].value;
+
+			qc.exclusive = ef["exclusive"].checked;
+			qc.durable = ef["durable"].checked;
+			qc.autoDelete = ef["autoDelete"].checked;
+
+			qc.destCfg.hostHead = ef["hostHead"].value;
+			qc.destCfg.httpMethod = ef["httpMethod"].value;
+			qc.destCfg.timeout = ef["timeout"].value;
+			qc.destCfg.url = ef["url"].value;
+
+			qc.serverCfg = {
+				id : ef["serverCfg"].value
+			}
+			
+			for ( var ex_ids = ef["exchangeCfgs"].value.split(","), i = 0; i < ex_ids.length; i++) {
+				if (parseInt(ex_ids[i]) > 0)
+					qc.exchanges.push({
+						id : ex_ids[i]
+					});
+			}
+
+			return qc;
+		}
+
+		function save(QueueCfg) {
+			QueueCfg = toEntity(QueueCfg);
+			var xhr = null;
+
+			if (QueueCfg.id < 0) {
+				xhr = RS.ctx.MQueueCfgRes.create.with_entity(
+						JSON.stringify(QueueCfg)).call({
+					async : false
+				});
+			} else {
+				xhr = RS.ctx.MQueueCfgRes.update.with_entity(
+						JSON.stringify(QueueCfg)).call({
+					async : false
+				});
+			}
+
+			if (xhr.statusCode().status != 200) {
+				console.log(xhr);
+				return;
+			}
+
+			var newQueueCfg = xhr.responseJSON;
+			
+			loadQueueCfg();
+		}
+
+		function loadFailedMsgs() {
+
+			var tx = $("#template_xslt")[0];
+			var cd = $("#tbl_container");
+
+			var xslt_xhr = $.ajax({
+				url : "queue_cfg_table.xsl",
+				async : false
+			});
+			var xslt = xslt_xhr.responseText;
+			var xhr = RS.ctx.MQueueCfgRes.getAll.call({
+				async : false
+			});
+			var data = xhr.responseText;
+			cd.xslt(data, xslt);
+			$('#mqueue_cfg_tbl').dataTable();
+		}
+
+		function loadFailedJobs(qc_id) {
+			var xhr = RS.ctx.FailedJobRes.getFailedJobs.with_qc_id(qc_id).call();
+			var data = xhr.responseText;
+			loadIntoDom("#message_ctx_tbl_div", data, "message_ctx_table.xsl");
+			$("#message_ctx_tbl").dataTable();
+		}
+	
+		function getQueueCfgId() {
+			var searchStr = document.location.search;
+			var matches = searchStr.match(/id=\d*/);
+			if (!matches || matches.length == 0) {
+				return;
+			}
+			
+			var idx = parseInt(matches[0].match(/\d+/)[0]);
+			return idx;
+		}
+		
+		function loadQueueCfg() {
+			var idx = getQueueCfgId();
+			editQueueCfg(idx);
+			loadFailedJobs(idx);
+		}
+		
+
+		loadServerCfgOpts();
+		loadExchangeCfgOpts();
+		loadQueueCfg();
+		
+		
+	</script>
+</body>
+</html>

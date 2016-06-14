@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
@@ -20,17 +19,20 @@ public class ConsumerLoggers {
 		//TODO
 	}
 	
-	public static synchronized Logger getLoggerByServerCfg(final ServerCfg sc) {
+	public static Logger getLoggerByServerCfg(final ServerCfg sc) {
 		final String serverKey = sc.getLogFilePath();
-		final Logger logger = serverKeyAndLoggers.get(serverKey);
+		Logger logger = serverKeyAndLoggers.get(serverKey);
 		if (logger != null) {
 			return logger;
 		}
 
+		logger = createLogger(sc);
+		serverKeyAndLoggers.put(serverKey, logger);
+		return logger;
+	}
+
+	private static Logger createLogger(final ServerCfg sc) {
 		String logFileName = sc.getLogFilePath();
-		if (StringUtils.isBlank(logFileName)) {
-			logFileName = serverKey;
-		}
 
 		final String maxLogSize = sc.getMaxFileSize();
 
@@ -59,12 +61,11 @@ public class ConsumerLoggers {
 			_logger.removeAllAppenders();// purge other appenders
 			_logger.addAppender(queueLogAppender);// use specified appender
 
-			serverKeyAndLoggers.put(serverKey, _logger);
 			return _logger;
 		} catch (IOException e) {
 			log.error("failed to create logger for serverCfg: \n" + sc, e);
 		}
-		return logger;
+		return null;
 	}
 
 	protected static final Log log = LogFactory.getLog(ConsumerLoggers.class.getName());

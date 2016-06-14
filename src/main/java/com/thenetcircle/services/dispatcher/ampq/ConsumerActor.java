@@ -1,5 +1,7 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
+
 import java.io.IOException;
 
 import org.apache.commons.logging.Log;
@@ -15,8 +17,6 @@ import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
-
-import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers.*;
 
 public class ConsumerActor extends DefaultConsumer {
 

@@ -19,51 +19,47 @@ import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 
 @Default
-@RequestScoped //for java SE, only application scope available
+@RequestScoped // for java SE, only application scope available
 public class QueueCfgDao extends CdiBaseDao<QueueCfg> implements Closeable {
 	private static final long serialVersionUID = 1L;
-	
+
 	@Override
 	public Class<QueueCfg> getEntityClass() {
 		return QueueCfg.class;
 	}
 
 	public QueueCfgDao() {
-		
+
 	}
-	
+
 	public QueueCfgDao(final EntityManager em) {
 		super(em);
 	}
-	
+
+	@Transactional
 	public List<QueueCfg> findEnabled() {
-		return query("select qc from QueueCfg qc " +
-				" LEFT JOIN FETCH qc.exchanges " +
-				" LEFT JOIN FETCH qc.serverCfg " +
-				" LEFT JOIN FETCH qc.destCfg where qc.enabled=true");
+		return query("select qc from QueueCfg qc " + " LEFT JOIN FETCH qc.exchanges " + " LEFT JOIN FETCH qc.serverCfg " + " LEFT JOIN FETCH qc.destCfg where qc.enabled=true");
 	}
-	
-	
+
+	@Transactional
 	public List<QueueCfg> findAll() {
-		return query("select qc from QueueCfg qc " +
-				" LEFT JOIN FETCH qc.exchanges " +
-				" LEFT JOIN FETCH qc.serverCfg " +
-				" LEFT JOIN FETCH qc.destCfg");
+		return query("select qc from QueueCfg qc " + " LEFT JOIN FETCH qc.exchanges " + " LEFT JOIN FETCH qc.serverCfg " + " LEFT JOIN FETCH qc.destCfg");
 	}
-	
+
+	@Transactional
 	public QueueCfg find(Integer id) {
-		return findOne("select qc from QueueCfg qc " +
-				" LEFT JOIN FETCH qc.exchanges " +
-				" LEFT JOIN FETCH qc.serverCfg " +
-				" LEFT JOIN FETCH qc.destCfg where qc.id=?1 ", id);
+
+		QueueCfg qc = findOne("select qc from QueueCfg qc " + " LEFT JOIN FETCH qc.exchanges " + " LEFT JOIN FETCH qc.serverCfg " + " LEFT JOIN FETCH qc.destCfg where qc.id=?1 ", id);
+		em.refresh(qc);
+		return qc;
 	}
-	
+
 	@Transactional
 	public QueueCfg create(final QueueCfg qc) {
 		prepare(qc);
 		return super.create(qc);
 	}
-	
+
 	@Transactional
 	public QueueCfg update(final QueueCfg qc) {
 		if (!em.contains(qc)) {
@@ -78,15 +74,15 @@ public class QueueCfgDao extends CdiBaseDao<QueueCfg> implements Closeable {
 		}
 
 		final ExchangeCfgDao ecDao = new ExchangeCfgDao(em);
-		
+
 		final QueueCfg _qc = find(qc.getId());
-		
+
 		if (_qc != null) {
 			final Collection<ExchangeCfg> ecs = new HashSet<ExchangeCfg>(_qc.getExchanges());
 			_qc.getExchanges().clear();
 			ecs.forEach(ec -> ec.getQueues().remove(_qc));
 		}
-		
+
 		if (CollectionUtils.isEmpty(qc.getExchanges())) {
 			final ExchangeCfg _ec = QueueCfg.defaultExchange(qc);
 			ecDao.create(_ec);
@@ -95,8 +91,8 @@ public class QueueCfgDao extends CdiBaseDao<QueueCfg> implements Closeable {
 		} else {
 			final Collection<ExchangeCfg> ecs = new HashSet<ExchangeCfg>(qc.getExchanges());
 			qc.getExchanges().clear();
-			
-			ecs.stream().filter(ec->ec != null).forEach(ec->{
+
+			ecs.stream().filter(ec -> ec != null).forEach(ec -> {
 				if (ec.getId() < 0) {
 					ec = ecDao.create(ec);
 				} else {
@@ -109,10 +105,11 @@ public class QueueCfgDao extends CdiBaseDao<QueueCfg> implements Closeable {
 		}
 	}
 
+	@Transactional
 	public List<QueueCfg> findQueuesByServer(final ServerCfg sc) {
 		return super.query("select qc from QueueCfg qc where qc.serverCfg=?1", sc);
 	}
-	
+
 	public static QueueCfgDao instance() {
 		return WeldBinder.getBean(QueueCfgDao.class);
 	}

@@ -191,7 +191,7 @@ public class MQueueCfgRes {
 	}
 
 	@POST
-	@Path("/{qc_id}")
+//	@Path("/{qc_id}")
 	// @Produces({ MediaType.APPLICATION_JSON })
 	// @Consumes({ MediaType.APPLICATION_JSON })
 	public QueueCfg update(@FormParam("entity") final String reqStr) {

@@ -57,7 +57,7 @@ public class MsgMonitor extends ConcurrentAsynActor<MessageContext> {
 			return null;
 		}
 
-		return queueAndMonitors.put(qc, monitor);
+		return queueAndMonitors.computeIfAbsent(qc, (QueueCfg _qc)->monitor);
 	}
 
 	public IActor<MessageContext> getQueueMonitor(final QueueCfg qc) {

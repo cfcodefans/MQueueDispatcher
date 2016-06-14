@@ -3,6 +3,7 @@ package com.thenetcircle.services.dispatcher.http;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,7 +22,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.GzipCompressingEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -72,7 +72,7 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 				respStr = e.getMessage();
 			}
 
-			mc.setResponse(new MsgResp(resp.getStatusLine().getStatusCode(), StringUtils.trimToEmpty(respStr)));
+			mc.setResponse(new MsgResp(resp.getStatusLine().getStatusCode(), StringUtils.substring(StringUtils.trimToEmpty(respStr), 0, 2000)));
 			
 			MsgMonitor.prefLog(mc, log);
 			Responder.instance(mc.getDelivery().getEnvelope().getDeliveryTag()).handover(mc);
@@ -98,7 +98,9 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 
 	private static HttpDispatcherActor instance = new HttpDispatcherActor();
 
-	protected static final Log log = LogFactory.getLog(HttpDispatcherActor.class.getSimpleName());
+	protected static final Log log = LogFactory.getLog(HttpDispatcherActor.class.getSimpleName()); 
+	
+	protected static Charset CHATSET = Charset.forName(HTTP.UTF_8);
 
 	public static HttpDispatcherActor instance() {
 		return instance;
@@ -163,7 +165,7 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 				final HttpPost post = new HttpPost(destUrlStr);
 
 				final List<NameValuePair> paramList = getParamsList("queueName", qc.getQueueName(), "bodyData", bodyStr);
-				UrlEncodedFormEntity fe = new UrlEncodedFormEntity(paramList, HTTP.UTF_8);
+				UrlEncodedFormEntity fe = new UrlEncodedFormEntity(paramList, CHATSET);
 //				GzipCompressingEntity ze = new GzipCompressingEntity(fe);
 
 				post.setEntity(fe);

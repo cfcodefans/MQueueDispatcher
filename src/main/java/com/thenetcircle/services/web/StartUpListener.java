@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletContextEvent;
@@ -21,7 +20,6 @@ import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
-import com.thenetcircle.services.dispatcher.entity.QueueCfg.Status;
 import com.thenetcircle.services.dispatcher.mgr.NotificationActor;
 import com.thenetcircle.services.rest.MonitorRes;
 

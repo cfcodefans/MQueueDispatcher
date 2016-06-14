@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="tnc" xmlns:ns1="tnc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <xs:import namespace="http://www.w3.org/2001/XMLSchema-instance" schemaLocation="xsixml"/>
+    <xs:element name="jobs">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ns1:conf"  maxOccurs="1" />
+                <xs:element ref="ns1:monitor"  maxOccurs="1"/>
+                <xs:element ref="ns1:servers"  maxOccurs="1"/>
+                <xs:element ref="ns1:job" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="conf">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ns1:request-pre"/>
+                <xs:element ref="ns1:request-count"/>
+                <xs:element ref="ns1:request-timeout"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="request-pre" type="xs:anyURI"/>
+    <xs:element name="request-count" type="xs:integer"/>
+    <xs:element name="request-timeout" type="xs:integer"/>
+    <xs:element name="monitor">
+        <xs:complexType>
+            <xs:attribute name="httpHost" use="required" type="xs:string"/>
+            <xs:attribute name="httpPort" use="required" type="xs:integer"/>
+            <xs:attribute name="rHost" use="required" type="xs:string"/>
+            <xs:attribute name="rPort" use="required" type="xs:integer"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="servers">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="ns1:queueserver"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="queueserver">
+        <xs:complexType>
+            <xs:attribute name="host" use="required" type="xs:string"/>
+            <xs:attribute name="logFileName" type="xs:string"/>
+            <xs:attribute name="name" use="required" type="xs:string"/>
+            <xs:attribute name="password" use="required" type="xs:string"/>
+            <xs:attribute name="port" use="required" type="xs:integer"/>
+            <xs:attribute name="redisHost" type="xs:string"/>
+            <xs:attribute name="redisPort" type="xs:integer"/>
+            <xs:attribute name="retryIntervalSeconds" type="xs:integer"/>
+            <xs:attribute name="userName" use="required" type="xs:string"/>
+            <xs:attribute name="vhost" use="required" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="job">
+        <xs:complexType>
+        	<xs:attribute name="exchange" use="required" type="xs:string" />
+        	<xs:attribute name="name" use="required" type="xs:string" />
+        	<xs:attribute name="retryLimit" use="required" type="xs:integer" />
+        	<xs:attribute name="routeKey" use="optional" type="xs:string" />
+        	<xs:attribute name="server" use="required" type="xs:NCName" />
+        	<xs:attribute name="url" use="required" type="xs:anyURI" />
+        	<xs:attribute name="exchangeDurable" use="optional" type="xs:boolean" />
+        	<xs:attribute name="queueDurable" use="optional" type="xs:boolean" />
+        	<xs:attribute name="urlHost" use="optional" type="xs:string" />
+        	<xs:attribute name="type" type="xs:string"></xs:attribute>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

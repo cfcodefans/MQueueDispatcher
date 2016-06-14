@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html ng-app="Configs">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Consumer Dispatcher</title>
+
+<link href="../webjars/bootstrap/3.3.6/dist/css/bootstrap.css" rel="stylesheet" />
+<link href="../webjars/ui-grid/3.0.7/ui-grid.css" rel="stylesheet" />
+<link href="../webjars/angular-bootstrap/1.1.2/ui-bootstrap-csp.css" rel="stylesheet" />
+<link href="../res/style.css" rel="stylesheet" />
+<link href="../res/simple-sidebar.css" rel="stylesheet" />
+<!-- <link href="../res/ui-grid-qorsmond.css" rel="stylesheet" /> -->
+</head>
+<body>
+
+	<div id="wrapper">
+		<div id="sidebar-wrapper">
+			<ul class="sidebar-nav">
+				<li class="sidebar-brand">
+					<a href="#"> Dispatchers </a>
+				</li>
+				<li>
+					<a href="#/overview">Overview</a>
+				</li>
+				<li>
+					<a href="#/servers">Servers</a>
+				</li>
+				<li>
+					<a href="#/exchanges">Exchanges</a>
+				</li>
+				<li>
+					<a href="#/queues">Queues</a>
+				</li>
+			</ul>
+		</div>
+
+		<div id="page-content-wrapper" ng-view>
+		</div>
+	</div>
+
+
+	<script type="text/javascript" src="../webjars/jquery/2.2.0/dist/jquery.js"></script>
+	<script type="text/javascript" src="../webjars/bootstrap/3.3.6/dist/js/bootstrap.js"></script>
+	<script type="text/javascript" src="../webjars/angularjs/1.5.0/angular.js"></script>
+	<script type="text/javascript" src="../webjars/angular-route/1.5.0/angular-route.js"></script>
+	<script type="text/javascript" src="../webjars/angular-bootstrap/1.1.2/ui-bootstrap.js"></script>
+	<script type="text/javascript" src="../webjars/angular-bootstrap/1.1.2/ui-bootstrap-tpls.js"></script>
+	<script type="text/javascript" src="../webjars/ui-grid/3.0.7/ui-grid.js"></script>
+	<script type="text/javascript" src="../res/rest.js"></script>
+	<script type="text/javascript" src="configs.js"></script>
+
+	<script type="text/ng-template" id="cellCtrl">
+		<div class="btn-group btn-group-justified" role="group">
+			<a role="button" class="btn">Edit</a>
+  			<a role="button" class="btn">Copy</a>
+		</div>
+	</script>
+	
+	<script type="text/ng-template" id="queueCtrl">
+		<div class="btn-group btn-group-justified" role="group">
+			<a role="button" class="btn">Edit</a>
+  			<a role="button" class="btn">Copy</a>
+			<a role="button" class="btn">Stop</a>
+		</div>
+	</script>
+
+	<script type="text/javascript">
+		function to(ctrlName, viewUrl) {
+			return {
+				controller : ctrlName,
+				templateUrl : viewUrl
+			};
+		}
+
+		function redirect(key) {
+			return {redirectTo : key};
+		}
+		var app = angular.module("Configs", [ "ngRoute", 
+		                                      "ui.grid", 
+		                                      "ui.grid.autoResize", 
+		                                      "ui.grid.pagination" ]);
+
+		app.config([ "$routeProvider", function($routeProvider) {
+			$routeProvider
+				.when("/overview", to("overviewCtrl", "../mvc/overview.html"))
+				.when("/servers", to("serversCtrl", "servers.html"))
+				.when("/exchanges", to("exchangesCtrl", "exchanges.html"))
+				.when("/queues", to("queuesCtrl", "queues.html"))
+				.otherwise(redirect("/overview"));
+		} ]);
+
+		app.controller("overviewCtrl", [ "$scope", "$route", "$rootScope", "$templateCache", overviewCtrl ]);
+		app.controller("serversCtrl", [ "$scope", "$route", "$rootScope", "$templateCache", serversCtrl ]);
+		app.controller("exchangesCtrl", [ "$scope", "$route", "$rootScope", "$templateCache", "$parse", exchangesCtrl ]);
+		app.controller("queuesCtrl", [ "$scope", "$route", "$rootScope", "$templateCache", "$parse", queuesCtrl ]);
+	</script>
+
+</body>
+</html>

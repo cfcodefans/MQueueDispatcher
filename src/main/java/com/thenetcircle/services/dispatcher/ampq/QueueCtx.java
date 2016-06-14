@@ -1,5 +1,7 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
+
 import java.util.Objects;
 
 import org.apache.log4j.Logger;
@@ -10,7 +12,6 @@ import com.rabbitmq.client.ShutdownListener;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
-import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers.*;
 
 class QueueCtx implements ShutdownListener {
 	public ConsumerActor			ca;

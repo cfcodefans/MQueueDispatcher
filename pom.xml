@@ -320,6 +320,8 @@
 					<!-- </manifestEntries> -->
 					<!-- </archive> -->
 					<warSourceDirectory>WebContent</warSourceDirectory>
+					<warName>dispatcher</warName>
+					<webappDirectory>target/dispatcher</webappDirectory>
 				</configuration>
 			</plugin>
 			<!-- -->

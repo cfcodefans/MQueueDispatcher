@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<style>
+<!--
+.input-group {
+	margin-bottom: 0px;
+}
+
+.input-group-addon {
+	border-radius: 0px;
+}
+
+.input-group {
+	width: 100%;
+}
+
+span.input-group-addon {
+	min-width: 20%;
+}
+
+.input-group input.form-control {
+	width: 100%;
+}
+#edit_form {
+	position: fixed;
+	width: 400px;
+	top:0px;
+	right:0px;
+}
+
+#queue_nav {
+	padding-right: 420px;
+}
+
+#edit_form .form-control {
+	border-radius: 0px;
+}
+
+.attribute_pane {
+	display:table;
+}
+
+.attribute_pane .input-group {
+	display:table-row;
+}
+
+#msgsPanel {
+	position: fixed;
+	left: 150px;
+	top: 50px;
+	right: 400px;
+	bottom: 0px;
+	margin: 0px;
+}
+
+#msgsPanel .panel-body {
+	height: 100%;
+	width: 100%;
+	padding: 0px;
+}
+
+.ui-grid-cell-contents {
+	word-wrap: break-word;
+	white-space: normal;	
+	overflow: auto;
+}
+
+#msgsTable {
+	position: absolute;
+	width: 100%;
+	top: 55px;
+	bottom: 0px;
+}
+-->
+</style>
+<nav class="navbar navbar-default navbar-compact" id="queue_nav">
+	<div class="navbar-header">
+		<span class="navbar-brand">Queues > {{qc.serverCfg.host}}:{{qc.serverCfg.port}}/{{qc.name}}</span>
+	</div>
+</nav>
+	<script type="text/ng-template" id="msg_content">
+		<div class='ui-grid-cell-contents'>
+			<p>
+			{{row.entity.messageContent}}
+			</p>
+		</div>
+	</script>
+	<script type="text/ng-template" id="resp_content">
+		<div class='ui-grid-cell-contents'>
+			{{row.entity.response.statusCode}}<p>{{row.entity.response.responseStr}}</p>
+		</div>
+	</script>
+<div id="msgsPanel" class="panel panel-default">
+	<div class="panel-heading">
+			<input type="text" class="form-control" placeholder="Search" ng-model="filterValue" ng-change="filter()"/>
+	</div>
+	<div class="panel-body">
+		<div id="msgsTable" ui-grid="gridCfgs" ui-grid-auto-resize ui-grid-pagination></div>
+	</div>
+</div>
+<form class="form-horizontal" role="form" id="edit_form">
+	<nav class="navbar navbar-default navbar-compact" role="group">
+		<div class="btn-group">
+		<button type="button" class="btn  navbar-btn" ng-click="toggle(sc)">Start</button>
+		<button type="button" class="btn btn-primary  navbar-btn" ng-click="save(sc)">Save</button>
+		<button type="button" class="btn  navbar-btn" ng-click="monitor(sc)">Monitor</button>
+		</div>
+	</nav>
+	<div class="attribute_pane">
+		<div class="input-group">
+			<span class="input-group-addon" id="nameDesc">Name</span> 
+			<input ng-model="qc.name" type="text" id="name" required="true" class="form-control" aria-describedby="nameDesc" />
+		</div>
+		<div class="input-group">	
+			<span class="input-group-addon" id="queueNameDesc">Queue Name</span> 
+			<input ng-model="qc.queueName" type="text" id="qname" required="true" class="form-control" aria-describedby="queueNameDesc" />
+		</div>
+		<div class="input-group">
+			<span class="input-group-addon" id="serverDesc">Server</span> 
+			<select 
+				size="7"
+				ng-options="serverCfg.label for serverCfg in serverCfgs track by serverCfg.id" 
+				ng-model="selectedServerCfg" 
+				ng-change="onServerCfgSelected(selectedServerCfg)"
+				required="true" 
+				class="form-control" 
+				aria-describedby="serverDesc">
+			</select>
+		</div>
+		<div class="input-group">
+			<span class="input-group-addon" id="exDesc">Exchange</span> 
+			<select multiple
+				size="7"
+				ng-options="ec as exchangeCfg.label for exchangeCfg in exchangeCfgs track by exchangeCfg.id" 
+				ng-model="selectedExchanges" 
+				required="true" 
+				class="form-control" 
+				aria-describedby="exDesc">
+			</select>
+		</div>
+		<div class="input-group">
+			<span class="input-group-addon" id="routeKeyDesc">Route Key</span> 
+			<input ng-model="qc.routeKey" type="text" id="routeKey" required="false" class="form-control" aria-describedby="nameDesc" />
+			</div>
+		<div class="input-group">
+			<span class="input-group-addon" id="retryDesc">Retry</span> 
+			<input ng-model="qc.retryLimit" type="number" id="retryLimit" required="true" class="form-control" aria-describedby="retryDesc" />
+			</div>
+		<div class="input-group">
+			<span class="input-group-addon" id="fetchDesc">Fetch Size</span> 
+			<input ng-model="qc.prefetchSize" type="number" id="retryLimit" required="true" class="form-control" aria-describedby="fetchDesc" />
+		</div>
+		<div class="input-group">
+			<span class="input-group-addon" id="optionsDesc">Options</span>
+			<div class="form-control">
+				<label class=""> 
+					<input type="checkbox" id="exclusive" ng-model="qc.exclusive"> exclusive
+				</label>
+				<label class=""> 
+					<input type="checkbox" id="durable" ng-model="qc.durable"> durable
+				</label>  						
+				<label class=""> 
+					<input type="checkbox" id="autoDelete" ng-model="qc.autoDelete"> autoDelete
+				</label>
+			</div>
+		</div>
+		<div class="input-group">
+			<span class="input-group-addon" id="urlDesc">URL</span> 
+			<input ng-model="qc.destCfg.url" type="text" id="url" required="true" class="form-control" aria-describedby="urlDesc" />
+		</div>
+		<div class="input-group">
+			<span class="input-group-addon" id="headerDesc">Host header</span> 
+			<input ng-model="qc.destCfg.hostHead" type="text" id="url" required="true" class="form-control" aria-describedby="headerDesc" />
+		</div>
+		<div class="input-group">
+			<span class="input-group-addon" id="methodDesc">Http method</span>
+			<div class="form-control">
+			<label class="">
+				<input type="radio" ng-model="qc.destCfg.httpMethod" name="httpMethod" id="httpMethod_post" value="post"> post
+			</label>
+			<label class="">
+				<input type="radio" ng-model="qc.destCfg.httpMethod" name="httpMethod" id="httpMethod_get" value="get"> get
+			</label>
+			</div>
+			</div>
+		<div class="input-group">
+			<span class="input-group-addon" id="timeoutDesc">Timeout</span>
+			<input ng-model="qc.destCfg.timeout" type="number" id="timeout" required="true" class="form-control" aria-describedby="timeoutDesc" />
+		</div>
+	</div>
+</form>

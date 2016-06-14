@@ -3,6 +3,7 @@
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -16,6 +17,7 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.functors.EqualPredicate;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -102,9 +104,21 @@ public class MQueueTest {
 
 	@Test
 	public void testSending() throws Exception {
-		String[] msgs = IntStream.range(0, 20000).mapToObj(i -> StringUtils.repeat("a", 200)).collect(Collectors.toList()).toArray(new String[0]);
+		String[] msgs = IntStream.range(0, 15000).mapToObj(i -> RandomStringUtils.random(200)).collect(Collectors.toList()).toArray(new String[0]);
 		Publisher p = new Publisher("pref_test", msgs, "pref_test_exchange", "");
-		p.call();
+		
+		es.invokeAll(Arrays.asList(
+				new Publisher("pref_test", msgs, "pref_test_exchange", ""),
+				new Publisher("pref_test", msgs, "pref_test_exchange", ""),
+				new Publisher("pref_test", msgs, "pref_test_exchange", ""),
+				new Publisher("pref_test", msgs, "pref_test_exchange", ""),
+				new Publisher("pref_test", msgs, "pref_test_exchange", ""))).forEach(f -> {
+			try {
+				f.get();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		});
 	}
 	
 	@Test
@@ -151,7 +165,7 @@ public class MQueueTest {
 		es.schedule(new Publisher(_ch, msgs, exchange, routeKey), seconds, TimeUnit.SECONDS);
 	}
 
-	ScheduledExecutorService es = Executors.newScheduledThreadPool(5);
+	ScheduledExecutorService es = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors() / 2);
 
 	public static class Publisher implements Callable<Void> {
 		protected Channel ch = null;
@@ -183,10 +197,10 @@ public class MQueueTest {
 				ch.queueDeclare(queueName, true, false, false, null);
 			}
 			for (String msg : msgs) {
-				log.info(Thread.currentThread().getName() + " publishes message: \t" + msg);
+//				log.info(Thread.currentThread().getName() + " publishes message: \t" + msg);
 				ch.basicPublish(exchange, routeKey, null, msg.getBytes());
 			}
-			log.info("\n\n\n");
+//			log.info("\n\n\n");
 			if (StringUtils.isNotBlank(queueName)) {
 				ch.close();
 			}

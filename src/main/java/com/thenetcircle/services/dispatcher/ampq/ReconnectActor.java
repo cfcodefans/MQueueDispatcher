@@ -1,5 +1,7 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -11,8 +13,6 @@ import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg.Status;
-
-import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers.*;
 
 public class ReconnectActor implements Runnable {
 	private Set<QueueCfg>			queuesForReconnect	= new LinkedHashSet<QueueCfg>();
