@@ -43,13 +43,19 @@ public class QueueCfgDao extends CdiBaseDao<QueueCfg> implements Closeable {
 
 	@Transactional
 	public List<QueueCfg> findAll() {
-		return query("select qc from QueueCfg qc " + " LEFT JOIN FETCH qc.exchanges " + " LEFT JOIN FETCH qc.serverCfg " + " LEFT JOIN FETCH qc.destCfg");
+		em.clear();
+		return query("select qc from QueueCfg qc " 
+					+ " LEFT JOIN FETCH qc.exchanges " 
+					+ " LEFT JOIN FETCH qc.serverCfg " 
+					+ " LEFT JOIN FETCH qc.destCfg");
 	}
 
 	@Transactional
 	public QueueCfg find(Integer id) {
-
-		QueueCfg qc = findOne("select qc from QueueCfg qc " + " LEFT JOIN FETCH qc.exchanges " + " LEFT JOIN FETCH qc.serverCfg " + " LEFT JOIN FETCH qc.destCfg where qc.id=?1 ", id);
+		QueueCfg qc = findOne("select qc from QueueCfg qc " 
+							+ " LEFT JOIN FETCH qc.exchanges " 
+							+ " LEFT JOIN FETCH qc.serverCfg " 
+							+ " LEFT JOIN FETCH qc.destCfg where qc.id=?1 ", id);
 		em.refresh(qc);
 		return qc;
 	}

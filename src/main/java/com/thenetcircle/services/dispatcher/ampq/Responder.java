@@ -21,54 +21,63 @@ import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
 
-public class Responder extends ConcurrentAsynActor<MessageContext> { // implements IMessageActor, Runnable {
-
+public class Responder extends ConcurrentAsynActor<MessageContext> {
 	protected static final Log log = LogFactory.getLog(Responder.class.getSimpleName());
-	private IFailsafe failsafe = FailedMessageSqlStorage.instance(); //DefaultFailedMessageHandler.instance();
+	private IFailsafe failsafe = FailedMessageSqlStorage.instance(); // DefaultFailedMessageHandler.instance();
+
+	protected MessageContext onSuccess(MessageContext mc) {
+		final MQueueMgr qm = MQueueMgr.instance();
+		mc = qm.acknowledge(mc);
+		if (mc.getFailTimes() > 0) {
+			failsafe.handover(mc);
+		}
+		MsgMonitor.prefLog(mc, log);
+		return mc;
+	}
+	
+	protected MessageContext onFail(MessageContext mc) {
+		final MQueueMgr qm = MQueueMgr.instance();
+		logFailure(mc);
+
+		mc.fail();
+		if (!mc.isExceedFailTimes()) {
+			return failsafe.handover(mc);
+		}
+
+		log.info(String.format("MessageContext: %d exceeds the retryLimit: %d", mc.getId(), mc.getQueueCfg().getRetryLimit()));
+		return qm.acknowledge(mc);
+	}
 
 	@Override
 	public MessageContext handle(final MessageContext mc) {
 		if (mc == null) {
 			return null;
 		}
-		
+
 		final MsgMonitor monitor = MsgMonitor.instance();
 		final MQueueMgr qm = MQueueMgr.instance();
 		MessageContext _mc = monitor.handover(mc);
-		
+
 		try {
 			if (_mc.isSucceeded()) {
-				_mc = qm.acknowledge(mc);
-				if (_mc.getFailTimes() > 0) {
-					failsafe.handover(mc);
-				}
-				MsgMonitor.prefLog(mc, log);
-				return _mc;
+				return onSuccess(_mc);
 			}
-			
-			final QueueCfg qc = _mc.getQueueCfg();
-			final Logger srvLog = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
-			final String logStr = String.format("\nMessage: %d failed %d times\n\tfrom queue: %s\n\tto url: %s\n\tcontent: %s\n\tresponse: %s\n",
-					_mc.getDelivery().getEnvelope().getDeliveryTag(),
-					_mc.getFailTimes(), 
-					qc.getQueueName(), 
-					qc.getDestCfg().getUrl(),
-					_mc.getMessageContent(), 
-					_mc.getResponse());
-			log.info(logStr);
-			srvLog.info(logStr);
-			
-			if (!_mc.isExceedFailTimes()) {
-				return failsafe.handover(_mc);
-			}
-			
-			log.info(String.format("MessageContext: %d exceeds the retryLimit: %d", _mc.getId(), _mc.getQueueCfg().getRetryLimit()));
-			return qm.acknowledge(_mc);
+
+			return onFail(_mc);
 		} catch (Exception e) {
 			log.error("failed to handle: \n\t" + mc, e);
 		}
-		
+
 		return mc;
+	}
+
+	protected void logFailure(MessageContext _mc) {
+		final QueueCfg qc = _mc.getQueueCfg();
+		final Logger srvLog = ConsumerLoggers.getLoggerByServerCfg(qc.getServerCfg());
+		final String logStr = String.format("\nMessage: %d failed %d times\n\tfrom queue: %s\n\tto url: %s\n\tcontent: %s\n\tresponse: %s\n", _mc.getDelivery().getEnvelope().getDeliveryTag(), _mc.getFailTimes(), qc.getQueueName(), qc.getDestCfg().getUrl(), _mc.getMessageContent(),
+				_mc.getResponse());
+		log.info(logStr);
+		srvLog.info(logStr);
 	}
 
 	@Override
@@ -76,31 +85,31 @@ public class Responder extends ConcurrentAsynActor<MessageContext> { // implemen
 		super.stop();
 		executor.shutdownNow();
 	}
-	
+
 	public static void stopAll() {
-		Stream.of(instances.getArray()).forEach(instance->instance.stop());
+		Stream.of(instances.getArray()).forEach(instance -> instance.stop());
 	}
 
 	private ExecutorService executor = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory(Responder.class.getSimpleName()));
-	
+
 	private static LoopingArrayIterator<Responder> instances = null;
 	static {
 		final List<Responder> list = new ArrayList<Responder>();
-		final int RESPOND_NUMBER = (int)MiscUtils.getPropertyNumber("respond.number", MiscUtils.AVAILABLE_PROCESSORS * 4);
-		IntStream.range(0, RESPOND_NUMBER).forEach(i->list.add(new Responder()));
+		final int RESPOND_NUMBER = (int) MiscUtils.getPropertyNumber("respond.number", MiscUtils.AVAILABLE_PROCESSORS * 4);
+		IntStream.range(0, RESPOND_NUMBER).forEach(i -> list.add(new Responder()));
 		instances = new LoopingArrayIterator<Responder>(list.toArray(new Responder[0]));
 	};
-	
+
 	public Responder() {
 		executor.submit(this);
 	}
-	
+
 	public static Responder instance() {
 		return instances.loop();
 	}
-	
+
 	public static Responder instance(long deliveryTag) {
 		final Responder[] array = instances.getArray();
-		return array[(int)(deliveryTag % array.length)];
+		return array[(int) (deliveryTag % array.length)];
 	}
 }

@@ -1,6 +1,7 @@
 package com.thenetcircle.services.dispatcher.failsafe.sql;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -9,7 +10,6 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -24,16 +24,16 @@ import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 
 public class FailedMessageSqlStorage extends ConcurrentAsynActor<MessageContext> implements AsyncActor.IBatchProvider<MessageContext>, IFailsafe {
 
-	private static FailedMessageSqlStorage	instance	= new FailedMessageSqlStorage();
-	protected static final Log				log			= LogFactory.getLog(FailedMessageSqlStorage.class.getSimpleName());
+	private static FailedMessageSqlStorage instance = new FailedMessageSqlStorage();
+	protected static final Log log = LogFactory.getLog(FailedMessageSqlStorage.class.getSimpleName());
 
 	public static FailedMessageSqlStorage instance() {
 		return instance;
 	}
 
-	private EntityManager	em			= null;
+	private EntityManager em = null;
 
-	final ExecutorService	executor	= Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory(FailedMessageSqlStorage.class.getSimpleName()));
+	final ExecutorService executor = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory(FailedMessageSqlStorage.class.getSimpleName()));
 
 	private FailedMessageSqlStorage() {
 		start();
@@ -79,30 +79,38 @@ public class FailedMessageSqlStorage extends ConcurrentAsynActor<MessageContext>
 		return;
 	}
 
-	public MessageContext _handle(final MessageContext mc) {
+	public MessageContext _handle(MessageContext mc) {
 		if (mc == null)
 			return mc;
+
 		try {
-			if (mc.isSucceeded() && mc.getId() > 0) {
-				delete(mc.getId());
-				return mc;
+			if (mc.isSucceeded()) {
+				return onSuccess(mc);
 			}
 
-			mc.fail();
-
-			MessageContext _mc = em.find(MessageContext.class, Long.valueOf(mc.getId()));
+			MessageContext _mc = mc.getId() >= 0 ? em.find(MessageContext.class, Long.valueOf(mc.getId())) : null;
 			if (_mc == null) {
 				_mc = em.merge(mc);
 				mc.setId(_mc.getId());
+				HttpDispatcherActor.instance().handover(mc);
 			} else {
 				_mc.setDelivery(mc.getDelivery());
 				_mc.setFailTimes(mc.getFailTimes());
+				_mc.setResponse(mc.getResponse());
 				em.merge(_mc);
 			}
 
-			return HttpDispatcherActor.instance().handover(mc);
+			return _mc;
 		} catch (Exception e) {
 			log.error("failed to handle: \n\t" + mc, e);
+		}
+
+		return mc;
+	}
+
+	protected MessageContext onSuccess(MessageContext mc) {
+		if (mc.getId() > 0) {
+			delete(mc.getId());
 		}
 		return mc;
 	}
@@ -113,7 +121,14 @@ public class FailedMessageSqlStorage extends ConcurrentAsynActor<MessageContext>
 		} else {
 			log.info(String.format("failed message resent: %s \t failed times: %d", mc.getQueueCfg().getQueueName(), mc.getFailTimes()));
 		}
-		buf.offer(mc);
+		
+		//do retry
+		if (mc.getId() > 0 && !mc.isExceedFailTimes()) {
+			HttpDispatcherActor.instance().handover(mc);
+			buf.offer(mc.clone());
+		} else {
+			buf.offer(mc);
+		}
 		return mc;
 	}
 
@@ -131,6 +146,6 @@ public class FailedMessageSqlStorage extends ConcurrentAsynActor<MessageContext>
 
 	@Override
 	public Collection<MessageContext> pollBatch() throws Exception {
-		return super.pollBatch(10);
+		return new LinkedHashSet<MessageContext>(super.pollBatch(10));
 	}
 }

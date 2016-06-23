@@ -37,11 +37,7 @@ public class MsgMonitor extends ConcurrentAsynActor<MessageContext> {
 		}
 
 		final IActor<MessageContext> monitor = queueAndMonitors.get(mc.getQueueCfg());
-		if (monitor != null) {
-			monitor.handover(mc);
-		}
-
-		return mc;
+		return (monitor != null ? monitor.handover(mc) : mc); 
 	}
 
 	@Override

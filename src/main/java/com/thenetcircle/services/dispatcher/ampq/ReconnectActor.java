@@ -3,9 +3,12 @@ package com.thenetcircle.services.dispatcher.ampq;
 import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.thenetcircle.services.commons.MiscUtils;
@@ -41,7 +44,7 @@ public class ReconnectActor implements Runnable {
 		log.info("reconnecting queue: " + qc.getQueueName());
 		final QueueCfg _qc = MQueueMgr.instance.startQueue(qc);
 		if (_qc.isEnabled()) {
-			if (!Status.running.equals(qc.getStatus())) {
+			if (!Status.RUNNING.equals(qc.getStatus())) {
 				final String infoStr = "failed to reconnect queue: \n\t" + qc.getQueueName();
 				log.info(infoStr);
 				_info(qc.getServerCfg(), infoStr);
@@ -58,18 +61,24 @@ public class ReconnectActor implements Runnable {
 		synchronized (queuesForReconnect) {
 			log.info(MiscUtils.invocationInfo() + "\n\n\n");
 
-			if (queuesForReconnect.isEmpty()) {
-				log.info("no queue needs to be reconnected");
-				return;
-			}
 			
 			try (final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager())) {
+				List<QueueCfg> enabledQeueus = qcDao.findEnabled();
+				queuesForReconnect = enabledQeueus.stream().filter(qc -> !MQueueMgr.instance.isQueueRunning(qc)).collect(Collectors.toSet());
+				
+				if (queuesForReconnect.isEmpty()) {
+					log.info("no queue needs to be reconnected");
+					return;
+				}
 				Set<QueueCfg> stillDisconnectQueues = queuesForReconnect.stream()
 						.map(qc -> qcDao.find(qc.getId()))
 						.map(this::tryReconnect)
 						.filter(qc -> qc.isRunning())
 						.collect(Collectors.toSet());
-				queuesForReconnect = stillDisconnectQueues;
+				
+				if (CollectionUtils.isNotEmpty(stillDisconnectQueues))
+					log.error("failed to reconnect queues:\n\t" + StringUtils.join(stillDisconnectQueues));
+				
 			} catch (Exception e) {
 				// TODO: handle exception
 				log.error("what is up?", e);

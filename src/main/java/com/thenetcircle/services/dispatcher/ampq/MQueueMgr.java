@@ -132,6 +132,7 @@ public class MQueueMgr {
 	public boolean ifExchangeExists(ExchangeCfg ec) {
 		if (ec == null || ec.getServerCfg() == null || StringUtils.isBlank(ec.getExchangeName()))
 			return false;
+		
 		return operate(ec.getServerCfg(), (ch) -> {
 			try {
 				ch.exchangeDeclarePassive(ec.getExchangeName());
@@ -191,7 +192,7 @@ public class MQueueMgr {
 		Channel ch = null;
 		try {
 			try {
-				conn = this.getConnFactory(sc).newConnection();
+				conn = getConnFactory(sc).newConnection();
 				ch = conn.createChannel();
 				return fn.apply(ch);
 			} finally {
@@ -262,7 +263,7 @@ public class MQueueMgr {
 			queueCtx.nc = nc;
 			nc.qcSet.add(qc);
 
-			qc.setStatus(Status.running);
+			qc.setStatus(Status.RUNNING);
 
 			cfgAndCtxs.put(qc, queueCtx);
 			return qc;
@@ -270,7 +271,7 @@ public class MQueueMgr {
 			final String infoStr = "failed to start queue: \n\t" + qc;
 			log.error(infoStr, e);
 			_error(sc, infoStr, e);
-			qc.setStatus(Status.started);
+			qc.setStatus(Status.STARTED);
 		}
 		return qc;
 	}
@@ -309,32 +310,13 @@ public class MQueueMgr {
 		_info(qc.getServerCfg(), "going to remove queue:\n\t" + qc);
 
 		try {
-			try {
-				if (ch != null && ch.isOpen()) {
-					String queueName = qc.getQueueName();
-					String routeKey = qc.getRouteKey();
-
-					for (final ExchangeCfg ec : qc.getExchanges()) {
-						String exchangeName = StringUtils.defaultString(ec.getExchangeName(), StringUtils.EMPTY);
-
-						if (ifExchangeExists(ec) && ifQueueExists(qc)) {
-							_info(qc.getServerCfg(), String.format("disconnect exchange:\n%s to queue:\n%s", ec, qc));
-							ch.queueUnbind(queueName, exchangeName, routeKey);
-							ch.exchangeDelete(exchangeName, true);
-						}
-					}
-
-					ch.close(AMQP.CONNECTION_FORCED, "OK");
-				}
-			} catch (Exception e) {
-				log.error("what is up?", e);
-			}
+			disconnect(qc, ch);
 
 			_info(qc.getServerCfg(), "removed queue:\n\t" + qc.getQueueName());
 
 			final NamedConnection nc = queueCtx.nc;
 			if (nc == null) {
-				qc.setStatus(Status.stopped);
+				qc.setStatus(Status.STOPPED);
 				cfgAndCtxs.remove(qc);
 				return qc;
 			}
@@ -344,7 +326,7 @@ public class MQueueMgr {
 
 			cleanNamedConnection(nc);
 
-			qc.setStatus(Status.stopped);
+			qc.setStatus(Status.STOPPED);
 			cfgAndCtxs.remove(qc);
 		} catch (final Exception e) {
 			final String infoStr = "failed to shut down Queue: \n" + qc.getQueueName();
@@ -355,6 +337,29 @@ public class MQueueMgr {
 		}
 
 		return qc;
+	}
+
+	protected void disconnect(final QueueCfg qc, final Channel ch) {
+		try {
+			if (ch != null && ch.isOpen()) {
+				String queueName = qc.getQueueName();
+				String routeKey = qc.getRouteKey();
+
+				for (final ExchangeCfg ec : qc.getExchanges()) {
+					String exchangeName = StringUtils.defaultString(ec.getExchangeName(), StringUtils.EMPTY);
+
+					if (ifExchangeExists(ec) && ifQueueExists(qc)) {
+						_info(qc.getServerCfg(), String.format("disconnect exchange:\n%s to queue:\n%s", ec, qc));
+						ch.queueUnbind(queueName, exchangeName, routeKey);
+						ch.exchangeDelete(exchangeName, true);
+					}
+				}
+
+				ch.close(AMQP.CONNECTION_FORCED, "OK");
+			}
+		} catch (Exception e) {
+			log.error("what is up?", e);
+		}
 	}
 
 	public void updateExchange(ExchangeCfg ex) throws Exception {
@@ -413,6 +418,7 @@ public class MQueueMgr {
 		try {
 			if (nc.conn.isOpen()) {
 				nc.conn.close(AMQP.CONNECTION_FORCED, "OK");
+				log.info(String.format("closed connection:\t%s", nc));
 			}
 		} catch (Exception e) {
 			log.error("what is up?", e);
@@ -442,7 +448,10 @@ public class MQueueMgr {
 		cf.setPort(sc.getPort());
 		cf.setUsername(sc.getUserName());
 		cf.setPassword(sc.getPassword());
-
+		
+		cf.setAutomaticRecoveryEnabled(true);
+		cf.setTopologyRecoveryEnabled(true);
+		
 		infoStr = String.format("ConnectionFactory is instantiated with \n%s", sc.toString());
 		log.info(infoStr);
 		logForSrv.info(infoStr);
