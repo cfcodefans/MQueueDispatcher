@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -28,6 +29,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.reactor.IOReactorConfig;
@@ -58,7 +60,7 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 		}
 
 		public void cancelled() {
-
+			MQueueMgr.instance().acknowledge(mc);
 		}
 
 		public void completed(final HttpResponse resp) {
@@ -73,7 +75,7 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 			}
 
 			mc.setResponse(new MsgResp(resp.getStatusLine().getStatusCode(), StringUtils.substring(StringUtils.trimToEmpty(respStr), 0, 2000)));
-			
+
 			MsgMonitor.prefLog(mc, log);
 			Responder.instance(mc.getDelivery().getEnvelope().getDeliveryTag()).handover(mc);
 		}
@@ -240,6 +242,8 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 			
 			final IOReactorConfig ioCfg = IOReactorConfig.custom().setInterestOpQueued(true).build();
 			final CloseableHttpAsyncClient hac = HttpAsyncClients.custom()
+				//to deal with https
+													.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
 													.setMaxConnTotal((int)MiscUtils.getPropertyNumber("http.client.max.connection", 50))
 													.setMaxConnPerRoute((int)MiscUtils.getPropertyNumber("http.client.max.connection.per_route", 25))
 //													.setConnectionReuseStrategy(new NoConnectionReuseStrategy())

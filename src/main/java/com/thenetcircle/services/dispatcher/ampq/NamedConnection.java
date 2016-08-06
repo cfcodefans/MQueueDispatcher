@@ -1,5 +1,6 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._error;
 import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
 
 import java.util.HashSet;
@@ -63,21 +64,20 @@ class NamedConnection implements ShutdownListener {
 	
 	public void shutdownCompleted(final ShutdownSignalException cause) {
 		final Object reasonObj = cause.getReason();
+		log.error("shutdown happens!!!", cause);
 		
 		if (reasonObj instanceof AMQP.Connection.Close) {
 			AMQP.Connection.Close close  = (AMQP.Connection.Close) reasonObj;
 			if (AMQP.CONNECTION_FORCED == close.getReplyCode() && "OK".equals(close.getReplyText())) {
 				final String infoStr = String.format("\n close connection to server: \n\t %s", sc);
-				log.error(infoStr);
-				_info(sc, infoStr);
+				_error(log, sc, infoStr);
 				return;
 			}
 		}
 		
 		if (!cause.isHardError()) {
 			final String infoStr = String.format("\n unexpected shutdown on connection to server: \n\t %s \n\n\t", sc, cause.getCause());
-			log.error(infoStr);
-			_info(sc, infoStr);
+			_error(log, sc, infoStr);
 			return;
 		} 
 		

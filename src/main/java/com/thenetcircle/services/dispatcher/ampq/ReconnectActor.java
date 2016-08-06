@@ -33,8 +33,7 @@ public class ReconnectActor implements Runnable {
 		}
 
 		final String infoStr = "going to reconnect queue: \n\t" + qc;
-		log.info(infoStr);
-		_info(qc.getServerCfg(), infoStr);
+		_info(log, qc.getServerCfg(), infoStr);
 		synchronized (queuesForReconnect) {
 			queuesForReconnect.add(qc);
 		}
@@ -61,8 +60,8 @@ public class ReconnectActor implements Runnable {
 		synchronized (queuesForReconnect) {
 			log.info(MiscUtils.invocationInfo() + "\n\n\n");
 
-			
 			try (final QueueCfgDao qcDao = new QueueCfgDao(JpaModule.getEntityManager())) {
+				qcDao.getEm().clear();
 				List<QueueCfg> enabledQeueus = qcDao.findEnabled();
 				queuesForReconnect = enabledQeueus.stream().filter(qc -> !MQueueMgr.instance.isQueueRunning(qc)).collect(Collectors.toSet());
 				
@@ -88,8 +87,7 @@ public class ReconnectActor implements Runnable {
 
 	public void stopReconnect(final QueueCfg qc) {
 		final String infoStr = "will not reconnect queue: \n\t" + qc;
-		log.info(infoStr);
-		_info(qc.getServerCfg(), infoStr);
+		_info(log, qc.getServerCfg(), infoStr);
 		synchronized (queuesForReconnect) {
 			queuesForReconnect.remove(qc);
 		}

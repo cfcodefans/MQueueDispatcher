@@ -1,29 +1,5 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
-import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._error;
-import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.AMQP.Exchange.DeleteOk;
 import com.rabbitmq.client.Channel;
@@ -31,6 +7,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.ProcTrace;
 import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
@@ -41,6 +18,18 @@ import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._error;
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
 
 public class MQueueMgr {
 
@@ -90,12 +79,17 @@ public class MQueueMgr {
 			}
 
 			final Channel ch = queueCtx.ch;
+			if (!ch.isOpen()) {
+				final String infoStr = "can't acknowledge the message as channel is not opened!\n\t" + qc;
+				log.error(infoStr);
+				_error(qc.getServerCfg(), infoStr);
+				return mc;
+			}
 			ch.basicAck(deliveryTag, false);
 			_info(qc.getServerCfg(), "the result of job: " + deliveryTag + " for q " + qc.getName() + " on server " + qc.getServerCfg().getVirtualHost() + "\nresponse: " + mc.getResponse());
 		} catch (final IOException e) {
 			final String infoStr = "failed to acknowledge message: \n" + deliveryTag + "\nresponse: " + mc.getResponse();
-			log.error(infoStr, e);
-			_error(qc.getServerCfg(), infoStr, e);
+			_error(log, qc.getServerCfg(), infoStr, e);
 		}
 
 		return mc;
@@ -132,7 +126,7 @@ public class MQueueMgr {
 	public boolean ifExchangeExists(ExchangeCfg ec) {
 		if (ec == null || ec.getServerCfg() == null || StringUtils.isBlank(ec.getExchangeName()))
 			return false;
-		
+
 		return operate(ec.getServerCfg(), (ch) -> {
 			try {
 				ch.exchangeDeclarePassive(ec.getExchangeName());
@@ -211,6 +205,9 @@ public class MQueueMgr {
 	}
 
 	public synchronized QueueCfg startQueue(final QueueCfg qc) {
+
+		ProcTrace.start();
+
 		if (cfgAndCtxs.containsKey(qc)) {
 			stopQueue(qc);
 		}
@@ -238,8 +235,11 @@ public class MQueueMgr {
 			String routeKey = qc.getRouteKey();
 
 			ch.queueDeclare(queueName, qc.isDurable(), qc.isExclusive(), qc.isAutoDelete(), null);
+			ProcTrace.ongoing("declear channel for queue: " + queueName);
+
 			if (qc.getPrefetchSize() != null) {
 				ch.basicQos(qc.getPrefetchSize());
+				ProcTrace.ongoing(String.format("set prefetch size: %d for queue: %s", qc.getPrefetchSize(), queueName));
 			}
 			for (final ExchangeCfg ec : qc.getExchanges()) {
 				String exchangeName = StringUtils.defaultString(ec.getExchangeName(), StringUtils.EMPTY);
@@ -251,10 +251,12 @@ public class MQueueMgr {
 
 				ch.exchangeDeclare(exchangeName, ec.getType(), ec.isDurable(), ec.isAutoDelete(), null);
 				ch.queueBind(queueName, exchangeName, routeKey);
+				ProcTrace.ongoing(String.format("declare and bind exchange: %s for queue: %s", exchangeName, queueName));
 			}
 
 			final ConsumerActor ca = new ConsumerActor(ch, qc);
 			ch.basicConsume(queueName, false, ca);
+			ProcTrace.ongoing(String.format("Consumer registered for queue: %s", queueName));
 
 			queueCtx.ca = ca;
 			queueCtx.qc = qc;
@@ -266,17 +268,24 @@ public class MQueueMgr {
 			qc.setStatus(Status.RUNNING);
 
 			cfgAndCtxs.put(qc, queueCtx);
+
+			ProcTrace.ongoing(String.format("queue: %s started", queueName));
+
 			return qc;
 		} catch (Throwable e) {
 			final String infoStr = "failed to start queue: \n\t" + qc;
-			log.error(infoStr, e);
-			_error(sc, infoStr, e);
+			_error(log, sc, infoStr, e);
 			qc.setStatus(Status.STARTED);
+		} finally {
+			ProcTrace.end();
+
+			log.info(ProcTrace.flush());
 		}
 		return qc;
 	}
 
 	private NamedConnection newNamedConn(final ServerCfg sc) {
+		ProcTrace.start();
 		NamedConnection nc = null;
 		try {
 			nc = new NamedConnection();
@@ -284,10 +293,16 @@ public class MQueueMgr {
 			nc.conn = getConnFactory(sc).newConnection(EXECUTORS);
 			nc.conn.addShutdownListener(nc);
 			nc.sc = sc;
-			_info(sc, String.format("created connection:\n\t%s to server:\n\t%s", sc, nc));
+
+			String logStr = String.format("created connection:\n\t%s to server:\n\t%s", sc, nc);
+			_info(log, sc, logStr);
+			ProcTrace.ongoing(logStr);
+
 		} catch (IOException | TimeoutException e) {
-			_error(sc, "failed to create named connection", e);
+			_error(log, sc, "failed to create named connection", e);
 			return null;
+		} finally {
+			ProcTrace.end();
 		}
 		return nc;
 	}
@@ -302,17 +317,19 @@ public class MQueueMgr {
 			return qc;
 		}
 
+		ProcTrace.start();
 		reconnActor.stopReconnect(qc);
 
 		final QueueCtx queueCtx = cfgAndCtxs.get(qc);
 		final Channel ch = queueCtx.ch;
 
-		_info(qc.getServerCfg(), "going to remove queue:\n\t" + qc);
+		_info(log, qc.getServerCfg(), "going to remove queue:\n\t" + qc);
 
 		try {
 			disconnect(qc, ch);
+			ProcTrace.ongoing("disconnect for queue: " + qc.getName());
 
-			_info(qc.getServerCfg(), "removed queue:\n\t" + qc.getQueueName());
+			_info(log, qc.getServerCfg(), "removed queue:\n\t" + qc.getQueueName());
 
 			final NamedConnection nc = queueCtx.nc;
 			if (nc == null) {
@@ -334,12 +351,14 @@ public class MQueueMgr {
 			_error(qc.getServerCfg(), infoStr, e);
 		} finally {
 			updateDatabase(qc);
+			ProcTrace.end();
 		}
 
 		return qc;
 	}
 
 	protected void disconnect(final QueueCfg qc, final Channel ch) {
+		ProcTrace.start();
 		try {
 			if (ch != null && ch.isOpen()) {
 				String queueName = qc.getQueueName();
@@ -353,12 +372,17 @@ public class MQueueMgr {
 						ch.queueUnbind(queueName, exchangeName, routeKey);
 						ch.exchangeDelete(exchangeName, true);
 					}
+
+					ProcTrace.ongoing("unbind exchange: " + exchangeName);
 				}
 
 				ch.close(AMQP.CONNECTION_FORCED, "OK");
+				ProcTrace.ongoing("close channel for queue: " + qc.getName());
 			}
 		} catch (Exception e) {
 			log.error("what is up?", e);
+		} finally {
+			ProcTrace.end();
 		}
 	}
 
@@ -448,10 +472,10 @@ public class MQueueMgr {
 		cf.setPort(sc.getPort());
 		cf.setUsername(sc.getUserName());
 		cf.setPassword(sc.getPassword());
-		
+
 		cf.setAutomaticRecoveryEnabled(true);
 		cf.setTopologyRecoveryEnabled(true);
-		
+
 		infoStr = String.format("ConnectionFactory is instantiated with \n%s", sc.toString());
 		log.info(infoStr);
 		logForSrv.info(infoStr);

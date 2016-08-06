@@ -21,17 +21,22 @@ import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
 
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
+
 public class Responder extends ConcurrentAsynActor<MessageContext> {
 	protected static final Log log = LogFactory.getLog(Responder.class.getSimpleName());
 	private IFailsafe failsafe = FailedMessageSqlStorage.instance(); // DefaultFailedMessageHandler.instance();
 
 	protected MessageContext onSuccess(MessageContext mc) {
 		final MQueueMgr qm = MQueueMgr.instance();
-		mc = qm.acknowledge(mc);
-		if (mc.getFailTimes() > 0) {
+		if (mc.getFailTimes() == 0) {
+			mc = qm.acknowledge(mc);
+		} else if (mc.getFailTimes() > 0) {
 			failsafe.handover(mc);
 		}
 		MsgMonitor.prefLog(mc, log);
+		QueueCfg qc = mc.getQueueCfg();
+		_info(qc.getServerCfg(), "the result of job: " + mc.getDelivery().getEnvelope().getDeliveryTag() + " for q " + qc.getName() + " on server " + qc.getServerCfg().getVirtualHost() + "\nresponse: " + mc.getResponse());
 		return mc;
 	}
 	
@@ -39,13 +44,16 @@ public class Responder extends ConcurrentAsynActor<MessageContext> {
 		final MQueueMgr qm = MQueueMgr.instance();
 		logFailure(mc);
 
+		if (mc.getFailTimes() == 0) {
+			mc = qm.acknowledge(mc);
+		}
 		mc.fail();
 		if (!mc.isExceedFailTimes()) {
 			return failsafe.handover(mc);
 		}
 
 		log.info(String.format("MessageContext: %d exceeds the retryLimit: %d", mc.getId(), mc.getQueueCfg().getRetryLimit()));
-		return qm.acknowledge(mc);
+		return mc;
 	}
 
 	@Override

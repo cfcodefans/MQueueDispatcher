@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.collections4.iterators.ObjectArrayIterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
@@ -76,6 +77,19 @@ public class ConsumerLoggers {
 			logForSrv.info(infoStr);
 		}
 	}
+
+	public static final void _info(final ServerCfg sc, final String format, Object...args) {
+		_info(sc, String.format(format, args));
+	}
+
+	public static final void _info(final Logger _log, final ServerCfg sc, final String infoStr) {
+		_log.info(infoStr);
+		_info(sc, infoStr);
+	}
+
+	public static final void _info(final Logger _log, final ServerCfg sc, final String format, Object...args) {
+		_info(_log, sc, String.format(format, args));
+	}
 	
 	public static final void _error(final ServerCfg sc, final String infoStr) {
 		final Logger logForSrv = getLoggerByServerCfg(sc);
@@ -84,10 +98,27 @@ public class ConsumerLoggers {
 		}
 	}
 
+	public static final void _error(final ServerCfg sc, final String format, final Object...args) {
+		final Logger logForSrv = getLoggerByServerCfg(sc);
+		if (logForSrv != null) {
+			logForSrv.error(String.format(format, args));
+		}
+	}
+
+	public static final void _error(final Logger _log, final ServerCfg sc, final String infoStr) {
+		_log.error(infoStr);
+		_error(sc, infoStr);
+	}
+
 	public static final void _error(final ServerCfg sc, final String infoStr, final Throwable t) {
 		final Logger logForSrv = getLoggerByServerCfg(sc);
 		if (logForSrv != null) {
 			logForSrv.error(infoStr, t);
 		}
+	}
+
+	public static final void _error(final Logger _log, final ServerCfg sc, final String infoStr, final Throwable t) {
+		_log.error(infoStr, t);
+		_error(sc, infoStr, t);
 	}
 }

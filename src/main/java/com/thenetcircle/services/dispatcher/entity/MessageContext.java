@@ -24,6 +24,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Envelope;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
@@ -189,7 +192,7 @@ public class MessageContext implements Serializable, Cloneable {
 	public boolean isExceedFailTimes() {
 		if (queueCfg != null) {
 			int retryLimit = queueCfg.getRetryLimit();
-			return failTimes > (retryLimit < 0 ? DEFAULT_RETRY_LIMIT : retryLimit);
+			return failTimes >= (retryLimit < 0 ? DEFAULT_RETRY_LIMIT : retryLimit);
 		}
 		return failTimes > DEFAULT_RETRY_LIMIT;
 	}
@@ -243,9 +246,34 @@ public class MessageContext implements Serializable, Cloneable {
 	
 	public static Delivery clone(Delivery d) {
 		if (d == null) return d;
-		return new Delivery(d.getEnvelope(), d.getProperties(), d.getBody());
+		return new Delivery(clone(d.getEnvelope()), clone(d.getProperties()), ObjectUtils.clone(d.getBody()));
 	}
-	
+
+	public static Envelope clone(Envelope ev) {
+		if (ev == null) return ev;
+		return new Envelope(ev.getDeliveryTag(), ev.isRedeliver(), ev.getExchange(), ev.getRoutingKey());
+	}
+
+	public static AMQP.BasicProperties clone(AMQP.BasicProperties p) {
+		if (p == null) return p;
+		return new AMQP.BasicProperties(
+			p.getContentType(),
+			p.getContentEncoding(),
+			p.getHeaders(),
+			p.getDeliveryMode(),
+			p.getPriority(),
+			p.getCorrelationId(),
+			p.getReplyTo(),
+			p.getExpiration(),
+			p.getMessageId(),
+			p.getTimestamp(),
+			p.getType(),
+			p.getUserId(),
+			p.getAppId(),
+			p.getClusterId()
+		);
+	}
+
 	public MessageContext clone() {
 		MessageContext mc = new MessageContext();
 		

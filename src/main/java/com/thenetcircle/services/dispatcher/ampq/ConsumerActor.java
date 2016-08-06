@@ -37,6 +37,7 @@ public class ConsumerActor extends DefaultConsumer {
 		
 		// TODO use injection to decouple dependency
 		MsgMonitor.prefLog(mc, log);
+//		getChannel().basicAck(envelope.getDeliveryTag(), false);
 		HttpDispatcherActor.instance().handover(mc);
 	}
 

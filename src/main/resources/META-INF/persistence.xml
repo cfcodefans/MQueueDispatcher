@@ -25,7 +25,7 @@
 				/> -->
 			<!-- <property name="javax.persistence.jdbc.user" value="sa" /> -->
 			<!-- <property name="javax.persistence.jdbc.password" value="" /> -->
-			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://bart:3306/dispatcher" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://bart:3306/dispatcher?autoReconnect=true&amp;autoReconnectForPools=true" />
 			<property name="javax.persistence.jdbc.user" value="dispatcher" />
 			<property name="javax.persistence.jdbc.password" value="dispatcher" />
 			<!-- hibernate connection properties -->
@@ -48,6 +48,9 @@
 			<property name="hibernate.c3p0.max_statements" value="0" />
 			<property name="hibernate.c3p0.min_size" value="10" />
 			<property name="hibernate.c3p0.timeout" value="100" />
+			<property name="hibernate.c3p0.testConnectionOnCheckin" value="false"/>
+			<property name="hibernate.c3p0.testConnectionOnCheckout" value="true"/>
+			<property name="hibernate.c3p0.preferredTestQuery" value="SELECT 1"/>
 
 			<!-- cache -->
 			<property name="javax.persistence.sharedCache.mode " value="DISABLE_SELECTIVE" />

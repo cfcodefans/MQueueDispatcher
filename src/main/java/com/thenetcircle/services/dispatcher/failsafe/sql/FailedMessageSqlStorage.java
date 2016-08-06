@@ -1,18 +1,5 @@
 package com.thenetcircle.services.dispatcher.failsafe.sql;
 
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Query;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.actor.AsyncActor;
 import com.thenetcircle.services.commons.actor.ConcurrentAsynActor;
@@ -21,6 +8,17 @@ import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Query;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class FailedMessageSqlStorage extends ConcurrentAsynActor<MessageContext> implements AsyncActor.IBatchProvider<MessageContext>, IFailsafe {
 
@@ -94,13 +92,13 @@ public class FailedMessageSqlStorage extends ConcurrentAsynActor<MessageContext>
 				mc.setId(_mc.getId());
 				HttpDispatcherActor.instance().handover(mc);
 			} else {
-				_mc.setDelivery(mc.getDelivery());
+				_mc.setDelivery(MessageContext.clone(mc.getDelivery()));
 				_mc.setFailTimes(mc.getFailTimes());
 				_mc.setResponse(mc.getResponse());
 				em.merge(_mc);
 			}
 
-			return _mc;
+			return mc;
 		} catch (Exception e) {
 			log.error("failed to handle: \n\t" + mc, e);
 		}
@@ -121,9 +119,9 @@ public class FailedMessageSqlStorage extends ConcurrentAsynActor<MessageContext>
 		} else {
 			log.info(String.format("failed message resent: %s \t failed times: %d", mc.getQueueCfg().getQueueName(), mc.getFailTimes()));
 		}
-		
+
 		//do retry
-		if (mc.getId() > 0 && !mc.isExceedFailTimes()) {
+		if (mc.getId() > 0 && !mc.isSucceeded() && !mc.isExceedFailTimes()) {
 			HttpDispatcherActor.instance().handover(mc);
 			buf.offer(mc.clone());
 		} else {

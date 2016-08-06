@@ -56,8 +56,7 @@ public class QueueCfgDao extends CdiBaseDao<QueueCfg> implements Closeable {
 							+ " LEFT JOIN FETCH qc.exchanges " 
 							+ " LEFT JOIN FETCH qc.serverCfg " 
 							+ " LEFT JOIN FETCH qc.destCfg where qc.id=?1 ", id);
-		em.refresh(qc);
-		return qc;
+		return qc == null ? null : refresh(qc);
 	}
 
 	@Transactional
