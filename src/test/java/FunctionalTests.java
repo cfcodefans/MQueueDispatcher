@@ -1,18 +1,3 @@
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.persistence.EntityManager;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.log4j.Logger;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -23,6 +8,20 @@ import com.thenetcircle.services.dispatcher.entity.ExchangeCfg;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import javax.persistence.EntityManager;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class FunctionalTests {
@@ -94,7 +93,7 @@ public class FunctionalTests {
 		em.getTransaction().commit();
 	}
 
-	static Logger log = Logger.getLogger(FunctionalTests.class.getSimpleName());
+	static Logger log = LogManager.getLogger(FunctionalTests.class);
 	
 	final ServerCfg sc = qc.getServerCfg();
 	final ConnectionFactory cf = new ConnectionFactory();

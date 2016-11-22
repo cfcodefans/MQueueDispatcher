@@ -1,24 +1,24 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
-import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
-
-import java.util.Objects;
-
-import org.apache.log4j.Logger;
-
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ShutdownListener;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Objects;
+
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
 
 class QueueCtx implements ShutdownListener {
 	public ConsumerActor			ca;
 	public Channel					ch;
 	public NamedConnection			nc;
 	public QueueCfg					qc;
-	protected static final Logger	log	= Logger.getLogger(QueueCtx.class);
+	protected static final Logger log	= LogManager.getLogger(QueueCtx.class);
 
 	@Override
 	public boolean equals(Object obj) {
@@ -78,6 +78,5 @@ class QueueCtx implements ShutdownListener {
 
 		MQueueMgr qm = MQueueMgr.instance();
 		qm.stopQueue(qc);
-		qm.reconnActor.addReconnect(qc);
 	}
 }

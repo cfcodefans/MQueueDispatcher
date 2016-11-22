@@ -1,16 +1,5 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
-
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.commons.actor.ConcurrentAsynActor;
@@ -20,11 +9,20 @@ import com.thenetcircle.services.dispatcher.failsafe.IFailsafe;
 import com.thenetcircle.services.dispatcher.failsafe.sql.FailedMessageSqlStorage;
 import com.thenetcircle.services.dispatcher.log.ConsumerLoggers;
 import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
 
 public class Responder extends ConcurrentAsynActor<MessageContext> {
-	protected static final Log log = LogFactory.getLog(Responder.class.getSimpleName());
+	protected static final Logger log = LogManager.getLogger(Responder.class);
 	private IFailsafe failsafe = FailedMessageSqlStorage.instance(); // DefaultFailedMessageHandler.instance();
 
 	protected MessageContext onSuccess(MessageContext mc) {

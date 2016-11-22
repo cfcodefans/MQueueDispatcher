@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" threshold="debug">
-	<appender name="Console" class="org.apache.log4j.ConsoleAppender">
+	<appender name="Console" class="org.apache.log4j.core.ConsoleAppender">
 		<param name="Threshold" value="debug"></param>
 		<param name="ImmediateFlush" value="true"></param>
 		<param name="Encoding" value="GBK"></param>
@@ -10,7 +10,7 @@
 			<param name="ConversionPattern" value="%d{yy-MM-dd HH:mm:ss} %-5p %c{2} %x%t - %m%n"></param>
 		</layout>
 	</appender>
-	<appender name="consumerDispatcherLog" class="org.apache.log4j.RollingFileAppender">
+	<appender name="consumerDispatcherLog" class="org.apache.log4j.core.RollingFileAppender">
 		<param name="Threshold" value="info"></param>
 		<param name="ImmediateFlush" value="true"></param>
 		<param name="Encoding" value="GBK"></param>
@@ -23,7 +23,7 @@
 			<param name="ConversionPattern" value="%d{yy-MM-dd HH:mm:ss} %-5p %c{2}(Line:%L) %x[%t] - %m%n"></param>
 		</layout>
 	</appender>
-	<appender name="consumerDispatcherServerLog" class="org.apache.log4j.RollingFileAppender">
+	<appender name="consumerDispatcherServerLog" class="org.apache.log4j.core.RollingFileAppender">
 		<param name="Threshold" value="info"></param>
 		<param name="ImmediateFlush" value="true"></param>
 		<param name="Encoding" value="GBK"></param>

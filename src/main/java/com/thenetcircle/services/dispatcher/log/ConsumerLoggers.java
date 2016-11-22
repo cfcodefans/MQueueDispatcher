@@ -1,124 +1,107 @@
 package com.thenetcircle.services.dispatcher.log;
 
-import java.io.IOException;
+import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
+import org.apache.logging.log4j.core.appender.rolling.RolloverStrategy;
+import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.collections4.iterators.ObjectArrayIterator;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.RollingFileAppender;
-
-import com.thenetcircle.services.dispatcher.entity.ServerCfg;
-
 public class ConsumerLoggers {
-	static final Map<String, Logger> serverKeyAndLoggers = new HashMap<String, Logger>();
+    static final Map<String, Logger> serverKeyAndLoggers = new HashMap<String, Logger>();
 
-	public static synchronized void updateLoggerByServerCfg(final ServerCfg sc) {
-		//TODO
-	}
-	
-	public static Logger getLoggerByServerCfg(final ServerCfg sc) {
-		final String serverKey = sc.getLogFilePath();
-		Logger logger = serverKeyAndLoggers.get(serverKey);
-		if (logger != null) {
-			return logger;
-		}
+    public static Logger getLoggerByServerCfg(final ServerCfg sc) {
+        return serverKeyAndLoggers.computeIfAbsent(sc.getLogFilePath(), (String key) -> createLogger(sc));
+    }
 
-		logger = createLogger(sc);
-		serverKeyAndLoggers.put(serverKey, logger);
-		return logger;
-	}
+    private static final String APPENDER_NAME = "consumerDispatcherLog";
 
-	private static Logger createLogger(final ServerCfg sc) {
-		String logFileName = sc.getLogFilePath();
+    private static Logger createLogger(final ServerCfg sc) {
+        String logFileName = sc.getLogFilePath();
+        final String maxLogSize = sc.getMaxFileSize();
+        final String logName = sc.getHost() + "/" + sc.getVirtualHost();
 
-		final String maxLogSize = sc.getMaxFileSize();
+        LoggerContext context = (LoggerContext) LogManager.getContext();
+        ConfigurationSource cfgSrc = context.getConfiguration().getConfigurationSource();
+        XmlConfiguration xmlCfg = new XmlConfiguration(context, cfgSrc);
+        RollingFileAppender _appender = xmlCfg.getAppender(APPENDER_NAME);
 
-		RollingFileAppender originalLogAppender = (RollingFileAppender) Logger.getRootLogger().getAppender("consumerDispatcherLog");
-		PatternLayout srcLayout = (PatternLayout) originalLogAppender.getLayout();
-		RollingFileAppender queueLogAppender = new RollingFileAppender();
-		queueLogAppender.setEncoding(originalLogAppender.getEncoding());
+        RolloverStrategy _rolloverStrategy = _appender.getManager().getRolloverStrategy();
 
-		try {
-			queueLogAppender.setFile(logFileName, originalLogAppender.getAppend(), originalLogAppender.getBufferedIO(), originalLogAppender.getBufferSize());
+        RollingFileAppender __appender = RollingFileAppender.newBuilder()
+            .withConfiguration(xmlCfg)
+            .withBufferedIo(true)
+            .withLayout(_appender.getLayout())
+            .withPolicy(SizeBasedTriggeringPolicy.createPolicy(maxLogSize))
+            .withStrategy(_rolloverStrategy)
+            .withFileName(logFileName)
+            .withName(logName)
+            .build();
 
-			queueLogAppender.setErrorHandler(originalLogAppender.getErrorHandler());
-			queueLogAppender.setImmediateFlush(originalLogAppender.getImmediateFlush());
+        xmlCfg.getAppenders().keySet().forEach(xmlCfg::removeAppender);
+        xmlCfg.addAppender(__appender);
 
-			final PatternLayout pl = new PatternLayout(srcLayout.getConversionPattern());
-			queueLogAppender.setLayout(pl);
-			queueLogAppender.setMaxBackupIndex(originalLogAppender.getMaxBackupIndex());
-			queueLogAppender.setMaxFileSize(maxLogSize);
+        LoggerContext lc = new LoggerContext(logName);
+        lc.start(xmlCfg);
+        return lc.getLogger(logName);
+    }
 
-			final String logName = sc.getHost() + "/" + sc.getVirtualHost();
-			queueLogAppender.setName(logName);
-			queueLogAppender.setThreshold(originalLogAppender.getThreshold());
+    protected static final Logger log = LogManager.getLogger(ConsumerLoggers.class.getName());
 
-			final Logger _logger = Logger.getLogger(logName);
-			_logger.setAdditivity(false);// don't inherit root's appender
-			_logger.removeAllAppenders();// purge other appenders
-			_logger.addAppender(queueLogAppender);// use specified appender
+    public static final void _info(final ServerCfg sc, final String infoStr) {
+        final Logger logForSrv = getLoggerByServerCfg(sc);
+        if (logForSrv != null) {
+            logForSrv.info(infoStr);
+        }
+    }
 
-			return _logger;
-		} catch (IOException e) {
-			log.error("failed to create logger for serverCfg: \n" + sc, e);
-		}
-		return null;
-	}
+    public static final void _info(final ServerCfg sc, final String format, Object... args) {
+        _info(sc, String.format(format, args));
+    }
 
-	protected static final Log log = LogFactory.getLog(ConsumerLoggers.class.getName());
-	
-	public static final void _info(final ServerCfg sc, final String infoStr) {
-		final Logger logForSrv = getLoggerByServerCfg(sc);
-		if (logForSrv != null) {
-			logForSrv.info(infoStr);
-		}
-	}
+    public static final void _info(final Logger _log, final ServerCfg sc, final String infoStr) {
+        _log.info(infoStr);
+        _info(sc, infoStr);
+    }
 
-	public static final void _info(final ServerCfg sc, final String format, Object...args) {
-		_info(sc, String.format(format, args));
-	}
+    public static final void _info(final Logger _log, final ServerCfg sc, final String format, Object... args) {
+        _info(_log, sc, String.format(format, args));
+    }
 
-	public static final void _info(final Logger _log, final ServerCfg sc, final String infoStr) {
-		_log.info(infoStr);
-		_info(sc, infoStr);
-	}
+    public static final void _error(final ServerCfg sc, final String infoStr) {
+        final Logger logForSrv = getLoggerByServerCfg(sc);
+        if (logForSrv != null) {
+            logForSrv.error(infoStr);
+        }
+    }
 
-	public static final void _info(final Logger _log, final ServerCfg sc, final String format, Object...args) {
-		_info(_log, sc, String.format(format, args));
-	}
-	
-	public static final void _error(final ServerCfg sc, final String infoStr) {
-		final Logger logForSrv = getLoggerByServerCfg(sc);
-		if (logForSrv != null) {
-			logForSrv.error(infoStr);
-		}
-	}
+    public static final void _error(final ServerCfg sc, final String format, final Object... args) {
+        final Logger logForSrv = getLoggerByServerCfg(sc);
+        if (logForSrv != null) {
+            logForSrv.error(String.format(format, args));
+        }
+    }
 
-	public static final void _error(final ServerCfg sc, final String format, final Object...args) {
-		final Logger logForSrv = getLoggerByServerCfg(sc);
-		if (logForSrv != null) {
-			logForSrv.error(String.format(format, args));
-		}
-	}
+    public static final void _error(final Logger _log, final ServerCfg sc, final String infoStr) {
+        _log.error(infoStr);
+        _error(sc, infoStr);
+    }
 
-	public static final void _error(final Logger _log, final ServerCfg sc, final String infoStr) {
-		_log.error(infoStr);
-		_error(sc, infoStr);
-	}
+    public static final void _error(final ServerCfg sc, final String infoStr, final Throwable t) {
+        final Logger logForSrv = getLoggerByServerCfg(sc);
+        if (logForSrv != null) {
+            logForSrv.error(infoStr, t);
+        }
+    }
 
-	public static final void _error(final ServerCfg sc, final String infoStr, final Throwable t) {
-		final Logger logForSrv = getLoggerByServerCfg(sc);
-		if (logForSrv != null) {
-			logForSrv.error(infoStr, t);
-		}
-	}
-
-	public static final void _error(final Logger _log, final ServerCfg sc, final String infoStr, final Throwable t) {
-		_log.error(infoStr, t);
-		_error(sc, infoStr, t);
-	}
+    public static final void _error(final Logger _log, final ServerCfg sc, final String infoStr, final Throwable t) {
+        _log.error(infoStr, t);
+        _error(sc, infoStr, t);
+    }
 }

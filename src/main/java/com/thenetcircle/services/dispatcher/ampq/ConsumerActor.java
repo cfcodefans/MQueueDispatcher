@@ -1,12 +1,5 @@
 package com.thenetcircle.services.dispatcher.ampq;
 
-import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
-
-import java.io.IOException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
@@ -17,11 +10,17 @@ import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 import com.thenetcircle.services.dispatcher.http.HttpDispatcherActor;
 import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+
+import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
 
 public class ConsumerActor extends DefaultConsumer {
 
 	private QueueCfg queueCfg;
-	protected static final Log log = LogFactory.getLog(ConsumerActor.class);
+	protected static final Logger log = LogManager.getLogger(ConsumerActor.class);
 
 	public ConsumerActor(final Channel ch, final QueueCfg queueCfg) {
 		super(ch);
@@ -37,7 +36,6 @@ public class ConsumerActor extends DefaultConsumer {
 		
 		// TODO use injection to decouple dependency
 		MsgMonitor.prefLog(mc, log);
-//		getChannel().basicAck(envelope.getDeliveryTag(), false);
 		HttpDispatcherActor.instance().handover(mc);
 	}
 

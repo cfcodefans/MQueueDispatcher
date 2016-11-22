@@ -1,19 +1,5 @@
 package com.thenetcircle.services.web;
 
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.thenetcircle.services.cluster.JGroupsActor;
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
@@ -22,6 +8,18 @@ import com.thenetcircle.services.dispatcher.dao.QueueCfgDao;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.mgr.NotificationActor;
 import com.thenetcircle.services.rest.MonitorRes;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 
 @WebListener
@@ -93,8 +91,6 @@ public class StartUpListener implements ServletContextListener {
 	}
 
 	private static Callable<QueueCfg> makeQueueInitiator(QueueCfg qc) {
-		return ()->{
-			return MQueueMgr.instance().startQueue(qc);
-		};
+		return ()-> MQueueMgr.instance().startQueue(qc);
 	}
 }

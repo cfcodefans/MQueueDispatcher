@@ -1,55 +1,55 @@
 package com.thenetcircle.services.dispatcher.http;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.StopWatch;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.impl.nio.reactor.IOReactorConfig;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
-import org.apache.http.util.EntityUtils;
-
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.MiscUtils.LoopingArrayIterator;
 import com.thenetcircle.services.commons.actor.IActor;
+import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
 import com.thenetcircle.services.dispatcher.ampq.Responder;
 import com.thenetcircle.services.dispatcher.entity.HttpDestinationCfg;
 import com.thenetcircle.services.dispatcher.entity.MessageContext;
 import com.thenetcircle.services.dispatcher.entity.MsgResp;
 import com.thenetcircle.services.dispatcher.entity.QueueCfg;
 import com.thenetcircle.services.dispatcher.mgr.MsgMonitor;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.sync.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.sync.FutureRequestExecutionService;
+import org.apache.hc.client5.http.impl.sync.HttpClients;
+import org.apache.hc.client5.http.methods.HttpGet;
+import org.apache.hc.client5.http.methods.HttpPost;
+import org.apache.hc.client5.http.methods.HttpUriRequest;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.sync.ResponseHandler;
+import org.apache.hc.core5.concurrent.FutureCallback;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.entity.EntityUtils;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.reactor.IOReactorConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import static org.apache.commons.lang3.CharEncoding.UTF_8;
 
 public class HttpDispatcherActor implements IActor<MessageContext> {
 
-	private static class RespHandler implements FutureCallback<HttpResponse> {
+	private static class RespHandler implements ResponseHandler<HttpResponse>, FutureCallback<HttpResponse> {
 		private MessageContext mc;
 		private StopWatch sw = new StopWatch();
 
@@ -66,7 +66,7 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 		public void completed(final HttpResponse resp) {
 			sw.stop();
 //			log.info(sw.getTime());
-			String respStr = null;
+			String respStr;
 			try {
 				respStr = EntityUtils.toString(resp.getEntity());
 			} catch (Exception e) {
@@ -85,14 +85,19 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 			final long time = sw.getTime();
 			final long deliveryTag = mc.getDelivery().getEnvelope().getDeliveryTag();
 			log.error(String.format("Message: %d failed after %d ms \n gettng response from url: \n%s", deliveryTag, time, mc.getQueueCfg().getDestCfg().getUrl()), e);
-			
-			mc.setResponse(new MsgResp(MsgResp.FAILED, 
+
+			mc.setResponse(new MsgResp(MsgResp.FAILED,
 					String.format("{status: %s, resp: '%s', time: %d}", e.getClass().getSimpleName(), e.getMessage(), time)));
-			
+
 			MsgMonitor.prefLog(mc, log);
 			Responder.instance(deliveryTag).handover(mc);
 		}
-	}
+
+        @Override
+        public HttpResponse handleResponse(HttpResponse resp) throws IOException {
+            return null;
+        }
+    }
 
 	public static final int DEFAULT_TIMEOUT = 30000;
 
@@ -100,29 +105,29 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 
 	private static HttpDispatcherActor instance = new HttpDispatcherActor();
 
-	protected static final Log log = LogFactory.getLog(HttpDispatcherActor.class.getSimpleName()); 
-	
-	protected static Charset CHATSET = Charset.forName(HTTP.UTF_8);
+    private static final Logger log = LogManager.getLogger(HttpDispatcherActor.class);
+
+    private static Charset CHARSET = Charset.forName(UTF_8);
 
 	public static HttpDispatcherActor instance() {
 		return instance;
 	}
 
-	private final static List<NameValuePair> getParamsList(final String... nameAndValues) {
+	private static List<NameValuePair> getParamsList(final String... nameAndValues) {
 		if (ArrayUtils.isEmpty(nameAndValues)) {
-			return null;
+			return Collections.emptyList();
 		}
-		
-		final List<NameValuePair> params = new ArrayList<NameValuePair>();
+
+		final List<NameValuePair> params = new ArrayList<>();
 		IntStream.range(0, nameAndValues.length - 1).filter(i -> (i % 2 == 0))
 				.forEach(i -> params.add(new BasicNameValuePair(nameAndValues[i], nameAndValues[i + 1])));
-		
+
 		return params;
 	}
 
-	private CloseableHttpAsyncClient[] hacs;
+	private FutureRequestExecutionService[] closeableHttpClients;
 
-	private LoopingArrayIterator<CloseableHttpAsyncClient> httpClientIterator = null;
+	private LoopingArrayIterator<FutureRequestExecutionService> httpClientIterator = null;
 
 	private HttpDispatcherActor() {
 		CLIENT_NUM = (int) MiscUtils.getPropertyNumber("httpclient.number", CLIENT_NUM);
@@ -133,21 +138,20 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 		mcs.forEach(this::handle);
 	}
 
-	
 	protected String resolveDestUrl(final MessageContext mc) {
 		final QueueCfg qc = mc.getQueueCfg();
 		final HttpDestinationCfg destCfg = qc.getDestCfg();
 		String defaultUrl = destCfg.getUrl();
-			
+
 		Map<String, Object> headers = mc.getDelivery().getProperties().getHeaders();
 		if (MapUtils.isEmpty(headers)) {
 			return defaultUrl;
 		}
-		
+
 		String origin = ObjectUtils.defaultIfNull(headers.get("consumer_target"), defaultUrl).toString();
 		return StringUtils.isBlank(origin) ? defaultUrl : origin;
 	}
-	
+
 	@SuppressWarnings({ "deprecation" })
 	public MessageContext handle(final MessageContext mc) {
 		MsgMonitor.prefLog(mc, log);
@@ -156,7 +160,7 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 		final HttpDestinationCfg destCfg = qc.getDestCfg();
 		final String destUrlStr = resolveDestUrl(mc);
 
-		HttpUriRequest req = null;
+		HttpUriRequest req;
 
 		final String bodyStr = new String(mc.getMessageBody());
 		try {
@@ -165,7 +169,7 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 
 				//TODO should be queueName instead of config name
 				final List<NameValuePair> paramList = getParamsList("queueName", qc.getName(), "bodyData", bodyStr);
-				UrlEncodedFormEntity fe = new UrlEncodedFormEntity(paramList, CHATSET);
+				UrlEncodedFormEntity fe = new UrlEncodedFormEntity(paramList, CHARSET);
 //				GzipCompressingEntity ze = new GzipCompressingEntity(fe);
 
 				post.setEntity(fe);
@@ -193,8 +197,9 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 										.build());
 		// }
 
-		final CloseableHttpAsyncClient[] clientArray = httpClientIterator.getArray();
-		clientArray[(int)(mc.getDelivery().getEnvelope().getDeliveryTag() % clientArray.length)].execute(req, httpClientCtx, new RespHandler(mc));
+		final FutureRequestExecutionService[] clientArray = httpClientIterator.getArray();
+		clientArray[(int)(mc.getDelivery().getEnvelope().getDeliveryTag() % clientArray.length)]
+			.execute(req, httpClientCtx, new RespHandler(mc));
 		MsgMonitor.prefLog(mc, log);
 		return mc;
 	}
@@ -213,17 +218,14 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 	}
 
 	public void stop() {
-		if (ArrayUtils.isEmpty(hacs))
+		if (ArrayUtils.isEmpty(closeableHttpClients))
 			return;
-		
+
 		if (stopped.compareAndSet(false, true))
-			Stream.of(hacs).forEach(this::close);
+			Stream.of(closeableHttpClients).forEach(this::close);
 	}
 
-	private void close(final CloseableHttpAsyncClient hac) {
-		if (!hac.isRunning()) {
-			return;
-		}
+	private void close(final FutureRequestExecutionService hac) {
 		try {
 			hac.close();
 		} catch (IOException e) {
@@ -232,34 +234,33 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 	}
 
 	private void initHttpAsyncClients() {
-		hacs = new CloseableHttpAsyncClient[CLIENT_NUM];
+		closeableHttpClients = new FutureRequestExecutionService[CLIENT_NUM];
 		IntStream.range(0, CLIENT_NUM).forEach(i-> {
 			final RequestConfig reqCfg = RequestConfig.custom()
 											.setConnectTimeout(DEFAULT_TIMEOUT)
 											.setSocketTimeout(DEFAULT_TIMEOUT)
 											.setConnectTimeout(DEFAULT_TIMEOUT)
 											.build();
-			
+
 			final IOReactorConfig ioCfg = IOReactorConfig.custom().setInterestOpQueued(true).build();
-			final CloseableHttpAsyncClient hac = HttpAsyncClients.custom()
+			final CloseableHttpClient chc = HttpClients.custom()
 				//to deal with https
 													.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
 													.setMaxConnTotal((int)MiscUtils.getPropertyNumber("http.client.max.connection", 50))
 													.setMaxConnPerRoute((int)MiscUtils.getPropertyNumber("http.client.max.connection.per_route", 25))
 //													.setConnectionReuseStrategy(new NoConnectionReuseStrategy())
 													.setDefaultRequestConfig(reqCfg)
-													.setDefaultIOReactorConfig(ioCfg)
+//													.setDefaultIOReactorConfig(ioCfg)
 													.build();
-			hac.start();
-			hacs[i] = hac;
+			this.closeableHttpClients[i] = new FutureRequestExecutionService(chc, Executors.newWorkStealingPool());
 		});
-		httpClientIterator = new LoopingArrayIterator<CloseableHttpAsyncClient>(hacs);
+		httpClientIterator = new LoopingArrayIterator<>(closeableHttpClients);
 	}
 
 	@Override
 	public boolean isStopped() {
 		return stopped.get();
 	}
-	
+
 	private AtomicBoolean stopped;
 }
