@@ -91,17 +91,7 @@ function MethodBuilder(_method, _metadata) {
 			}
 		}
 
-//		with (this) {
-//			
-//			if (method.consumedMediaTypes && method.consumedMediaTypes.length > 0)
-//				settings["contentType"] = method.consumedMediaTypes[0];
-//			
-//			if (method.produceMediaTypes && method.produceMediaTypes.length > 0)
-//				settings["dataType"] = method.produceMediaTypes[0];
-//		}
-		
 		settings.data = data;
-		
 		return $.ajax(this.url(), settings);
 	};
 

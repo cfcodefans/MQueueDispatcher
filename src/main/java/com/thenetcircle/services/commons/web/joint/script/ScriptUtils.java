@@ -1,28 +1,21 @@
 package com.thenetcircle.services.commons.web.joint.script;
 
+import com.thenetcircle.services.commons.web.mvc.ResCacheMgr;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
+
+import javax.script.*;
+import javax.servlet.ServletContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.script.Compilable;
-import javax.script.CompiledScript;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import javax.servlet.ServletContext;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.TextNode;
-
-import com.thenetcircle.services.commons.web.mvc.ResCacheMgr;
-
 public class ScriptUtils {
-	public static Log	log	= LogFactory.getLog(ScriptUtils.class);
+	private static final Logger log = LogManager.getLogger(ScriptUtils.class);
 
 	public static CompiledScript getCompiledScript(String mimeType, String scriptStr) {
 		String errorMessage = String.format("ScriptEngine: %s can't compile script: \n%s", mimeType, scriptStr);

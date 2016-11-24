@@ -1,6 +1,8 @@
 package com.thenetcircle.services.dispatcher.log;
 
 import com.thenetcircle.services.dispatcher.entity.ServerCfg;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -10,6 +12,7 @@ import org.apache.logging.log4j.core.appender.rolling.SizeBasedTriggeringPolicy;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +32,15 @@ public class ConsumerLoggers {
 
         LoggerContext context = (LoggerContext) LogManager.getContext();
         ConfigurationSource cfgSrc = context.getConfiguration().getConfigurationSource();
-        XmlConfiguration xmlCfg = new XmlConfiguration(context, cfgSrc);
+        XmlConfiguration xmlCfg = null;
+        try {
+            xmlCfg = new XmlConfiguration(context, new ConfigurationSource(FileUtils.openInputStream(cfgSrc.getFile()), cfgSrc.getFile()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        LoggerContext lc = new LoggerContext(logName);
+        lc.start(xmlCfg);
+
         RollingFileAppender _appender = xmlCfg.getAppender(APPENDER_NAME);
 
         RolloverStrategy _rolloverStrategy = _appender.getManager().getRolloverStrategy();
@@ -41,14 +52,13 @@ public class ConsumerLoggers {
             .withPolicy(SizeBasedTriggeringPolicy.createPolicy(maxLogSize))
             .withStrategy(_rolloverStrategy)
             .withFileName(logFileName)
+            .withFilePattern(FilenameUtils.getBaseName(logFileName) + "-%d{yyyy-MM-dd}-%i.log")
             .withName(logName)
             .build();
 
         xmlCfg.getAppenders().keySet().forEach(xmlCfg::removeAppender);
         xmlCfg.addAppender(__appender);
 
-        LoggerContext lc = new LoggerContext(logName);
-        lc.start(xmlCfg);
         return lc.getLogger(logName);
     }
 

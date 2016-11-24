@@ -1,17 +1,16 @@
 package com.thenetcircle.services.commons.web.joint.script;
 
+import com.thenetcircle.services.commons.MiscUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.thenetcircle.services.commons.MiscUtils;
-
 public class ScriptExecutor {
 
-	private static Log log = LogFactory.getLog(ScriptExecutor.class);
+	private static final Logger log = LogManager.getLogger(ScriptExecutor.class);
 	
 	protected ScriptExecutionContext scriptCtx;
 

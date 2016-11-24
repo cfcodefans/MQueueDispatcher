@@ -1,12 +1,9 @@
 package com.thenetcircle.services.commons.persistence.jpa;
 
-import java.io.FileInputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import com.thenetcircle.services.commons.MiscUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -16,12 +13,13 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceContext;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.thenetcircle.services.commons.MiscUtils;
+import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 @ApplicationScoped
 public class JpaModule {
@@ -30,7 +28,7 @@ public class JpaModule {
 
 	static EntityManagerFactory emf = null;
 	final static String UN = "mqueue-dispatcher";
-	protected static final Log log = LogFactory.getLog(JpaModule.class.getName());
+	protected static final Logger log = LogManager.getLogger(JpaModule.class);
 	private static JpaModule instance;
 
 	protected static EntityManager initialValue() {

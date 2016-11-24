@@ -1,17 +1,16 @@
 package com.thenetcircle.services.commons.web.joint.script;
 
+import com.thenetcircle.services.commons.web.mvc.ResCacheMgr;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.SimpleScriptContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.thenetcircle.services.commons.web.mvc.ResCacheMgr;
 
 public class ScriptExecutionContext {
 
@@ -22,8 +21,8 @@ public class ScriptExecutionContext {
 	public String mimeType;
 	
 	protected String scriptStr = StringUtils.EMPTY;
-	
-	private static Log log = LogFactory.getLog(ScriptExecutionContext.class);
+
+	private static final Logger log = LogManager.getLogger(ScriptExecutionContext.class);
 	
 	public String getScriptStr() {
 		return scriptStr;

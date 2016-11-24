@@ -1,6 +1,17 @@
 package com.thenetcircle.services.commons.web.mvc;
 
-import java.io.InputStream;
+import com.thenetcircle.services.commons.web.joint.script.PageScriptExecutionContext;
+import com.thenetcircle.services.commons.web.joint.script.ScriptExecutor;
+import com.thenetcircle.services.commons.web.mvc.ResCacheMgr.CachedEntry;
+import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ViewFacade;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
 
 import javax.script.ScriptContext;
 import javax.script.SimpleScriptContext;
@@ -8,23 +19,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Parser;
-
-import com.thenetcircle.services.commons.web.joint.script.PageScriptExecutionContext;
-import com.thenetcircle.services.commons.web.joint.script.ScriptExecutor;
-import com.thenetcircle.services.commons.web.mvc.ResCacheMgr.CachedEntry;
-import com.thenetcircle.services.commons.web.mvc.ViewProcModel.ViewFacade;
+import java.io.InputStream;
 
 public class DomViewProcessor extends ResViewProcessor {
-	private static Log	log	= LogFactory.getLog(DomViewProcessor.class);
+	private static final Logger log = LogManager.getLogger(DomViewProcessor.class);
 
 	public DomViewProcessor(final HttpServletRequest _req, final HttpServletResponse _resp, final String _basePathStr, MediaType mediaType) {
 		super(_req, _resp, StringUtils.defaultIfBlank(_basePathStr, "/"), mediaType);

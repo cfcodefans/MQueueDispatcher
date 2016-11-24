@@ -1,32 +1,13 @@
 package com.thenetcircle.services.commons.rest.utils;
 
-import java.security.AccessController;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.inject.Singleton;
-import javax.ws.rs.CookieParam;
-import javax.ws.rs.Encoded;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.MatrixParam;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-
+import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.ProcTrace;
+import com.thenetcircle.services.commons.rest.ajax.AjaxResMetaData;
+import com.thenetcircle.services.commons.rest.ajax.ParamMetaData;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.jersey.internal.inject.Providers;
 import org.glassfish.jersey.internal.util.ReflectionHelper;
@@ -47,13 +28,18 @@ import org.glassfish.jersey.server.monitoring.RequestEventListener;
 import org.glassfish.jersey.server.spi.Container;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 
-import com.thenetcircle.services.commons.MiscUtils;
-import com.thenetcircle.services.commons.ProcTrace;
-import com.thenetcircle.services.commons.rest.ajax.AjaxResMetaData;
-import com.thenetcircle.services.commons.rest.ajax.ParamMetaData;
+import javax.inject.Singleton;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import java.security.AccessController;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AjaxResLoader extends ResourceConfig {
-	private static Log log = LogFactory.getLog(AjaxResLoader.class);
+	private static final Logger log = LogManager.getLogger(AjaxResLoader.class);
 
 	public AjaxResLoader() {
 		ProcTrace.start(MiscUtils.invocationInfo());

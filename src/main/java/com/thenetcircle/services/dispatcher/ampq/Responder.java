@@ -68,7 +68,6 @@ public class Responder extends ConcurrentAsynActor<MessageContext> {
 			if (_mc.isSucceeded()) {
 				return onSuccess(_mc);
 			}
-
 			return onFail(_mc);
 		} catch (Exception e) {
 			log.error("failed to handle: \n\t" + mc, e);

@@ -1,7 +1,9 @@
 package com.thenetcircle.services.commons.web.mvc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import com.thenetcircle.services.commons.MiscUtils;
+import com.thenetcircle.services.commons.ProcTrace;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
@@ -9,11 +11,8 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.glassfish.jersey.server.mvc.internal.MvcBinder;
 
-import com.thenetcircle.services.commons.MiscUtils;
-import com.thenetcircle.services.commons.ProcTrace;
-
 public class MvcResLoader extends ResourceConfig {
-	private static Log log = LogFactory.getLog(MvcResLoader.class);
+	private static final Logger log = LogManager.getLogger(MvcResLoader.class);
 
 	public MvcResLoader() {
 		ProcTrace.start(MiscUtils.invocationInfo());

@@ -21,8 +21,7 @@ public class DefaultUrlRes {
 	public String getKo() {
 		return "ko";
 	}
-	
-	
+
 	@POST
 	@Path("ok")
 	public String postOk() {

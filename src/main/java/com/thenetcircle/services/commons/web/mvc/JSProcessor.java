@@ -1,25 +1,23 @@
 package com.thenetcircle.services.commons.web.mvc;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
+import com.thenetcircle.services.commons.web.joint.script.ScriptExecutionContext;
+import com.thenetcircle.services.commons.web.joint.script.ScriptExecutor;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.script.ScriptContext;
 import javax.script.SimpleScriptContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.thenetcircle.services.commons.web.joint.script.ScriptExecutionContext;
-import com.thenetcircle.services.commons.web.joint.script.ScriptExecutor;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
 
 public class JSProcessor extends ResViewProcessor {
 
 	public static final String MIME_APPLICATION_JAVASCRIPT = "application/javascript";
-	private static Log log = LogFactory.getLog(JSProcessor.class);
+	private static final Logger log = LogManager.getLogger(JSProcessor.class);
 	
 	public JSProcessor(final HttpServletRequest _req, 
 					   final HttpServletResponse _resp, 

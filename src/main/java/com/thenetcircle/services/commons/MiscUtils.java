@@ -38,263 +38,260 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class MiscUtils {
-	public static final int	AVAILABLE_PROCESSORS	= Runtime.getRuntime().availableProcessors();
+    public static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
-	public static long getPropertyNumber(String name, long defaultValule) {
-		String str = System.getProperty(name);
-		if (StringUtils.isNumeric(str)) {
-			return Long.parseLong(str);
-		}
-		return defaultValule;
-	}
+    public static long getPropertyNumber(String name, long defaultValule) {
+        String str = System.getProperty(name);
+        if (StringUtils.isNumeric(str)) {
+            return Long.parseLong(str);
+        }
+        return defaultValule;
+    }
 
-	public static String invocationInfo() {
-		StackTraceElement[] ste = Thread.currentThread().getStackTrace();
-		int i = 2;
-		return String.format("%s\t%s.%s", ste[i].getFileName(), ste[i].getClassName(), ste[i].getMethodName());
-	}
+    public static String invocationInfo() {
+        StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+        int i = 2;
+        return String.format("%s\t%s.%s", ste[i].getFileName(), ste[i].getClassName(), ste[i].getMethodName());
+    }
 
-	public static String invocInfo() {
-		StackTraceElement[] ste = Thread.currentThread().getStackTrace();
-		int i = 2;
-		return String.format("%s\t%s.%s", ste[i].getFileName(), StringUtils.substringAfterLast(ste[i].getClassName(), "."), ste[i].getMethodName());
-	}
+    public static String invocInfo() {
+        StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+        int i = 2;
+        return String.format("%s\t%s.%s", ste[i].getFileName(), StringUtils.substringAfterLast(ste[i].getClassName(), "."), ste[i].getMethodName());
+    }
 
-	public static String invocationInfo(final int i) {
-		StackTraceElement[] ste = Thread.currentThread().getStackTrace();
-		return String.format("%s\t%s.%s", ste[i].getFileName(), ste[i].getClassName(), ste[i].getMethodName());
-	}
+    public static String invocationInfo(final int i) {
+        StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+        return String.format("%s\t%s.%s", ste[i].getFileName(), ste[i].getClassName(), ste[i].getMethodName());
+    }
 
-	public static String byteCountToDisplaySize(long size) {
-		String displaySize;
-		if (size / 1073741824L > 0L) {
-			displaySize = String.valueOf(size / 1073741824L) + " GB";
-		} else {
-			if (size / 1048576L > 0L) {
-				displaySize = String.valueOf(size / 1048576L) + " MB";
-			} else {
-				if (size / 1024L > 0L)
-					displaySize = String.valueOf(size / 1024L) + " KB";
-				else
-					displaySize = String.valueOf(size) + " bytes";
-			}
-		}
-		return displaySize;
-	}
+    public static String byteCountToDisplaySize(long size) {
+        if (size / 1073741824L > 0L) {
+            return String.valueOf(size / 1073741824L) + " GB";
+        }
 
-	public static long getProcessId() {
-		// Note: may fail in some JVM implementations
-		// therefore fallback has to be provided
+        if (size / 1048576L > 0L) {
+            return String.valueOf(size / 1048576L) + " MB";
+        }
 
-		// something like '<pid>@<hostname>', at least in SUN / Oracle JVMs
-		final String jvmName = ManagementFactory.getRuntimeMXBean().getName();
-		final int index = jvmName.indexOf('@');
-		String pidStr = jvmName.substring(0, index);
+        if (size / 1024L > 0L)
+            return String.valueOf(size / 1024L) + " KB";
 
-		if (index < 1 || !NumberUtils.isNumber(pidStr)) {
-			// part before '@' empty (index = 0) / '@' not found (index = -1)
-			return 0;
-		}
+        return String.valueOf(size) + " bytes";
+    }
 
-		return Long.parseLong(pidStr);
-	}
+    public static long getProcessId() {
+        // Note: may fail in some JVM implementations
+        // therefore fallback has to be provided
 
-	public static class LoopingArrayIterator<E> extends ObjectArrayIterator<E> {
-		@SafeVarargs
-		public LoopingArrayIterator(final E... array) {
-			super(array, 0, array.length);
-		}
+        // something like '<pid>@<hostname>', at least in SUN / Oracle JVMs
+        final String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+        final int index = jvmName.indexOf('@');
+        String pidStr = jvmName.substring(0, index);
 
-		public LoopingArrayIterator(final E array[], final int start) {
-			super(array, start, array.length);
-		}
+        if (index < 1 || !NumberUtils.isNumber(pidStr)) {
+            // part before '@' empty (index = 0) / '@' not found (index = -1)
+            return 0;
+        }
 
-		public E loop() {
-			final E[] array = this.getArray();
-			loopIdx.compareAndSet(array.length, 0);
-			// System.out.println(array.getClass().getName() + ".index: " + loopIdx.get());
-			return array[loopIdx.getAndIncrement() % array.length];
-		}
+        return Long.parseLong(pidStr);
+    }
 
-		private AtomicInteger	loopIdx	= new AtomicInteger();
-	}
+    public static class LoopingArrayIterator<E> extends ObjectArrayIterator<E> {
+        @SafeVarargs
+        public LoopingArrayIterator(final E... array) {
+            super(array, 0, array.length);
+        }
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static Map map(Object... keyAndVals) {
-		return MapUtils.putAll(new HashMap(), keyAndVals);
-	}
+        public LoopingArrayIterator(final E array[], final int start) {
+            super(array, start, array.length);
+        }
 
-	public static long	HOST_HASH	= System.currentTimeMillis();
+        public E loop() {
+            final E[] array = this.getArray();
+            loopIdx.compareAndSet(array.length, 0);
+            return array[loopIdx.getAndIncrement() % array.length];
+        }
 
-	static {
-		try {
-			HOST_HASH = InetAddress.getLocalHost().getHostAddress().hashCode();
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
-	}
+        private AtomicInteger loopIdx = new AtomicInteger();
+    }
 
-	// private static long IDX = 0;
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static Map map(Object... keyAndVals) {
+        return MapUtils.putAll(new HashMap(), keyAndVals);
+    }
 
-	public static long uniqueLong() {
-		return Math.abs(UUID.randomUUID().hashCode());
-	}
+    public static long HOST_HASH = System.currentTimeMillis();
 
-	public static ThreadFactory namedThreadFactory(final String name) {
-		return new BasicThreadFactory.Builder().namingPattern(name + "_%d").build();
-	}
+    static {
+        try {
+            HOST_HASH = InetAddress.getLocalHost().getHostAddress().hashCode();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
 
-	public static String lineNumber(final String str) {
-		if (str == null) {
-			return null;
-		}
+    // private static long IDX = 0;
 
-		final StringReader sr = new StringReader(str);
-		final BufferedReader br = new BufferedReader(sr);
+    public static long uniqueLong() {
+        return Math.abs(UUID.randomUUID().hashCode());
+    }
 
-		final StringBuilder sb = new StringBuilder(0);
-		AtomicLong lineNumber = new AtomicLong(0);
-		br.lines().forEach(line -> sb.append(lineNumber.incrementAndGet()).append("\t").append(line).append('\n'));
+    public static ThreadFactory namedThreadFactory(final String name) {
+        return new BasicThreadFactory.Builder().namingPattern(name + "_%d").build();
+    }
 
-		return sb.toString();
-	}
+    public static String lineNumber(final String str) {
+        if (str == null) {
+            return null;
+        }
 
-	private static final Log	log	= LogFactory.getLog(EventUtils.class.getName());
+        final StringReader sr = new StringReader(str);
+        final BufferedReader br = new BufferedReader(sr);
 
-	public static NameValuePair[] getParamPairs(Map<String, ?> paramMap) {
-		return paramMap.entrySet().stream().map(en -> new BasicNameValuePair(en.getKey(), String.valueOf(en.getValue()))).toArray(NameValuePair[]::new);
-	}
+        final StringBuilder sb = new StringBuilder(0);
+        AtomicLong lineNumber = new AtomicLong(0);
+        br.lines().forEach(line -> sb.append(lineNumber.incrementAndGet()).append("\t").append(line).append('\n'));
 
-	public static String mapToJson(Map<String, String> paramMap) {
-		if (MapUtils.isEmpty(paramMap)) {
-			return "{}";
-		}
+        return sb.toString();
+    }
 
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			return mapper.writeValueAsString(paramMap);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			return paramMap.toString();
-		}
-	}
+    private static final Log log = LogFactory.getLog(EventUtils.class.getName());
 
-	public static String toXML(final Object bean) {
-		final StringWriter sw = new StringWriter();
+    public static NameValuePair[] getParamPairs(Map<String, ?> paramMap) {
+        return paramMap.entrySet().stream().map(en -> new BasicNameValuePair(en.getKey(), String.valueOf(en.getValue()))).toArray(NameValuePair[]::new);
+    }
 
-		try {
-			JAXBContext jc = JAXBContext.newInstance(bean.getClass());
-			Marshaller m = jc.createMarshaller();
-			m.setProperty(Marshaller.JAXB_FRAGMENT, true);
-			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			// marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-16");
-			m.marshal(bean, sw);
-		} catch (Exception e) {
-			log.error(bean, e);
-		}
-		return sw.toString();
-	}
+    public static String mapToJson(Map<String, String> paramMap) {
+        if (MapUtils.isEmpty(paramMap)) {
+            return "{}";
+        }
 
-	public static <T> T toObj(final String xmlStr, final Class<T> cls) {
-		if (StringUtils.isBlank(xmlStr) || cls == null) {
-			return null;
-		}
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.writeValueAsString(paramMap);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return paramMap.toString();
+        }
+    }
 
-		try {
-			JAXBContext jc = JAXBContext.newInstance(cls);
-			Unmarshaller um = jc.createUnmarshaller();
-			return um.unmarshal(new StreamSource(new StringReader(xmlStr)), cls).getValue();
-		} catch (JAXBException e) {
-			log.error(xmlStr, e);
-		}
+    public static String toXML(final Object bean) {
+        final StringWriter sw = new StringWriter();
 
-		return null;
-	}
+        try {
+            JAXBContext jc = JAXBContext.newInstance(bean.getClass());
+            Marshaller m = jc.createMarshaller();
+            m.setProperty(Marshaller.JAXB_FRAGMENT, true);
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            // marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-16");
+            m.marshal(bean, sw);
+        } catch (Exception e) {
+            log.error(bean, e);
+        }
+        return sw.toString();
+    }
 
-	public static Map<String, String> extractParams(MultivaluedMap<String, String> params) {
-		Map<String, String> paramsMap = new HashMap<String, String>();
-		params.keySet().forEach(key -> paramsMap.put(key, params.getFirst(key)));
-		return paramsMap;
-	}
+    public static <T> T toObj(final String xmlStr, final Class<T> cls) {
+        if (StringUtils.isBlank(xmlStr) || cls == null) {
+            return null;
+        }
 
-	public static Map<String, String[]> toParamMap(MultivaluedMap<String, String> params) {
-		Map<String, String[]> paramsMap = new HashMap<String, String[]>();
-		params.keySet().forEach(key -> paramsMap.put(key, params.get(key).toArray(new String[0])));
-		return paramsMap;
-	}
+        try {
+            JAXBContext jc = JAXBContext.newInstance(cls);
+            Unmarshaller um = jc.createUnmarshaller();
+            return um.unmarshal(new StreamSource(new StringReader(xmlStr)), cls).getValue();
+        } catch (JAXBException e) {
+            log.error(xmlStr, e);
+        }
 
-	public static Map<String, String> extractParams(Map<String, String[]> params) {
-		Map<String, String> paramsMap = new HashMap<String, String>();
-		params.keySet().forEach(key -> {
-			final String[] vals = params.get(key);
-			paramsMap.put(key, ArrayUtils.isEmpty(vals) ? null : vals[0]);
-		});
-		return paramsMap;
-	}
+        return null;
+    }
 
-	public static String generate(final String text) {
-		final StringBuffer sb = new StringBuffer();
-		try {
-			final byte[] intext = text.getBytes();
-			final MessageDigest md5 = MessageDigest.getInstance("MD5");
-			final byte[] md5rslt = md5.digest(intext);
-			for (int i = 0; i < md5rslt.length; i++) {
-				final int val = 0xff & md5rslt[i];
-				if (val < 16) {
-					sb.append("0");
-				}
-				sb.append(Integer.toHexString(val));
-			}
-		} catch (final Exception e) {
-			log.error(e, e);
-		}
-		return sb.toString();
-	}
+    public static Map<String, String> extractParams(MultivaluedMap<String, String> params) {
+        Map<String, String> paramsMap = new HashMap<String, String>();
+        params.keySet().forEach(key -> paramsMap.put(key, params.getFirst(key)));
+        return paramsMap;
+    }
 
-	public static String loadResAsString(final Class<?> cls, final String fileName) {
-		if (cls == null || StringUtils.isBlank(fileName)) {
-			return StringUtils.EMPTY;
-		}
+    public static Map<String, String[]> toParamMap(MultivaluedMap<String, String> params) {
+        Map<String, String[]> paramsMap = new HashMap<String, String[]>();
+        params.keySet().forEach(key -> paramsMap.put(key, params.get(key).toArray(new String[0])));
+        return paramsMap;
+    }
 
-		try {
-			return IOUtils.toString(cls.getResourceAsStream(fileName));
-		} catch (IOException e) {
-			log.error("", e);
-		}
-		return StringUtils.EMPTY;
-	}
-	
-	public static String getEncodedText(String plainText) {
-		String encodedPassword = null;
-		try {
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			md.update(plainText.getBytes());
-			encodedPassword = new String(Hex.encodeHex(md.digest()));
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-		return encodedPassword;
-	}
-	
-	public static void writeToMappedFile(File file, byte[] data) throws IOException{
-		try (FileChannel fc = FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ)) {
-			MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_WRITE, 0, data.length);
-			mbb.put(data);
-			mbb.force();
-		}
-	}
+    public static Map<String, String> extractParams(Map<String, String[]> params) {
+        Map<String, String> paramsMap = new HashMap<String, String>();
+        params.keySet().forEach(key -> {
+            final String[] vals = params.get(key);
+            paramsMap.put(key, ArrayUtils.isEmpty(vals) ? null : vals[0]);
+        });
+        return paramsMap;
+    }
 
-	public static byte[] readFromMappedFile(File file) throws IOException{
-		try (FileChannel fc = FileChannel.open(file.toPath(), StandardOpenOption.READ)) {
-			long length = file.length();
-			MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_ONLY, 0, length);
-			if (!mbb.load().isLoaded()) {
-				throw new IllegalStateException(String.format("%s can not be loaded", file.getAbsolutePath()));
-			}
+    public static String generate(final String text) {
+        final StringBuffer sb = new StringBuffer();
+        try {
+            final byte[] intext = text.getBytes();
+            final MessageDigest md5 = MessageDigest.getInstance("MD5");
+            final byte[] md5rslt = md5.digest(intext);
+            for (int i = 0; i < md5rslt.length; i++) {
+                final int val = 0xff & md5rslt[i];
+                if (val < 16) {
+                    sb.append("0");
+                }
+                sb.append(Integer.toHexString(val));
+            }
+        } catch (final Exception e) {
+            log.error(e, e);
+        }
+        return sb.toString();
+    }
 
-			byte[] data = new byte[(int)length];
-			mbb.get(data);
-			return data;
-		}
-	}
+    public static String loadResAsString(final Class<?> cls, final String fileName) {
+        if (cls == null || StringUtils.isBlank(fileName)) {
+            return StringUtils.EMPTY;
+        }
+
+        try {
+            return IOUtils.toString(cls.getResourceAsStream(fileName));
+        } catch (IOException e) {
+            log.error("", e);
+        }
+        return StringUtils.EMPTY;
+    }
+
+    public static String getEncodedText(String plainText) {
+        String encodedPassword = null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(plainText.getBytes());
+            encodedPassword = new String(Hex.encodeHex(md.digest()));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return encodedPassword;
+    }
+
+    public static void writeToMappedFile(File file, byte[] data) throws IOException {
+        try (FileChannel fc = FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ)) {
+            MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_WRITE, 0, data.length);
+            mbb.put(data);
+            mbb.force();
+        }
+    }
+
+    public static byte[] readFromMappedFile(File file) throws IOException {
+        try (FileChannel fc = FileChannel.open(file.toPath(), StandardOpenOption.READ)) {
+            long length = file.length();
+            MappedByteBuffer mbb = fc.map(FileChannel.MapMode.READ_ONLY, 0, length);
+            if (!mbb.load().isLoaded()) {
+                throw new IllegalStateException(String.format("%s can not be loaded", file.getAbsolutePath()));
+            }
+
+            byte[] data = new byte[(int) length];
+            mbb.get(data);
+            return data;
+        }
+    }
 }

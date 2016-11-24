@@ -1,14 +1,13 @@
 package com.thenetcircle.services.commons.web.joint.script;
 
+import com.thenetcircle.services.commons.MiscUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.thenetcircle.services.commons.MiscUtils;
 
 /**
  * @author fan
@@ -16,7 +15,7 @@ import com.thenetcircle.services.commons.MiscUtils;
  */
 @Deprecated
 public class CompiledScriptExecutor extends ScriptExecutor {
-	private static Log log = LogFactory.getLog(CompiledScriptExecutor.class);
+	private static final Logger log = LogManager.getLogger(CompiledScriptExecutor.class);
 	
 	protected final CompiledScript compiledScript;
 	

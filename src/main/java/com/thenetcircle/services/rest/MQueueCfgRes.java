@@ -12,8 +12,8 @@ import com.thenetcircle.services.dispatcher.entity.ServerCfg;
 import com.thenetcircle.services.dispatcher.mgr.QueueOperator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -28,7 +28,7 @@ import java.util.List;
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class MQueueCfgRes {
 
-	protected static final Log log = LogFactory.getLog(MQueueCfgRes.class.getName());
+	protected static final Logger log = LogManager.getLogger(MQueueCfgRes.class);
 
 	@Inject
 	private ServerCfgDao scDao;

@@ -15,10 +15,12 @@ import org.apache.commons.logging.LogFactory;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -49,20 +51,16 @@ public class StartUpListener implements ServletContextListener {
 			log.info(MiscUtils.invocationInfo());
 			log.info("\n\tloading QueueCfg from database\n");
 
-			final List<QueueCfg> qcList = qcDao.findEnabled();
-
+			final List<QueueCfg> qcList = Collections.emptyList();// qcDao.findEnabled();
 			if (CollectionUtils.isEmpty(qcList)) {
 				log.warn("\n\tnot QueueCfg found!\n");
 				return;
 			} 
-			
 			log.info(String.format("loading %d queues...", qcList.size()));
 
 			final ExecutorService threadPool = Executors.newFixedThreadPool(MiscUtils.AVAILABLE_PROCESSORS, MiscUtils.namedThreadFactory("MQueueLoader"));
-			final MQueueMgr mqueueMgr = MQueueMgr.instance();
-			
-			List<Callable<QueueCfg>> initiators = qcList.stream().map(StartUpListener::makeQueueInitiator).collect(Collectors.toList()); 
 
+			List<Callable<QueueCfg>> initiators = qcList.stream().map(StartUpListener::makeQueueInitiator).collect(Collectors.toList()); 
 			List<QueueCfg> starteds = threadPool.invokeAll(initiators).stream().map(f -> {
 				try {
 					return f.get();
@@ -72,17 +70,10 @@ public class StartUpListener implements ServletContextListener {
 				}
 			}).filter(qc -> qc instanceof QueueCfg).collect(Collectors.toList());
 			threadPool.shutdown();
-			
-			qcDao.beginTransaction();
-			starteds.forEach(qcDao::edit);
-			qcDao.endTransaction();
-			
-			CollectionUtils.subtract(qcList, starteds).forEach(mqueueMgr.getReconnActor()::addReconnect);
-			starteds.stream().filter(qc -> !qc.isRunning()).forEach(mqueueMgr.getReconnActor()::addReconnect);
-			
+
 			log.info("\n\nWait for queues initialization");
 			while (!threadPool.isTerminated()) {
-				Thread.sleep(1);
+				threadPool.awaitTermination(1, TimeUnit.SECONDS);
 			}
 			log.info("\n\nDone for queues initialization");
 		} catch (Exception e) {

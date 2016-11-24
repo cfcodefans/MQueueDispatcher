@@ -65,7 +65,6 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 
 		public void completed(final HttpResponse resp) {
 			sw.stop();
-//			log.info(sw.getTime());
 			String respStr;
 			try {
 				respStr = EntityUtils.toString(resp.getEntity());
@@ -187,7 +186,6 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 		}
 
 		final HttpClientContext httpClientCtx = HttpClientContext.create();
-		// if (destCfg.getTimeout() != DEFAULT_TIMEOUT) {
 		final int timeout = (int) Math.max(destCfg.getTimeout(), DEFAULT_TIMEOUT);
 		httpClientCtx.setRequestConfig(RequestConfig.custom()
 										.setConnectionRequestTimeout(timeout)

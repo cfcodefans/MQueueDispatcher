@@ -1,23 +1,18 @@
 package com.thenetcircle.services.commons.actor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.thenetcircle.services.commons.ProcTrace;
 import com.thenetcircle.services.commons.ProcTrace.TraceEntry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 public abstract class AsyncActor<M, Q extends Queue<M>> implements IActor<M>, Runnable {
 
 	protected AtomicBoolean		stopped	= new AtomicBoolean(false);
-	protected static final Log	log		= LogFactory.getLog(AsyncActor.class);
+	private static final Logger log = LogManager.getLogger(AsyncActor.class);
 
 	protected final Q			buf;
 

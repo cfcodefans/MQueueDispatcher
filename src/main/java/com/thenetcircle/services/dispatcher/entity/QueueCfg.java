@@ -1,33 +1,15 @@
 package com.thenetcircle.services.dispatcher.entity;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.persistence.Basic;
-import javax.persistence.Cacheable;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thenetcircle.services.dispatcher.cfg.Configuration;
 import com.thenetcircle.services.dispatcher.failsafe.FailsafeCfg;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import java.util.HashSet;
+import java.util.Set;
 
 @XmlRootElement
 @Entity
@@ -39,9 +21,7 @@ public class QueueCfg extends Configuration {
 	}
 
 	public static final String DEFAULT_ROUTE_KEY = "default_route_key";
-
-	private static final int DEFAUTL_RETRY_TIMES = 100;
-	
+	private static final int DEFAULT_RETRY_TIMES = 100;
 	private static final long serialVersionUID = 1L;
 
 	public static ExchangeCfg defaultExchange(QueueCfg qc) {
@@ -246,7 +226,7 @@ public class QueueCfg extends Configuration {
 	
 	public void setRetryLimit(int _retryLimit) {
 		if (_retryLimit < 0) {
-			_retryLimit = DEFAUTL_RETRY_TIMES;
+			_retryLimit = DEFAULT_RETRY_TIMES;
 		}
 		this.retryLimit = _retryLimit;
 	}

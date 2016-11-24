@@ -1,37 +1,19 @@
 package com.thenetcircle.services.dispatcher.entity;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Date;
-
-import javax.persistence.Basic;
-import javax.persistence.Cacheable;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.QueueingConsumer.Delivery;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
-import com.rabbitmq.client.QueueingConsumer.Delivery;
-import com.thenetcircle.services.commons.MiscUtils;
+import javax.persistence.*;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Date;
 
 @XmlRootElement
 @Entity
@@ -86,7 +68,6 @@ public class MessageContext implements Serializable, Cloneable {
 
 	public MessageContext(final QueueCfg queueCfg, final Delivery delivery) {
 		this();
-//		this.id = MiscUtils.uniqueLong();
 		this.queueCfg = queueCfg;
 		this.setDelivery(delivery);
 	}
@@ -235,7 +216,6 @@ public class MessageContext implements Serializable, Cloneable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("{class:\"MessageContext\",id: ").append(id)
 				.append(", queueCfg: ").append(queueCfg)
-//				.append(", delivery:").append(delivery)
 				.append(", messageBody: '").append(new String(messageBody))
 				.append("', response: ").append(response)
 				.append(", failTimes: ").append(failTimes)
