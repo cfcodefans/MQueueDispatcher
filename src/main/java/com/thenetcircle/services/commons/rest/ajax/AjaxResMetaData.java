@@ -1,24 +1,19 @@
 package com.thenetcircle.services.commons.rest.ajax;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.core.MediaType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.thenetcircle.services.commons.MiscUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.functors.EqualPredicate;
 import org.apache.commons.collections4.functors.NotPredicate;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.server.model.Resource;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.thenetcircle.services.commons.MiscUtils;
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import java.io.Serializable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @XmlRootElement
 public class AjaxResMetaData implements Serializable {
@@ -37,7 +32,7 @@ public class AjaxResMetaData implements Serializable {
 				MediaType.valueOf("text/event-stream"), text);
 
 		public static List<DataType> convert(List<MediaType> mediaTypes) {
-			final List<DataType> dataTypeList = mediaTypes.stream().map(internalMap::get).filter(dt -> dt != null).collect(Collectors.toList());
+			final List<DataType> dataTypeList = mediaTypes.stream().map(internalMap::get).filter(Objects::nonNull).collect(Collectors.toList());
 			if (CollectionUtils.isEmpty(dataTypeList)) {
 				return Arrays.asList(text);
 			}
@@ -83,12 +78,12 @@ public class AjaxResMetaData implements Serializable {
 		resMD.name = StringUtils.substringAfterLast(resMD.name, ".");
 		resMD.path = res.getPath();
 
-		res.getChildResources().stream().map(AjaxResMetaData::build).filter(subResMD -> subResMD != null).forEach(subResMD -> {
+		res.getChildResources().stream().map(AjaxResMetaData::build).filter(Objects::nonNull).forEach(subResMD -> {
 			subResMD.parent = resMD;
 			resMD.children.add(subResMD);
 		});
 
-		res.getResourceMethods().stream().map(AjaxResMethodMetaData::build).filter(aResMd -> aResMd != null).forEach(resMD.methods::add);
+		res.getResourceMethods().stream().map(AjaxResMethodMetaData::build).filter(Objects::nonNull).forEach(resMD.methods::add);
 		return resMD;
 	}
 

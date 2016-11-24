@@ -130,7 +130,7 @@ public class AjaxResLoader extends ResourceConfig {
 	                    encodedFlag || method.isAnnotationPresent(Encoded.class),
 	                    method.getParameterTypes()[0],
 	                    method.getGenericParameterTypes()[0],
-	                    method.getAnnotations())).filter(param->param != null).collect(Collectors.toList());
+	                    method.getAnnotations())).filter(Objects::nonNull).collect(Collectors.toList());
 		    	
 		    }
 

@@ -17,3 +17,6 @@ test/*
 *.log
 /target
 /target/
+/*.iml
+/*.ipr
+/*.iws

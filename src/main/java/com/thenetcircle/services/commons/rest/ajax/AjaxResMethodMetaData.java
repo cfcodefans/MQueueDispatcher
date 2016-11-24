@@ -1,19 +1,19 @@
 package com.thenetcircle.services.commons.rest.ajax;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ws.rs.core.MediaType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.sun.research.ws.wadl.HTTPMethods;
 import org.apache.commons.lang3.EnumUtils;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.server.model.ResourceMethod.JaxrsType;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.sun.research.ws.wadl.HTTPMethods;
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @XmlRootElement
 public class AjaxResMethodMetaData implements Serializable {
@@ -27,6 +27,7 @@ public class AjaxResMethodMetaData implements Serializable {
 	public HTTPMethods httpMethod;
 	public List<ParamMetaData> params = new ArrayList<ParamMetaData>();
 	public String baseUrl;
+	public boolean isArray = false;
 
 	public List<String> produceMediaTypes = new ArrayList<String>();
 	public List<String> consumedMediaTypes = new ArrayList<String>();
@@ -50,6 +51,15 @@ public class AjaxResMethodMetaData implements Serializable {
 		aResMd.httpMethod = HTTPMethods.valueOf(httpMethodStr);
 		aResMd.name = resMd.getInvocable().getHandlingMethod().getName();
 		aResMd.returnType = resMd.getInvocable().getRawResponseType();
+		if (aResMd.returnType.isArray()) {
+			aResMd.isArray = true;
+			aResMd.returnType = aResMd.returnType.getComponentType();
+		} else if (Collection.class.isAssignableFrom(aResMd.returnType)) {
+			aResMd.isArray = true;
+			ParameterizedType pt = (ParameterizedType)aResMd.returnType.getTypeParameters()[0];
+			aResMd.returnType = (Class)pt.getActualTypeArguments()[0];
+		}
+
 		aResMd.jaxrsType = resMd.getType();
 
 		resMd.getProducedTypes().stream().map(MediaType::toString).forEach(aResMd.produceMediaTypes::add);
