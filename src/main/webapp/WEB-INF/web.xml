@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
@@ -26,6 +25,10 @@
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>
 			<param-value>com.thenetcircle.services.rest,com.thenetcircle.services.commons.rest,com.thenetcircle.services.dispatcher.dao,com.thenetcircle.services.commons.persistence.jpa</param-value>
+		</init-param>
+		<init-param>
+			<param-name>script-path</param-name>
+			<param-value>scripts</param-value>
 		</init-param>
 		<init-param>
 			<param-name>jersey.config.server.provider.classnames</param-name>

@@ -2,7 +2,7 @@ package com.thenetcircle.services.commons.rest;
 
 import com.thenetcircle.services.commons.Jsons;
 import com.thenetcircle.services.commons.rest.ajax.AjaxResMetaData;
-import com.thenetcircle.services.commons.rest.utils.AjaxResLoader.AjaxResContext;
+import com.thenetcircle.services.commons.rest.utils.AjaxResContext;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Singleton;

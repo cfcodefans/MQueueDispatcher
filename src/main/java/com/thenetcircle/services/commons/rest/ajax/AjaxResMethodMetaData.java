@@ -10,7 +10,6 @@ import javax.ws.rs.core.MediaType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,8 +55,7 @@ public class AjaxResMethodMetaData implements Serializable {
 			aResMd.returnType = aResMd.returnType.getComponentType();
 		} else if (Collection.class.isAssignableFrom(aResMd.returnType)) {
 			aResMd.isArray = true;
-			ParameterizedType pt = (ParameterizedType)aResMd.returnType.getTypeParameters()[0];
-			aResMd.returnType = (Class)pt.getActualTypeArguments()[0];
+			aResMd.returnType = Object.class;
 		}
 
 		aResMd.jaxrsType = resMd.getType();

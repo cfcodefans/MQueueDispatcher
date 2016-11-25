@@ -59,7 +59,7 @@ public class ScriptExecutionContext {
 		
 		Bindings bindings = sc.getBindings(ScriptContext.GLOBAL_SCOPE);
 		if (bindings == null) {
-			log.debug("bindings are null, need initilization");
+			log.debug("bindings are null, need initialization");
 			bindings = se.createBindings();
 			sc.setBindings(bindings, ScriptContext.GLOBAL_SCOPE);
 		}
