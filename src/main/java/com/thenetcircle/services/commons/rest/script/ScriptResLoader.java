@@ -1,6 +1,5 @@
 package com.thenetcircle.services.commons.rest.script;
 
-import com.google.common.io.PatternFilenameFilter;
 import com.thenetcircle.services.commons.FileMonitor;
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.ProcTrace;
@@ -10,6 +9,8 @@ import com.thenetcircle.services.commons.web.mvc.ResCacheMgr;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.filefilter.OrFileFilter;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,10 +20,15 @@ import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.spi.Container;
+import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 
-import javax.script.*;
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 import javax.ws.rs.core.Application;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -33,18 +39,43 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
-/**
- * Created by fan on 2016/11/25.
- */
+
 public class ScriptResLoader extends ResourceConfig {
-    private static final Logger log = LogManager.getLogger(ScriptResLoader.class);
+
+    private static class ContainerHolder implements ContainerLifecycleListener {
+        @Override
+        public void onStartup(Container container) {
+            log.info("ScriptResLoader.container = {}", container);
+            instance.container = container;
+            instance.container.getConfiguration().getProperties().get(SCRIPT_PATH);
+        }
+
+        @Override
+        public void onReload(Container container) {
+        }
+
+        @Override
+        public void onShutdown(Container container) {
+
+        }
+    }
+
     public static final String SCRIPT_PATH = "script-path";
+    public static final FileFilter SCRIPT_EXTS = new OrFileFilter(Arrays.asList(
+        new WildcardFileFilter("*.js"),
+        new WildcardFileFilter("*.scala")));
+    private static final Logger log = LogManager.getLogger(ScriptResLoader.class);
+    private static ScriptResLoader instance = null;
+    protected Container container = null;
+    private ResourceConfig resHolder = this;
+    private AtomicBoolean startedWatch = new AtomicBoolean(false);
+    private ExecutorService watchThread = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory("script-folder-watcher"));
+    private Map<Path, Set<Resource>> scriptPathAndResources = new HashMap<>();
 
     public ScriptResLoader() {
         ProcTrace.start(MiscUtils.invocationInfo());
@@ -54,25 +85,43 @@ public class ScriptResLoader extends ResourceConfig {
         register(EncodingFilter.class);
         register(GZipEncoder.class);
         register(DeflateEncoder.class);
+        register(new ContainerHolder());
 
         ProcTrace.end();
         log.info(ProcTrace.flush());
 
         instance = this;
 
-        loadResourcesFromScript();
-        startWatchScriptFolder();
+        String[] pathStrs = getScriptPaths();
+        final String realResPath = ResCacheMgr.getRealResPath("WEB-INF/" + pathStrs[0]);
+        Stream.of(pathStrs).parallel()
+            .map(pathStr -> realResPath)
+            .map(Paths::get)
+            .filter(Files::exists)
+            .map(Path::toFile)
+            .filter(File::isDirectory)
+            .map(dir -> dir.listFiles(SCRIPT_EXTS))
+            .flatMap(Stream::of)
+            .forEach(file -> scriptPathAndResources.put(file.toPath(), executeScriptFile(file)));
+
+        Set<Resource> resSet = scriptPathAndResources.values().stream().flatMap(Set::stream).collect(Collectors.toSet());
+
+        prepareResourceConfig(resSet, this);
+
+        startWatchScriptFolder(realResPath);
     }
 
-    private static ScriptResLoader instance = null;
-    private AtomicBoolean startedWatch = new AtomicBoolean(false);
-    private ExecutorService watchThread = Executors.newSingleThreadExecutor(MiscUtils.namedThreadFactory("script-folder-watcher"));
+    public void generateAjaxMetadata(Set<Resource> resSet) {
+        AjaxResContext ajaxResContext = AjaxResContext.getInstance(this.getApplicationName());
+        ajaxResContext.getProxyList().clear();
+        ajaxResContext.build(resSet);
+    }
 
-    private void startWatchScriptFolder() {
+    private void startWatchScriptFolder(final String startPath) {
         if (!startedWatch.compareAndSet(false, true)) return;
         watchThread.submit(() -> {
-            try (FileMonitor fm = new FileMonitor()) {
-                fm.addObserver(this::onFileChange);
+            try (FileMonitor fm = new FileMonitor(startPath, SCRIPT_EXTS)) {
+                fm.addObserver(ScriptResLoader.this::onFileChange);
                 fm.run();
             } catch (Exception e) {
                 log.error("something wrong with file watcher", e);
@@ -80,28 +129,8 @@ public class ScriptResLoader extends ResourceConfig {
         });
     }
 
-    public void loadResourcesFromScript() {
-        String[] pathStrs = getScriptPaths();
-        Set<Resource> resSet = Stream.of(pathStrs).parallel()
-            .map(pathStr -> ResCacheMgr.getAbsoluteResPath("WEB-INF", pathStr))
-            .map(Paths::get)
-            .filter(Files::exists)
-            .map(Path::toFile)
-            .filter(File::isDirectory)
-            .map(dir -> dir.listFiles(new PatternFilenameFilter("*.js")))
-            .flatMap(Stream::of)
-            .map(this::executeScriptFile)
-            .filter(CollectionUtils::isNotEmpty)
-            .flatMap(Set::stream)
-            .collect(Collectors.toSet());
-
-        AjaxResContext ajaxResContext = AjaxResContext.getInstance(this.getApplicationName());
-        ajaxResContext.build(resSet);
-        registerResources(resSet);
-    }
-
     public String[] getScriptPaths() {
-        String pathProperty = Objects.toString(this.getConfiguration().getProperty(SCRIPT_PATH), "").trim();
+        String pathProperty = Objects.toString(this.getConfiguration().getProperty(SCRIPT_PATH), "scripts").trim();
         return Stream.of(StringUtils.split(pathProperty, ",")).map(String::trim).toArray(String[]::new);
     }
 
@@ -123,16 +152,16 @@ public class ScriptResLoader extends ResourceConfig {
                 return Collections.emptySet();
             }
 
-            ScriptContext sc = new SimpleScriptContext();
-            Bindings bindings = sc.getBindings(ScriptContext.GLOBAL_SCOPE);
-            if (bindings == null) {
-                log.debug("bindings are null, need initialization");
-                bindings = se.createBindings();
-                sc.setBindings(bindings, ScriptContext.GLOBAL_SCOPE);
-                bindings.put("Application", this);
-            }
+//            ScriptContext sc = new SimpleScriptContext();
+//            Bindings bindings = sc.getBindings(ScriptContext.GLOBAL_SCOPE);
+//            if (bindings == null) {
+//                log.debug("bindings are null, need initialization");
+//                bindings = se.createBindings();
+//                sc.setBindings(bindings, ScriptContext.GLOBAL_SCOPE);
+//                bindings.put("Application", this);
+//            }
 
-            se.eval(scriptStr, sc);
+            se.eval(scriptStr);
             Invocable inv = (Invocable) se;
             IResourceGenerator resGen = inv.getInterface(IResourceGenerator.class);
             if (resGen == null) {
@@ -151,34 +180,53 @@ public class ScriptResLoader extends ResourceConfig {
         return Collections.emptySet();
     }
 
-    interface IResourceGenerator extends Function<Application, Set<Resource>> {
-    }
-
     private void onFileChange(Observable fm, Object _watchEvents) {
 
         Map<WatchEvent.Kind, Set<Path>> eventAndPaths = FileMonitor.castEvent(_watchEvents);
-        eventAndPaths.get(ENTRY_DELETE).forEach(path -> scriptPathAndResources.remove(path));
-        Set<Resource> newResources = eventAndPaths.get(ENTRY_CREATE).stream()
-            .map(Path::toFile)
-            .map(this::executeScriptFile)
-            .flatMap(Set::stream)
-            .collect(Collectors.toSet());
-        registerResources(newResources);
+        Set<Resource> deletedResources = eventAndPaths.get(ENTRY_DELETE).stream()
+            .map(scriptPathAndResources::remove)
+            .flatMap(Set::stream).collect(Collectors.toSet());
 
-        eventAndPaths.get(ENTRY_MODIFY).forEach(path -> scriptPathAndResources.remove(path));
-        Set<Resource> modifiedResources = eventAndPaths.get(ENTRY_CREATE).stream()
-            .map(Path::toFile)
-            .map(this::executeScriptFile)
-            .flatMap(Set::stream)
-            .collect(Collectors.toSet());
-        registerResources(modifiedResources);
+        eventAndPaths.get(ENTRY_CREATE).stream()
+            .forEach(path -> {
+                Set<Resource> newResources = executeScriptFile(path.toFile());
+                if (CollectionUtils.isNotEmpty(newResources))
+                    scriptPathAndResources.put(path, newResources);
+                else
+                    scriptPathAndResources.remove(path);
+            });
 
-        AjaxResContext ajaxResContext = AjaxResContext.getInstance(this.getApplicationName());
-        ajaxResContext.getProxyList().clear();
-        ajaxResContext.build(scriptPathAndResources.values().stream().flatMap(Set::stream).collect(Collectors.toList()));
+        eventAndPaths.get(ENTRY_MODIFY).stream()
+            .forEach(path -> {
+                Set<Resource> newResources = executeScriptFile(path.toFile());
+                if (CollectionUtils.isNotEmpty(newResources))
+                    scriptPathAndResources.put(path, newResources);
+                else
+                    scriptPathAndResources.remove(path);
+            });
+
+        Set<Resource> resSet = scriptPathAndResources.values().stream().flatMap(Set::stream).collect(Collectors.toSet());
+        this.resHolder = new ResourceConfig();
+
+        prepareResourceConfig(resSet, resHolder);
+
+        container.reload(resHolder);
     }
 
-    private Map<Path, Set<Resource>> scriptPathAndResources = new HashMap<>();
+    private void prepareResourceConfig(Set<Resource> resSet, ResourceConfig resourceConfig) {
+        resourceConfig.register(JacksonFeature.class);
+        resourceConfig.register(EncodingFilter.class);
+        resourceConfig.register(GZipEncoder.class);
+        resourceConfig.register(DeflateEncoder.class);
 
+        resourceConfig.setApplicationName(this.getApplicationName());
+        resourceConfig.setClassLoader(this.getClassLoader());
 
+        resourceConfig.registerResources(resSet);
+        generateAjaxMetadata(resSet);
+    }
+
+    public interface IResourceGenerator {
+        Set<Resource> apply(Application app);
+    }
 }

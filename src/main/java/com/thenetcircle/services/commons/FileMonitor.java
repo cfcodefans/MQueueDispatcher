@@ -1,8 +1,10 @@
 package com.thenetcircle.services.commons;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -17,8 +19,22 @@ import static java.nio.file.StandardWatchEventKinds.*;
  */
 public class FileMonitor extends Observable implements Runnable, AutoCloseable {
     private static final Logger log = LogManager.getLogger(FileMonitor.class);
-    WatchService ws = null;
-    Map<WatchKey, Path> keys;
+    protected WatchService ws = null;
+    protected Map<WatchKey, Path> keys;
+    protected String start = null;
+    protected FileFilter filter = null;
+
+    public FileMonitor(String _start, FileFilter _filter) {
+        keys = new HashMap<WatchKey, Path>();
+        start = _start;
+        filter = _filter;
+        try {
+            ws = FileSystems.getDefault().newWatchService();
+            regForWatch(Paths.get(start));
+        } catch (IOException e) {
+            log.error(String.format("failed to monitor path at %s", start), e);
+        }
+    }
 
     public void regAllForWatch(Path _start) throws IOException {
         Files.walkFileTree(_start, new SimpleFileVisitor<Path>() {
@@ -30,11 +46,15 @@ public class FileMonitor extends Observable implements Runnable, AutoCloseable {
     }
 
     public void regForWatch(Path dir) throws IOException {
+        if (!Files.isDirectory(dir)) {
+            log.warn("can not watch a file: {}", dir);
+            return;
+        }
         WatchKey regKey = dir.register(ws, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
         keys.put(regKey, dir);
     }
 
-    private Map<WatchEvent.Kind, Set<Path>> wrap(WatchKey wk, List<WatchEvent> watchEvents) {
+    private Map<WatchEvent.Kind, Set<Path>> wrap(WatchKey wk, List<WatchEvent<?>> watchEvents) {
         Path dir = keys.get(wk);
         if (dir == null) {
             log.error("WatchKey not recognized! " + wk.watchable());
@@ -71,7 +91,7 @@ public class FileMonitor extends Observable implements Runnable, AutoCloseable {
             }
 
             List<WatchEvent<?>> watchEvents = wk.pollEvents();
-            super.notifyObservers(watchEvents);
+            updateListeners(wk, watchEvents);
 
             for (WatchEvent<?> event : watchEvents) {
                 WatchEvent.Kind kind = event.kind();
@@ -100,15 +120,38 @@ public class FileMonitor extends Observable implements Runnable, AutoCloseable {
                     }
                 }
             }
-
-
-            if (wk.reset()) {
+            if (!wk.reset()) {
                 keys.remove(wk);
                 if (keys.isEmpty()) {
                     return;
                 }
             }
         }
+    }
+
+    protected void updateListeners(WatchKey wk, List<WatchEvent<?>> _watchEvents) {
+        Path dir = keys.get(wk);
+        if (dir == null || CollectionUtils.isEmpty(_watchEvents)) {
+            return;
+        }
+
+        List<WatchEvent<?>> watchEvents = _watchEvents.stream()
+            .map(_we -> {
+                WatchEvent<Path> ev = cast(_we);
+                Path name = ev.context();
+                Path child = dir.resolve(name);
+                if (filter.accept(child.toFile())) {
+                    return ev;
+                }
+                return null;
+            }).filter(Objects::nonNull).collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(watchEvents)) {
+            return;
+        }
+
+        super.setChanged();
+        super.notifyObservers(wrap(wk, watchEvents));
     }
 
     static <T> WatchEvent<T> cast(WatchEvent<?> event) {

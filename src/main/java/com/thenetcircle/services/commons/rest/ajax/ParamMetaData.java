@@ -1,11 +1,11 @@
 package com.thenetcircle.services.commons.rest.ajax;
 
-import java.io.Serializable;
-
-import javax.xml.bind.annotation.XmlRootElement;
-
 import org.glassfish.jersey.server.model.Parameter;
 import org.glassfish.jersey.server.model.Parameter.Source;
+
+import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
+import java.lang.reflect.Type;
 
 @XmlRootElement
 @SuppressWarnings("rawtypes")
@@ -15,7 +15,7 @@ public class ParamMetaData implements Serializable {
 	public Source source;
 	public String sourceName;
 	public Class rawType;
-	public Class type;
+	public Type type;
 
 	public static ParamMetaData build(Parameter param) {
 		ParamMetaData pmd = new ParamMetaData();
@@ -23,7 +23,7 @@ public class ParamMetaData implements Serializable {
 		pmd.source = param.getSource();
 		pmd.sourceName = param.getSourceName();
 		pmd.rawType = param.getRawType();
-		pmd.type = (Class) param.getType();
+		pmd.type = param.getType();
 		
 		return pmd;
 	}

@@ -174,4 +174,8 @@ public class ResCacheMgr implements ServletContextListener, Runnable {
         }
         return FilenameUtils.separatorsToUnix(FilenameUtils.concat(FilenameUtils.getPath(refPath), path));
     }
+
+    public static String getRealResPath(final String path) {
+        return servletCtx.getRealPath(path);
+    }
 }

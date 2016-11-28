@@ -20,8 +20,6 @@ import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 public class AjaxResLoader extends ResourceConfig {
     private static final Logger log = LogManager.getLogger(AjaxResLoader.class);
 
-
-
     public AjaxResLoader() {
         ProcTrace.start(MiscUtils.invocationInfo());
         ProcTrace.ongoing("set packages scan");
