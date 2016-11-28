@@ -14,7 +14,6 @@ import org.apache.commons.logging.LogFactory;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -24,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
-@WebListener
+//@WebListener
 public class StartUpListener implements ServletContextListener {
 
 	private static Log log = LogFactory.getLog(StartUpListener.class);
