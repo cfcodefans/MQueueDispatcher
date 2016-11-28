@@ -179,6 +179,4 @@ public class ScriptResLoader extends ResourceConfig {
     }
 
     private Map<Path, Set<Resource>> scriptPathAndResources = new HashMap<>();
-
-
 }
