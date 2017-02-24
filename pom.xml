@@ -118,8 +118,6 @@
             <artifactId>hibernate-c3p0</artifactId>
             <version>${hibernate.version}</version>
         </dependency>
-        <!--
-         -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-ehcache</artifactId>
@@ -255,25 +253,6 @@
                     <!-- <bootclasspath>${env.JAVA_HOME}/lib/rt.jar</bootclasspath> -->
                 </configuration>
             </plugin>
-            <!--
-                        <plugin>
-                            <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifestFile>
-                            ${project.build.outputDirectory}/META-INF/MANIFEST.MF
-                        </manifestFile>
-                        <manifestEntries>
-                            <Bundle-ClassPath>WEB-INF/classes/</Bundle-ClassPath>
-                        </manifestEntries>
-                    </archive>
-                    <warSourceDirectory>WebContent</warSourceDirectory>
-                    <warName>dispatcher</warName>
-                    <webappDirectory>target/dispatcher</webappDirectory>
-                </configuration>
-            </plugin>
-
-            -->
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>

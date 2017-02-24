@@ -44,13 +44,13 @@ class QueueCtx implements ShutdownListener {
 
 	public void shutdownCompleted(final ShutdownSignalException cause) {
 		// final Object ref = cause.getReference();
-		final Object reasonObj = cause.getReason();
+		final Object reason = cause.getReason();
 		final ServerCfg sc = qc.getServerCfg();
 
 		log.error("shutdown happens!!!", cause);
 
-		if ((reasonObj instanceof AMQP.Connection.Close)) {
-			AMQP.Connection.Close close = (AMQP.Connection.Close) reasonObj;
+		if ((reason instanceof AMQP.Connection.Close)) {
+			AMQP.Connection.Close close = (AMQP.Connection.Close) reason;
 			if (AMQP.CONNECTION_FORCED == close.getReplyCode() && "OK".equals(close.getReplyText())) {
 				final String infoStr = String.format("\n close connection to server: \n\t %s", sc);
 				log.error(infoStr);
@@ -59,8 +59,8 @@ class QueueCtx implements ShutdownListener {
 			}
 		}
 
-		if ((reasonObj instanceof AMQP.Channel.Close)) {
-			AMQP.Channel.Close close = (AMQP.Channel.Close) reasonObj;
+		if ((reason instanceof AMQP.Channel.Close)) {
+			AMQP.Channel.Close close = (AMQP.Channel.Close) reason;
 			if (AMQP.CONNECTION_FORCED == close.getReplyCode() && "OK".equals(close.getReplyText())) {
 				final String infoStr = String.format("\n close channel to server: \n\t %s", sc);
 				log.error(infoStr);

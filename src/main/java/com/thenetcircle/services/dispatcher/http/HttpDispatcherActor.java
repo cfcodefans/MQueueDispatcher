@@ -241,15 +241,15 @@ public class HttpDispatcherActor implements IActor<MessageContext> {
 											.build();
 
 			final IOReactorConfig ioCfg = IOReactorConfig.custom().setInterestOpQueued(true).build();
+//to deal with https
 			final CloseableHttpClient chc = HttpClients.custom()
-				//to deal with https
 													.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
 													.setMaxConnTotal((int)MiscUtils.getPropertyNumber("http.client.max.connection", 50))
 													.setMaxConnPerRoute((int)MiscUtils.getPropertyNumber("http.client.max.connection.per_route", 25))
-//													.setConnectionReuseStrategy(new NoConnectionReuseStrategy())
 													.setDefaultRequestConfig(reqCfg)
+				.build();
 //													.setDefaultIOReactorConfig(ioCfg)
-													.build();
+//													.setConnectionReuseStrategy(new NoConnectionReuseStrategy())
 			this.closeableHttpClients[i] = new FutureRequestExecutionService(chc, Executors.newWorkStealingPool());
 		});
 		httpClientIterator = new LoopingArrayIterator<>(closeableHttpClients);

@@ -30,14 +30,11 @@ public abstract class AsyncActor<M, Q extends Queue<M>> implements IActor<M>, Ru
 		for (int i = 0; i < num; i++) {
 			reList.add(poll());
 		}
-		return reList.stream().filter(e -> e != null).collect(Collectors.toList());
+		return reList.stream().filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
 	@Override
 	public void run() {
-		// if (!stopped.compareAndSet(false, true)) {
-		// return;
-		// }
 		if (this instanceof IBatchProvider) {
 			processBatch();
 			return;
@@ -77,7 +74,7 @@ public abstract class AsyncActor<M, Q extends Queue<M>> implements IActor<M>, Ru
 		log.info(ProcTrace.flush());
 	}
 
-	public static interface IBatchProvider<T> {
+	public interface IBatchProvider<T> {
 		Collection<T> pollBatch() throws Exception;
 	}
 
