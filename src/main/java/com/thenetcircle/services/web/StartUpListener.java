@@ -1,7 +1,7 @@
 package com.thenetcircle.services.web;
 
 import com.thenetcircle.services.cluster.JGroupsActor;
-import com.thenetcircle.services.commons.Lambdas;
+import com.thenetcircle.services.commons.L;
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
 import com.thenetcircle.services.dispatcher.ampq.MQueueMgr;
@@ -59,7 +59,7 @@ public class StartUpListener implements ServletContextListener {
 
             List<Callable<QueueCfg>> initiators = qcList.stream().map(StartUpListener::makeQueueInitiator).collect(Collectors.toList());
             List<QueueCfg> starteds = threadPool.invokeAll(initiators).stream()
-                .map(Lambdas.wf(Future::get))
+                .map(L.wf(Future::get))
                 .filter(qc -> qc instanceof QueueCfg)
                 .collect(Collectors.toList());
 

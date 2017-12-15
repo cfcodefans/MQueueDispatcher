@@ -6,7 +6,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.thenetcircle.services.cluster.JGroupsActor;
-import com.thenetcircle.services.commons.Lambdas;
+import com.thenetcircle.services.commons.L;
 import com.thenetcircle.services.commons.MiscUtils;
 import com.thenetcircle.services.commons.ProcTrace;
 import com.thenetcircle.services.commons.persistence.jpa.JpaModule;
@@ -33,7 +33,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.thenetcircle.services.commons.Lambdas.falseSupplier;
+import static com.thenetcircle.services.commons.L.FALSE_SUPPLIER;
 import static com.thenetcircle.services.commons.MiscUtils.AVAILABLE_PROCESSORS;
 import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._error;
 import static com.thenetcircle.services.dispatcher.log.ConsumerLoggers._info;
@@ -130,20 +130,20 @@ public class MQueueMgr {
         if (ec == null || ec.getServerCfg() == null || StringUtils.isBlank(ec.getExchangeName()))
             return false;
 
-        return operate(ec.getServerCfg(), Lambdas.wf((Channel ch) -> {
+        return operate(ec.getServerCfg(), L.wf((Channel ch) -> {
             ch.exchangeDeclarePassive(ec.getExchangeName());
             return Boolean.TRUE;
-        }, falseSupplier, log::error));
+        }, FALSE_SUPPLIER, log::error));
     }
 
     public boolean ifQueueExists(QueueCfg qc) {
         if (qc == null || qc.getServerCfg() == null || StringUtils.isBlank(qc.getQueueName()))
             return false;
 
-        return operate(qc.getServerCfg(), Lambdas.wf((Channel ch) -> {
+        return operate(qc.getServerCfg(), L.wf((Channel ch) -> {
             ch.queueDeclarePassive(qc.getQueueName());
             return Boolean.TRUE;
-        }, falseSupplier, log::error));
+        }, FALSE_SUPPLIER, log::error));
     }
 
     public boolean isQueueRunning(final QueueCfg qc) {

@@ -1,5 +1,6 @@
 package com.thenetcircle.services.commons;
 
+import java.util.Optional;
 import java.util.function.*;
 
 /**
@@ -7,8 +8,7 @@ import java.util.function.*;
  *
  * @author fan
  */
-public class Lambdas {
-
+public class L {
     public interface ExBiConsumer<T, U> {
         void accept(T t, U u) throws Exception;
     }
@@ -17,9 +17,9 @@ public class Lambdas {
         return () -> t;
     }
 
-    public static Supplier<Object> nullSupplier = makeSupplier(null);
-    public static Supplier<Boolean> falseSupplier = makeSupplier(Boolean.FALSE);
-    public static Supplier<Boolean> trueSupplier = makeSupplier(Boolean.TRUE);
+    public static Supplier<Object> NULL_SUPPLIER = makeSupplier(null);
+    public static Supplier<Boolean> FALSE_SUPPLIER = makeSupplier(Boolean.FALSE);
+    public static Supplier<Boolean> TREU_SUPPLIER = makeSupplier(Boolean.TRUE);
 
     public static class ExBiConsumerWrapper<T, U> implements BiConsumer<T, U> {
         public final ExBiConsumer<T, U> ebc;
@@ -195,19 +195,19 @@ public class Lambdas {
     }
 
     public static <T, U> ExBiConsumerWrapper<T, U> wbc(ExBiConsumer<T, U> ebc) {
-        return new ExBiConsumerWrapper<T, U>(ebc, Lambdas::defaultExceptionConsumer);
+        return new ExBiConsumerWrapper<T, U>(ebc, L::defaultExceptionHandler);
     }
 
     public static <T, U> ExBiConsumerWrapper<T, U[]> wbca1(ExBiConsumer<T, U[]> ebc) {
-        return new ExBiConsumerWrapper<T, U[]>(ebc, Lambdas::defaultExceptionConsumer);
+        return new ExBiConsumerWrapper<T, U[]>(ebc, L::defaultExceptionHandler);
     }
 
     public static <T, U> ExBiConsumerWrapper<T[], U> wbca2(ExBiConsumer<T[], U> ebc) {
-        return new ExBiConsumerWrapper<T[], U>(ebc, Lambdas::defaultExceptionConsumer);
+        return new ExBiConsumerWrapper<T[], U>(ebc, L::defaultExceptionHandler);
     }
 
     public static <T, U> ExBiConsumerWrapper<T[], U[]> wbca3(ExBiConsumer<T[], U[]> ebc) {
-        return new ExBiConsumerWrapper<T[], U[]>(ebc, Lambdas::defaultExceptionConsumer);
+        return new ExBiConsumerWrapper<T[], U[]>(ebc, L::defaultExceptionHandler);
     }
 
     public static <T, U, R> ExBiFuncWrapper<T, U, R> wbf(ExBiFunc<T, U, R> ebc, Supplier<R> df, Consumer<Exception> exceptionHandler) {
@@ -243,9 +243,8 @@ public class Lambdas {
     }
 
     public static <T, U, R> ExBiFuncWrapper<T, U, R> wbf(ExBiFunc<T, U, R> ebc) {
-        return new ExBiFuncWrapper<T, U, R>(ebc, Lambdas::defaultExceptionConsumer, Lambdas::defaultValue);
+        return new ExBiFuncWrapper<T, U, R>(ebc, L::defaultExceptionHandler, L::nullVal);
     }
-
 
     public static <T, R> ExFuncWrapper<T, R> wf(ExFunc<T, R> ebc, Supplier<R> df, Consumer<Exception> exceptionHandler) {
         return new ExFuncWrapper<T, R>(ebc, exceptionHandler, df);
@@ -264,19 +263,19 @@ public class Lambdas {
     }
 
     public static <T, R> ExFuncWrapper<T, R[]> wfa1(ExFunc<T, R[]> ebc) {
-        return new ExFuncWrapper<T, R[]>(ebc, Lambdas::defaultExceptionConsumer, Lambdas::defaultValue);
+        return new ExFuncWrapper<T, R[]>(ebc, L::defaultExceptionHandler, L::nullVal);
     }
 
     public static <T, R> ExFuncWrapper<T[], R> wfa2(ExFunc<T[], R> ebc) {
-        return new ExFuncWrapper<T[], R>(ebc, Lambdas::defaultExceptionConsumer, Lambdas::defaultValue);
+        return new ExFuncWrapper<T[], R>(ebc, L::defaultExceptionHandler, L::nullVal);
     }
 
     public static <T, R> ExFuncWrapper<T[], R[]> wfa3(ExFunc<T[], R[]> ebc) {
-        return new ExFuncWrapper<T[], R[]>(ebc, Lambdas::defaultExceptionConsumer, Lambdas::defaultValue);
+        return new ExFuncWrapper<T[], R[]>(ebc, L::defaultExceptionHandler, L::nullVal);
     }
 
     public static <T, R> ExFuncWrapper<T, R> wf(ExFunc<T, R> ebc) {
-        return new ExFuncWrapper<T, R>(ebc, Lambdas::defaultExceptionConsumer, Lambdas::defaultValue);
+        return new ExFuncWrapper<T, R>(ebc, L::defaultExceptionHandler, L::nullVal);
     }
 
     public static <T> ExConsumerWrapper<T> wc(ExConsumer<T> ebc, Consumer<Exception> exceptionHandler) {
@@ -288,11 +287,11 @@ public class Lambdas {
     }
 
     public static <T> ExConsumerWrapper<T> wc(ExConsumer<T> ebc) {
-        return new ExConsumerWrapper<T>(ebc, Lambdas::defaultExceptionConsumer);
+        return new ExConsumerWrapper<T>(ebc, L::defaultExceptionHandler);
     }
 
     public static <T> ExConsumerWrapper<T[]> wca(ExConsumer<T[]> ebc) {
-        return new ExConsumerWrapper<T[]>(ebc, Lambdas::defaultExceptionConsumer);
+        return new ExConsumerWrapper<T[]>(ebc, L::defaultExceptionHandler);
     }
 
     public static <T> ExSupplierWrapper<T> ws(ExSupplier<T> ebc, Supplier<T> df, Consumer<Exception> exceptionHandler) {
@@ -304,18 +303,18 @@ public class Lambdas {
     }
 
     public static <T> ExSupplierWrapper<T> ws(ExSupplier<T> ebc) {
-        return new ExSupplierWrapper<T>(ebc, Lambdas::defaultExceptionConsumer, Lambdas::defaultValue);
+        return new ExSupplierWrapper<T>(ebc, L::defaultExceptionHandler, L::nullVal);
     }
 
     public static <T> ExSupplierWrapper<T[]> wsa(ExSupplier<T[]> ebc) {
-        return new ExSupplierWrapper<T[]>(ebc, Lambdas::defaultExceptionConsumer, Lambdas::defaultValue);
+        return new ExSupplierWrapper<T[]>(ebc, L::defaultExceptionHandler, L::nullVal);
     }
 
-    public static void defaultExceptionConsumer(Throwable e) {
+    public static void defaultExceptionHandler(Throwable e) {
         e.printStackTrace();
     }
 
-    public static <T> T defaultValue() {
+    public static <T> T nullVal() {
         return null;
     }
 
@@ -324,10 +323,10 @@ public class Lambdas {
     }
 
     public static <T> Predicate<T> wp(ExPredicate<T> p, boolean _default) {
-        return new ExPredicateWrapper<T>(p, Lambdas::defaultExceptionConsumer, _default);
+        return new ExPredicateWrapper<T>(p, L::defaultExceptionHandler, _default);
     }
 
     public static <T> Predicate<T> wpf(ExPredicate<T> p) {
-        return new ExPredicateWrapper<T>(p, Lambdas::defaultExceptionConsumer, false);
+        return new ExPredicateWrapper<T>(p, L::defaultExceptionHandler, false);
     }
 }
