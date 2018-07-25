@@ -1,6 +1,5 @@
 package com.thenetcircle.services.commons.actor;
 
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ConcurrentAsynActor<M> extends AsyncActor<M, ConcurrentLinkedQueue<M>> {
@@ -13,7 +12,7 @@ public class ConcurrentAsynActor<M> extends AsyncActor<M, ConcurrentLinkedQueue<
         this(new ConcurrentLinkedQueue<M>());
     }
 
-    protected M poll(ConcurrentLinkedDeque<M> _buf) throws InterruptedException {
+    protected M poll(ConcurrentLinkedQueue<M> _buf) throws InterruptedException {
         M polled = _buf.poll();
         if (polled != null) {
             return polled;

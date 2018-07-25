@@ -1,8 +1,8 @@
 package com.thenetcircle.services.dispatcher.entity;
 
 import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.Envelope;
-import com.rabbitmq.client.QueueingConsumer.Delivery;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;

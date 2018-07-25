@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
@@ -20,6 +19,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.annotation.PostConstruct;
 
 @ApplicationScoped
 public class JpaModule {
@@ -69,7 +70,7 @@ public class JpaModule {
 			final Properties p = new Properties();
 			p.load(new FileInputStream(pathStr));
 
-			final HashMap settings = new HashMap(p);
+			final Map settings = new HashMap(p);
 			log.info("\nhave loaded data source\n" + settings + "\n\n");
 			return settings;
 		} catch (Exception e) {
